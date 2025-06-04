@@ -1,0 +1,1 @@
+alter table user_profiles add column is_real boolean not null default false;
