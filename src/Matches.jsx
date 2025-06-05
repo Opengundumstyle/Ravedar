@@ -8,6 +8,7 @@ function Matches() {
   const [matches, setMatches] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showMatch, setShowMatch] = useState(false);
+  const [loading, setLoading] = useState(true);
   const controls = useAnimation();
   const dragging = useRef(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -20,10 +21,11 @@ function Matches() {
 
   useEffect(() => {
     const fetchMatches = async () => {
+      setLoading(true);
       const currentUserId = localStorage.getItem('user_profile_id');
-      console.log('user_profile_id from localStorage:', currentUserId);
       if (!currentUserId) {
         setMatches([]);
+        setLoading(false);
         return;
       }
       // 1. Get current user's event
@@ -34,26 +36,22 @@ function Matches() {
         .single();
       if (!myEvent) {
         setMatches([]);
+        setLoading(false);
         return;
       }
       // 2. Find real users attending the same event (excluding current user)
-      console.log('myEvent:', myEvent);
       let query = supabase
         .from('user_events')
         .select('user_id')
         .eq('name', myEvent.name.trim())
         .eq('city', myEvent.city.trim())
         .neq('user_id', currentUserId);
-
       if (myEvent.date) {
         query = query.eq('date', myEvent.date);
       } else {
         query = query.is('date', null);
       }
-
-      const { data: realUserEvents, error } = await query;
-      console.log('realUserEvents:', realUserEvents, 'error:', error);
-      
+      const { data: realUserEvents } = await query;
       const realUserIds = (realUserEvents || []).map(u => u.user_id);
       let realProfiles = [];
       if (realUserIds.length > 0) {
@@ -69,29 +67,22 @@ function Matches() {
         .from('user_profiles')
         .select('id, name, instagram, vibe_tags, about_me, is_real')
         .eq('is_real', false);
-// Debug: log the fetched user data
-     console.log('Real profiles:', realProfiles);
-     console.log('Fake profiles:', fakeProfiles);
-
       // After fetching realProfiles and fakeProfiles, get all user IDs
       const allUserIds = [...(realProfiles || []), ...(fakeProfiles || [])].map(u => u.id);
       const { data: photos } = await supabase
         .from('user_photos')
         .select('user_id, image_url, position')
         .in('user_id', allUserIds);
-
       // Merge photos into each user
       const mergePhotos = (profiles) =>
         (profiles || []).map(profile => ({
           ...profile,
           photos: (photos || []).filter(p => p.user_id === profile.id).sort((a, b) => a.position - b.position),
         }));
-
       const mergedRealProfiles = mergePhotos(realProfiles);
       const mergedFakeProfiles = mergePhotos(fakeProfiles);
-
-      // 4. Combine: real users first, then fake users
       setMatches([...mergedRealProfiles, ...mergedFakeProfiles]);
+      setLoading(false);
     };
     fetchMatches();
   }, []);
@@ -112,12 +103,16 @@ function Matches() {
     setToggled(false); // reset toggle on new card
   };
 
+  if (loading) {
+    return <div className="text-center mt-8">Loading matches...</div>;
+  }
+
   if (currentIndex >= matches.length) {
     return (
-      <div className="text-center mt-8">
-        <div>No more users to show.</div>
+      <div className="text-center mt-8 flex flex-col items-center">
+        <div className="text-lg font-semibold mb-4">No more users to show :</div>
         <button
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+          className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
           onClick={() => navigate('/')}
         >
           Go Home
