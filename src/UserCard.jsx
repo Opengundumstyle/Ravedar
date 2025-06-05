@@ -1,6 +1,6 @@
 function UserCard({ user }) {
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-4 flex flex-col items-center max-w-sm sm:max-w-md md:max-w-lg mx-auto transition-all duration-300 border border-gray-100 cursor-pointer">
+    <div className="bg-white rounded-2xl shadow-lg p-4 flex flex-col items-center w-full max-w-sm sm:max-w-md md:max-w-lg mx-auto transition-all duration-300 border border-gray-100 cursor-pointer min-h-[60vh]">
       {/* Responsive photo carousel with aspect ratio and cropping */}
       {user.photos && user.photos.length > 0 && (
         <div className="w-full flex justify-center mb-4">
