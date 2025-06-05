@@ -9,6 +9,7 @@ function Matches() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showMatch, setShowMatch] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [eventName, setEventName] = useState("");
   const controls = useAnimation();
   const dragging = useRef(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -39,6 +40,7 @@ function Matches() {
         setLoading(false);
         return;
       }
+      setEventName(myEvent.name);
       // 2. Find real users attending the same event (excluding current user)
       let query = supabase
         .from('user_events')
@@ -126,6 +128,13 @@ function Matches() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-pink-50 py-8 px-2">
       <div className="w-full max-w-md flex flex-col items-center justify-center min-h-[70vh]">
+        {eventName && match && (
+          <div className="mb-8 w-full flex items-center">
+            <span className="text-xl font-medium text-gray-400">You both are going to&nbsp;</span>
+            <span className="text-2xl font-bold text-gray-900">{eventName}</span>
+  
+          </div>
+        )}
         {showMatch && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="bg-white p-8 rounded shadow text-2xl font-bold text-green-600">It's a match!</div>
@@ -163,6 +172,9 @@ function Matches() {
               onClick={() => setToggled(t => !t)}
             >
               <UserCard user={match} />
+              {isHovered && (
+                <div className="absolute inset-0 rounded-2xl ring-2 ring-blue-400 pointer-events-none"></div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
