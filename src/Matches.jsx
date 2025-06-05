@@ -8,6 +8,7 @@ function Matches() {
   const [matches, setMatches] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showMatch, setShowMatch] = useState(false);
+  const [matchOverlay, setMatchOverlay] = useState(false);
   const [loading, setLoading] = useState(true);
   const [eventName, setEventName] = useState("");
   const controls = useAnimation();
@@ -98,11 +99,18 @@ function Matches() {
       liked: direction === 'right',
     });
     if (direction === 'right') {
-      setShowMatch(true);
-      setTimeout(() => setShowMatch(false), 1500);
+      setMatchOverlay(true);
+      return;
     }
     setCurrentIndex(i => i + 1);
     setToggled(false); // reset toggle on new card
+  };
+
+  const handleKeepSwiping = () => {
+    setMatchOverlay(false);
+    setShowMatch(false);
+    setCurrentIndex(i => i + 1);
+    setToggled(false);
   };
 
   if (loading) {
@@ -132,16 +140,41 @@ function Matches() {
           <div className="mb-8 w-full flex items-center">
             <span className="text-xl font-medium text-gray-400">You both are going to&nbsp;</span>
             <span className="text-2xl font-bold text-gray-900">{eventName}</span>
-  
           </div>
         )}
-        {showMatch && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-8 rounded shadow text-2xl font-bold text-green-600">It's a match!</div>
+        {matchOverlay && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full flex flex-col items-center text-center relative">
+              <div className="text-3xl font-extrabold text-pink-500 mb-2">It's a match</div>
+              <div className="text-lg text-gray-700 mb-4">You can be matching with real rave enthusiasts like this at your fingertip!</div>
+              <a href="#" target="_blank" rel="noopener noreferrer" className="mb-4 inline-block px-4 py-2 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition">Join private Discord chat</a>
+              <div className="mb-4 text-gray-500">Follow us on</div>
+              <div className="flex gap-4 mb-4">
+                {/* Instagram */}
+                <a href="#" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition">
+                  <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#E1306C"/><path d="M12 8.4A3.6 3.6 0 1 0 12 15.6 3.6 3.6 0 0 0 12 8.4Zm0 5.9a2.3 2.3 0 1 1 0-4.6 2.3 2.3 0 0 1 0 4.6Zm4.5-6.1a.9.9 0 1 1-1.8 0 .9.9 0 0 1 1.8 0ZM17.7 7.1a2.6 2.6 0 0 0-1.5-1.5c-.7-.3-1.5-.3-4.2-.3s-3.5 0-4.2.3a2.6 2.6 0 0 0-1.5 1.5c-.3.7-.3 1.5-.3 4.2s0 3.5.3 4.2a2.6 2.6 0 0 0 1.5 1.5c.7.3 1.5.3 4.2.3s3.5 0 4.2-.3a2.6 2.6 0 0 0 1.5-1.5c.3-.7.3-1.5.3-4.2s0-3.5-.3-4.2Zm-1.1 8.1a1.6 1.6 0 0 1-1.1 1.1c-.8.3-2.7.2-3.5.2s-2.7 0-3.5-.2a1.6 1.6 0 0 1-1.1-1.1c-.3-.8-.2-2.7-.2-3.5s0-2.7.2-3.5a1.6 1.6 0 0 1 1.1-1.1c.8-.3 2.7-.2 3.5-.2s2.7 0 3.5.2a1.6 1.6 0 0 1 1.1 1.1c.3.8.2 2.7.2 3.5s0 2.7-.2 3.5Z" fill="#fff"/></svg>
+                </a>
+                {/* TikTok */}
+                <a href="#" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition">
+                  <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#000"/><path d="M17.5 9.5c-.7 0-1.3-.2-1.8-.6V15c0 2-1.6 3.6-3.6 3.6S8.5 17 8.5 15s1.6-3.6 3.6-3.6c.2 0 .4 0 .6.1v1.5c-.2-.1-.4-.1-.6-.1-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2V7.5h1.5c.1.7.7 1.3 1.4 1.4v.6Z" fill="#fff"/></svg>
+                </a>
+                {/* Facebook */}
+                <a href="#" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition">
+                  <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#1877F3"/><path d="M15.5 8.5h-1.5c-.2 0-.5.2-.5.5v1.5h2l-.3 2h-1.7v5h-2v-5H9.5v-2h1.5V9c0-1.1.9-2 2-2h1.5v1.5Z" fill="#fff"/></svg>
+                </a>
+              </div>
+              <a href="#" target="_blank" rel="noopener noreferrer" className="mb-6 text-blue-600 underline font-medium">Join our mission: Contact us</a>
+              <button
+                onClick={handleKeepSwiping}
+                className="mt-2 px-6 py-3 bg-pink-500 hover:bg-pink-600 text-white rounded-full font-bold text-lg shadow-lg transition"
+              >
+                Keep Swiping
+              </button>
+            </div>
           </div>
         )}
         <AnimatePresence mode="wait">
-          {match && (
+          {!matchOverlay && match && (
             <motion.div
               key={match.id}
               className="touch-none relative cursor-pointer"
