@@ -11,6 +11,7 @@ function Matches() {
   const [matchOverlay, setMatchOverlay] = useState(false);
   const [loading, setLoading] = useState(true);
   const [eventName, setEventName] = useState("");
+  const [matchSlogan, setMatchSlogan] = useState("");
   const controls = useAnimation();
   const dragging = useRef(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -20,6 +21,14 @@ function Matches() {
   // Tinder-like: rotate card as you drag
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-300, 0, 300], [-20, 0, 20]);
+
+  const slogans = [
+    "{name} is down to vibe with you at {event} 💃 ",
+    "🎉 You and {name} are vibing at {event} — let's go 🎉 ",
+    "Looks like {name} is feeling your vibe for {event} 🎶 ",
+    "You've just synced up with {name} for {event} ✨ ",
+    "{name} is ready to light up {event} with you 🔥 "
+  ];
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -99,6 +108,12 @@ function Matches() {
       liked: direction === 'right',
     });
     if (direction === 'right') {
+      // Pick a random slogan and interpolate name/event
+      const sloganTemplate = slogans[Math.floor(Math.random() * slogans.length)];
+      const slogan = sloganTemplate
+        .replace('{name}', match.name)
+        .replace('{event}', eventName);
+      setMatchSlogan(slogan);
       setMatchOverlay(true);
       return;
     }
@@ -142,37 +157,81 @@ function Matches() {
             <span className="text-2xl font-bold text-gray-900">{eventName}</span>
           </div>
         )}
-        {matchOverlay && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full flex flex-col items-center text-center relative">
-              <div className="text-3xl font-extrabold text-pink-500 mb-2">It's a match</div>
-              <div className="text-lg text-gray-700 mb-4">You can be matching with real rave enthusiasts like this at your fingertip!</div>
-              <a href="#" target="_blank" rel="noopener noreferrer" className="mb-4 inline-block px-4 py-2 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition">Join private Discord chat</a>
-              <div className="mb-4 text-gray-500">Follow us on</div>
-              <div className="flex gap-4 mb-4">
-                {/* Instagram */}
-                <a href="#" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition">
-                  <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#E1306C"/><path d="M12 8.4A3.6 3.6 0 1 0 12 15.6 3.6 3.6 0 0 0 12 8.4Zm0 5.9a2.3 2.3 0 1 1 0-4.6 2.3 2.3 0 0 1 0 4.6Zm4.5-6.1a.9.9 0 1 1-1.8 0 .9.9 0 0 1 1.8 0ZM17.7 7.1a2.6 2.6 0 0 0-1.5-1.5c-.7-.3-1.5-.3-4.2-.3s-3.5 0-4.2.3a2.6 2.6 0 0 0-1.5 1.5c-.3.7-.3 1.5-.3 4.2s0 3.5.3 4.2a2.6 2.6 0 0 0 1.5 1.5c.7.3 1.5.3 4.2.3s3.5 0 4.2-.3a2.6 2.6 0 0 0 1.5-1.5c.3-.7.3-1.5.3-4.2s0-3.5-.3-4.2Zm-1.1 8.1a1.6 1.6 0 0 1-1.1 1.1c-.8.3-2.7.2-3.5.2s-2.7 0-3.5-.2a1.6 1.6 0 0 1-1.1-1.1c-.3-.8-.2-2.7-.2-3.5s0-2.7.2-3.5a1.6 1.6 0 0 1 1.1-1.1c.8-.3 2.7-.2 3.5-.2s2.7 0 3.5.2a1.6 1.6 0 0 1 1.1 1.1c.3.8.2 2.7.2 3.5s0 2.7-.2 3.5Z" fill="#fff"/></svg>
-                </a>
-                {/* TikTok */}
-                <a href="#" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition">
-                  <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#000"/><path d="M17.5 9.5c-.7 0-1.3-.2-1.8-.6V15c0 2-1.6 3.6-3.6 3.6S8.5 17 8.5 15s1.6-3.6 3.6-3.6c.2 0 .4 0 .6.1v1.5c-.2-.1-.4-.1-.6-.1-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2V7.5h1.5c.1.7.7 1.3 1.4 1.4v.6Z" fill="#fff"/></svg>
-                </a>
-                {/* Facebook */}
-                <a href="#" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition">
-                  <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#1877F3"/><path d="M15.5 8.5h-1.5c-.2 0-.5.2-.5.5v1.5h2l-.3 2h-1.7v5h-2v-5H9.5v-2h1.5V9c0-1.1.9-2 2-2h1.5v1.5Z" fill="#fff"/></svg>
-                </a>
-              </div>
-              <a href="#" target="_blank" rel="noopener noreferrer" className="mb-6 text-blue-600 underline font-medium">Join our mission: Contact us</a>
-              <button
-                onClick={handleKeepSwiping}
-                className="mt-2 px-6 py-3 bg-pink-500 hover:bg-pink-600 text-white rounded-full font-bold text-lg shadow-lg transition"
-              >
-                Keep Swiping
-              </button>
-            </div>
+       
+{matchOverlay && (
+  <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-70">
+    {/* Dynamic headline above the modal card */}
+    <div className="mb-4 md:mb-8 text-xl md:text-2xl font-bold text-indigo-600 text-center">
+      <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+        {matchSlogan}
+      </span>
+    </div>
+    <div className="bg-white rounded-2xl shadow-2xl p-0 max-w-3xl w-full flex flex-col md:flex-row items-stretch text-center relative overflow-hidden">
+      {/* Left Panel: User Info */}
+      <div className="md:w-1/2 w-full flex flex-col items-center justify-center bg-gradient-to-b from-blue-50 via-white to-pink-50 p-8 border-b md:border-b-0 md:border-r border-gray-100">
+        <div className="w-full flex flex-col items-center">
+          {/* User Photo */}
+          <div className="w-40 h-52 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 mb-4 flex items-center justify-center">
+            {match.photos && match.photos.length > 0 ? (
+              <img
+                src={match.photos[0].image_url}
+                alt="User pic"
+                className="w-full h-full object-cover object-top bg-gray-100"
+                draggable={false}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-400">No Photo</div>
+            )}
           </div>
-        )}
+          {/* Name & Instagram */}
+          <div className="font-bold text-2xl text-gray-800 text-center truncate w-full">
+            {match.name} {match.instagram && <span className="text-gray-400 text-base">@{match.instagram}</span>}
+          </div>
+          {/* Founding Raver Badge */}
+          {!match.is_real && (
+            <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-bold uppercase tracking-wide shadow-sm">
+              <span role="img" aria-label="star">🌟</span> Founding Raver
+            </div>
+          )}
+          {/* About Me */}
+          <div className="text-base text-gray-600 text-center w-full break-words line-clamp-3 min-h-[3.5em] mt-3">
+            {match.about_me}
+          </div>
+          {/* Vibe Tags */}
+          {match.vibe_tags && match.vibe_tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 justify-center max-h-12 overflow-y-auto mt-3">
+              {match.vibe_tags.map((tag, i) => (
+                <span key={i} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap">{tag}</span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      {/* Right Panel: Modal Content */}
+      <div className="md:w-1/2 w-full flex flex-col items-center justify-center p-8">
+        
+        <div className="text-base text-gray-700 mb-4">
+          Your match is part of our <span className="font-semibold text-pink-500">founding raver crew</span>, helping us test and build the ultimate raver connection experience.
+        </div>
+        <div className="text-base text-gray-700 mb-2">💬 <span className="font-semibold">Chat isn't live yet, but you can:</span></div>
+        <div className="text-base text-gray-700 mb-2 flex flex-col items-start w-full max-w-xs mx-auto">
+          <span className="mb-1">👉 <span className="font-semibold text-indigo-600">Join our Private Discord</span> - your feedback means the world to us! Help us shape a rave community platform that’s built to go viral at launch.</span>
+        </div>
+        <div className="flex gap-4 w-full justify-center mb-4">
+          <a href="#" target="_blank" rel="noopener noreferrer" className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-bold text-lg shadow-lg transition text-center">Join the Discord</a>
+        </div>
+       
+        <button
+          onClick={handleKeepSwiping}
+          className="mt-2 px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-full font-semibold text-lg shadow-sm hover:bg-gray-50 transition"
+        >
+           Keep Swiping
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
         <AnimatePresence mode="wait">
           {!matchOverlay && match && (
             <motion.div
