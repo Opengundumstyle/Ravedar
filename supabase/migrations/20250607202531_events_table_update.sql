@@ -1,0 +1,13 @@
+-- EVENTS TABLE MODIFICATIONS
+
+ALTER TABLE events
+  ADD COLUMN edmtrain_id INTEGER,
+  ADD COLUMN link TEXT NOT NULL DEFAULT '', -- required for EDMTrain credit
+  ADD COLUMN ticket_link TEXT,
+  ADD COLUMN address TEXT;
+
+-- ARTISTS TABLE MODIFICATIONS
+
+ALTER TABLE artists
+  ADD COLUMN link TEXT,
+  ADD COLUMN edmtrain_id INTEGER;

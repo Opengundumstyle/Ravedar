@@ -24,7 +24,7 @@ function Matches() {
 
   const slogans = [
     "{name} is down to vibe with you at {event} 💃 ",
-    "🎉 You and {name} are vibing at {event} — let's go 🎉 ",
+    "You and {name} are vibing at {event} — let's go 🎉 ",
     "Looks like {name} is feeling your vibe for {event} 🎶 ",
     "You've just synced up with {name} for {event} ✨ ",
     "{name} is ready to light up {event} with you 🔥 "
@@ -190,7 +190,7 @@ function Matches() {
           {/* Founding Raver Badge */}
           {!match.is_real && (
             <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-bold uppercase tracking-wide shadow-sm">
-              <span role="img" aria-label="star">🌟</span> Founding Raver
+              <span role="img" aria-label="star">🌟</span> Demo Raver
             </div>
           )}
           {/* About Me */}
@@ -211,14 +211,14 @@ function Matches() {
       <div className="md:w-1/2 w-full flex flex-col items-center justify-center p-8">
         
         <div className="text-base text-gray-700 mb-4">
-          Your match is part of our <span className="font-semibold text-pink-500">founding raver crew</span>, helping us test and build the ultimate raver connection experience.
+          Your match is part of our <span className="font-semibold text-pink-500">demo raver crew</span>, helping us test and build the ultimate raver connection experience.
         </div>
         <div className="text-base text-gray-700 mb-2">💬 <span className="font-semibold">Chat isn't live yet, but you can:</span></div>
         <div className="text-base text-gray-700 mb-2 flex flex-col items-start w-full max-w-xs mx-auto">
           <span className="mb-1">👉 <span className="font-semibold text-indigo-600">Join our Private Discord</span> - your feedback means the world to us! Help us shape a rave community platform that’s built to go viral at launch.</span>
         </div>
         <div className="flex gap-4 w-full justify-center mb-4">
-          <a href="#" target="_blank" rel="noopener noreferrer" className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-bold text-lg shadow-lg transition text-center">Join the Discord</a>
+          <a href="https://discord.gg/hzGwGe5y" target="_blank" rel="noopener noreferrer" className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-bold text-lg shadow-lg transition text-center">Join the Discord</a>
         </div>
        
         <button
