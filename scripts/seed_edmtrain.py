@@ -4,9 +4,9 @@ import time
 
 # === CONFIG ===
 
-SUPABASE_URL = "https://your-project.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY = "your-secret-api-key"
-EDMTRAIN_API_KEY = "your-edmtrain-api-key"
+SUPABASE_URL = "https://fqrurhyllovbfkhlbymi.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxcnVyaHlsbG92YmZraGxieW1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg2NjM0MzgsImV4cCI6MjA2NDIzOTQzOH0.bgIYi-RwfIUqSbz9WPHbBqGAmCYRgwQfCx0aTitJjuw"
+EDMTRAIN_API_KEY = "aed102b9-cf71-4afb-b768-e0eeff04a143"
 
 TARGET_CITIES = [
     "san-francisco", "los-angeles", "new-york-city", "miami",
