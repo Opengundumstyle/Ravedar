@@ -32,7 +32,7 @@ def insert_artist(artist_name, artist_link=None, edmtrain_id=None):
 def insert_event(event):
     venue = event.get("venue", {})
     return supabase.table("events").insert({
-        "name": event.get("name") or "Unnamed Event",
+        "name": event.get("name") or f"Event on {event.get('date')}",
         "city": venue.get("location") or "Unknown",
         "venue": venue.get("name"),
         "date": event.get("date"),

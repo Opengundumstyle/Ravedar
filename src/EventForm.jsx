@@ -15,6 +15,7 @@ function EventForm() {
   const [eventInputFocused, setEventInputFocused] = useState(false);
   const [cityInputFocused, setCityInputFocused] = useState(false);
   const [happeningSoonCity, setHappeningSoonCity] = useState("");
+  const [selectedSuggestion, setSelectedSuggestion] = useState(null);
 
   // Autocomplete for event/dj name
   useEffect(() => {
@@ -23,25 +24,32 @@ function EventForm() {
         setEventSuggestions([]);
         return;
       }
-      // Search both events and artists
+      const searchName = eventName.trim().toLowerCase();
       const { data: eventData } = await supabase
         .from('events')
-        .select('name')
-        .ilike('name', `%${eventName}%`)
+        .select('id, name')
+        .ilike('name', `%${searchName}%`)
+        .not('name', 'ilike', '%unnamed event%')
         .limit(5);
-
       const { data: artistData } = await supabase
         .from('artists')
-        .select('name')
-        .ilike('name', `%${eventName}%`)
+        .select('id, name')
+        .ilike('name', `%${searchName}%`)
         .limit(5);
-
-      // Merge and dedupe
-      const allNames = [
-        ...(eventData || []).map(e => e.name),
-        ...(artistData || []).map(a => a.name),
+      // Deduplicate event suggestions by name
+      const eventNames = new Set();
+      const uniqueEventSuggestions = [];
+      (eventData || []).forEach(e => {
+        if (!eventNames.has(e.name)) {
+          eventNames.add(e.name);
+          uniqueEventSuggestions.push({ type: 'event', id: e.id, name: e.name });
+        }
+      });
+      const allSuggestions = [
+        ...uniqueEventSuggestions,
+        ...(artistData || []).map(a => ({ type: 'artist', id: a.id, name: a.name })),
       ];
-      setEventSuggestions([...new Set(allNames)]);
+      setEventSuggestions(allSuggestions);
     };
     fetchSuggestions();
   }, [eventName]);
@@ -54,32 +62,32 @@ function EventForm() {
         setHappeningSoonCity("");
         return;
       }
-      // 1. Find the soonest upcoming city for this event/dj
       let soonestCity = "";
       let soonestDate = null;
-      // Events by name
-      const { data: eventCities } = await supabase
-        .from('events')
-        .select('city, date')
-        .ilike('name', `%${eventName}%`)
-        .order('date', { ascending: true })
-        .limit(1);
-      if (eventCities && eventCities.length > 0) {
-        soonestCity = eventCities[0].city;
-        soonestDate = eventCities[0].date;
-      } else {
-        // Try by artist
-        const { data: artist } = await supabase
-          .from('artists')
-          .select('id')
-          .ilike('name', `%${eventName}%`)
-          .maybeSingle();
-        if (artist && artist.id) {
+      let allCities = [];
+      // Use selectedSuggestion for precise lookup
+      if (selectedSuggestion) {
+        if (selectedSuggestion.type === 'event') {
+          // Lookup by event name (not just ID) to get all cities and soonest date
+          console.log('Looking up cities for event name:', selectedSuggestion.name);
+          const { data: eventRows } = await supabase
+            .from('events')
+            .select('city, date')
+            .ilike('name', `%${selectedSuggestion.name}%`)
+            .order('date', { ascending: true });
+          console.log('eventRows:', eventRows);
+          if (eventRows && eventRows.length > 0) {
+            soonestCity = eventRows[0].city;
+            soonestDate = eventRows[0].date;
+            allCities = eventRows.map(e => e.city);
+          }
+        } else if (selectedSuggestion.type === 'artist') {
+          // Lookup by artist ID
           const { data: artistEventCities } = await supabase
             .from('event_artists')
             .select('event_id')
-            .eq('artist_id', artist.id)
-            .limit(10);
+            .eq('artist_id', selectedSuggestion.id)
+            .limit(100);
           const eventIds = (artistEventCities || []).map(ea => ea.event_id);
           if (eventIds.length > 0) {
             const { data: eventsByArtist } = await supabase
@@ -92,41 +100,35 @@ function EventForm() {
               soonestCity = eventsByArtist[0].city;
               soonestDate = eventsByArtist[0].date;
             }
+            // Get all cities for this artist
+            const { data: allArtistCities } = await supabase
+              .from('events')
+              .select('city')
+              .in('id', eventIds);
+            if (allArtistCities) {
+              allCities = allArtistCities.map(e => e.city);
+            }
           }
         }
-      }
-      setHappeningSoonCity(soonestCity);
-
-      // 2. Fuzzy search for city suggestions
-      // Get all cities for this event/dj
-      let allCities = [];
-      const { data: allEventCities } = await supabase
-        .from('events')
-        .select('city')
-        .ilike('name', `%${eventName}%`);
-      if (allEventCities) {
-        allCities = allEventCities.map(e => e.city);
-      }
-      // Add artist cities
-      const { data: artist } = await supabase
-        .from('artists')
-        .select('id')
-        .ilike('name', `%${eventName}%`)
-        .maybeSingle();
-      if (artist && artist.id) {
-        const { data: artistEventCities } = await supabase
-          .from('event_artists')
-          .select('event_id')
-          .eq('artist_id', artist.id);
-        const eventIds = (artistEventCities || []).map(ea => ea.event_id);
-        if (eventIds.length > 0) {
-          const { data: eventsByArtist } = await supabase
-            .from('events')
-            .select('city')
-            .in('id', eventIds);
-          if (eventsByArtist) {
-            allCities = allCities.concat(eventsByArtist.map(e => e.city));
-          }
+      } else {
+        // Fallback: try by name as before
+        const searchName = eventName.trim().toLowerCase();
+        const { data: eventCities } = await supabase
+          .from('events')
+          .select('city, date')
+          .ilike('name', `%${searchName}%`)
+          .order('date', { ascending: true })
+          .limit(1);
+        if (eventCities && eventCities.length > 0) {
+          soonestCity = eventCities[0].city;
+          soonestDate = eventCities[0].date;
+        }
+        const { data: allEventCities } = await supabase
+          .from('events')
+          .select('city')
+          .ilike('name', `%${searchName}%`);
+        if (allEventCities) {
+          allCities = allEventCities.map(e => e.city);
         }
       }
       // Dedupe
@@ -136,12 +138,15 @@ function EventForm() {
       if (city.trim()) {
         filteredCities = allCities.filter(c => c.toLowerCase().includes(city.trim().toLowerCase()));
       }
-      // Remove soonest city from filtered list if present
-      filteredCities = filteredCities.filter(c => c !== soonestCity);
+      // Remove soonest city from filtered list if present, but only if there are other cities
+      if (allCities.length > 1) {
+        filteredCities = filteredCities.filter(c => c !== soonestCity);
+      }
       setCitySuggestions(filteredCities);
+      setHappeningSoonCity(soonestCity);
     };
     fetchCitySuggestions();
-  }, [eventName, city]);
+  }, [eventName, city, selectedSuggestion]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -179,9 +184,12 @@ function EventForm() {
           <input
             type="text"
             value={eventName}
-            onChange={e => setEventName(e.target.value)}
+            onChange={e => {
+              setEventName(e.target.value);
+              setSelectedSuggestion(null);
+            }}
             onFocus={() => setEventInputFocused(true)}
-            onBlur={() => setTimeout(() => setEventInputFocused(false), 100)}
+            onBlur={() => setTimeout(() => setEventInputFocused(false), 200)}
             className="input input-bordered w-full min-h-12 mx-auto rounded-lg border-gray-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition px-4"
             placeholder="Search by Artist or Event"
             autoFocus
@@ -193,9 +201,14 @@ function EventForm() {
                 <li
                   key={i}
                   className="px-4 py-2 hover:bg-blue-100 cursor-pointer"
-                  onClick={() => setEventName(suggestion)}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setEventName(suggestion.name);
+                    setSelectedSuggestion(suggestion);
+                    setEventInputFocused(false);
+                  }}
                 >
-                  {suggestion}
+                  {suggestion.name} <span className="ml-2 text-xs text-gray-400">({suggestion.type})</span>
                 </li>
               ))}
             </ul>
@@ -206,30 +219,41 @@ function EventForm() {
           <input
             type="text"
             value={city}
-            onChange={e => setCity(e.target.value)}
+            onChange={e => {
+              setCity(e.target.value);
+              setCityInputFocused(true);
+            }}
             onFocus={() => setCityInputFocused(true)}
-            onBlur={() => setTimeout(() => setCityInputFocused(false), 100)}
+            onBlur={() => setTimeout(() => setCityInputFocused(false), 200)}
             className="input input-bordered w-full rounded-lg border-gray-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition h-12 px-4"
             placeholder="Enter city"
             autoComplete="off"
           />
           {citySuggestions.length > 0 && cityInputFocused && (
             <ul className="absolute z-10 bg-white border border-gray-200 rounded-lg top-full left-0 w-full max-h-40 overflow-y-auto shadow-lg mt-1">
-              {/* Happening soon city at the top if present and matches input */}
+              {/* Up and coming city at the top if present and matches input */}
               {happeningSoonCity && (!city || happeningSoonCity.toLowerCase().includes(city.trim().toLowerCase())) && (
                 <li
                   className="px-4 py-2 hover:bg-blue-100 cursor-pointer font-semibold text-blue-700 flex items-center justify-between"
-                  onClick={() => setCity(happeningSoonCity)}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setCity(happeningSoonCity);
+                    setCityInputFocused(false);
+                  }}
                 >
                   <span>{happeningSoonCity}</span>
-                  <span className="ml-2 text-xs bg-yellow-100 text-yellow-700 rounded px-2 py-0.5">happening soon!</span>
+                  <span className="ml-2 text-xs bg-yellow-100 text-yellow-700 rounded px-2 py-0.5">up and coming</span>
                 </li>
               )}
               {citySuggestions.map((suggestion, i) => (
                 <li
                   key={i}
                   className="px-4 py-2 hover:bg-blue-100 cursor-pointer"
-                  onClick={() => setCity(suggestion)}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setCity(suggestion);
+                    setCityInputFocused(false);
+                  }}
                 >
                   {suggestion}
                 </li>
