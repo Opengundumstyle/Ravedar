@@ -158,20 +158,17 @@ function Matches() {
           </div>
         )}
        
-{matchOverlay && (
-  <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-70">
-    {/* Dynamic headline above the modal card */}
-    <div className="mb-4 md:mb-8 text-xl md:text-2xl font-bold text-indigo-600 text-center">
+       {matchOverlay && (
+  <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-70 p-4 overflow-y-auto">
+    <div className="mb-4 text-xl font-bold text-indigo-600 text-center px-4">
       <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
         {matchSlogan}
       </span>
     </div>
-    <div className="bg-white rounded-2xl shadow-2xl p-0 max-w-3xl w-full flex flex-col md:flex-row items-stretch text-center relative overflow-hidden">
-      {/* Left Panel: User Info */}
-      <div className="md:w-1/2 w-full flex flex-col items-center justify-center bg-gradient-to-b from-blue-50 via-white to-pink-50 p-8 border-b md:border-b-0 md:border-r border-gray-100">
+    <div className="bg-white rounded-2xl shadow-2xl p-0 w-full max-w-md flex flex-col md:flex-row items-stretch text-center relative">
+      <div className="w-full flex flex-col items-center justify-center bg-gradient-to-b from-blue-50 via-white to-pink-50 p-4 md:p-6 border-b md:border-b-0 md:border-r border-gray-100">
         <div className="w-full flex flex-col items-center">
-          {/* User Photo */}
-          <div className="w-40 h-52 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 mb-4 flex items-center justify-center">
+          <div className="w-28 h-36 md:w-40 md:h-52 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 mb-4 flex items-center justify-center">
             {match.photos && match.photos.length > 0 ? (
               <img
                 src={match.photos[0].image_url}
@@ -183,49 +180,42 @@ function Matches() {
               <div className="w-full h-full flex items-center justify-center text-gray-400">No Photo</div>
             )}
           </div>
-          {/* Name & Instagram */}
-          <div className="font-bold text-2xl text-gray-800 text-center truncate w-full">
-            {match.name} {match.instagram && <span className="text-gray-400 text-base">@{match.instagram}</span>}
+          <div className="font-bold text-lg md:text-2xl text-gray-800 text-center truncate w-full">
+            {match.name} {match.instagram && <span className="text-gray-400 text-sm md:text-base">@{match.instagram}</span>}
           </div>
-          {/* Founding Raver Badge */}
           {!match.is_real && (
             <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-bold uppercase tracking-wide shadow-sm">
               <span role="img" aria-label="star">🌟</span> Demo Raver
             </div>
           )}
-          {/* About Me */}
-          <div className="text-base text-gray-600 text-center w-full break-words line-clamp-3 min-h-[3.5em] mt-3">
+          <div className="text-sm md:text-base text-gray-600 text-center w-full break-words line-clamp-3 min-h-[3.5em] mt-3">
             {match.about_me}
           </div>
-          {/* Vibe Tags */}
           {match.vibe_tags && match.vibe_tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 justify-center max-h-12 overflow-y-auto mt-3">
+            <div className="flex flex-wrap gap-1.5 justify-center max-h-12 overflow-y-auto mt-3">
               {match.vibe_tags.map((tag, i) => (
-                <span key={i} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap">{tag}</span>
+                <span key={i} className="bg-blue-100 text-blue-800 px-2 py-0.5 md:px-3 md:py-1 rounded-full text-xs font-semibold whitespace-nowrap">{tag}</span>
               ))}
             </div>
           )}
         </div>
       </div>
-      {/* Right Panel: Modal Content */}
-      <div className="md:w-1/2 w-full flex flex-col items-center justify-center p-8">
-        
-        <div className="text-base text-gray-700 mb-4">
-          Your match is part of our <span className="font-semibold text-pink-500">demo raver crew</span>, helping us test and build the ultimate raver connection experience.
+      <div className="w-full flex flex-col items-center justify-center p-4 md:p-6">
+        <div className="text-sm md:text-base text-gray-700 mb-3">
+          Your match is part of our <span className="font-semibold text-pink-500">demo raver crew</span>, helping us test and build the ultimate rave connection experience.
         </div>
-        <div className="text-base text-gray-700 mb-2">💬 <span className="font-semibold">Chat isn't live yet, but you can:</span></div>
-        <div className="text-base text-gray-700 mb-2 flex flex-col items-start w-full max-w-xs mx-auto">
-          <span className="mb-1">👉 <span className="font-semibold text-indigo-600">Join our Private Discord</span> - your feedback means the world to us! Help us shape a rave community platform that’s built to go viral at launch.</span>
+        <div className="text-sm md:text-base text-gray-700 mb-2">💬 <span className="font-semibold">Chat isn't live yet, but you can:</span></div>
+        <div className="text-sm md:text-base text-gray-700 mb-3 flex flex-col items-start w-full">
+          <span className="mb-1">👉 <span className="font-semibold text-indigo-600">Join our Private Discord</span> - your feedback means the world to us!</span>
         </div>
-        <div className="flex gap-4 w-full justify-center mb-4">
-          <a href="https://discord.gg/hzGwGe5y" target="_blank" rel="noopener noreferrer" className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-bold text-lg shadow-lg transition text-center">Join the Discord</a>
+        <div className="flex gap-3 w-full justify-center mb-3">
+          <a href="https://discord.gg/hzGwGe5y" target="_blank" rel="noopener noreferrer" className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-bold text-base shadow-lg transition text-center">Join Discord</a>
         </div>
-       
         <button
           onClick={handleKeepSwiping}
-          className="mt-2 px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-full font-semibold text-lg shadow-sm hover:bg-gray-50 transition"
+          className="mt-2 px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-full font-semibold text-base shadow-sm hover:bg-gray-50 transition"
         >
-           Keep Swiping
+          Keep Swiping
         </button>
       </div>
     </div>
