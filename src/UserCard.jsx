@@ -1,15 +1,15 @@
 function UserCard({ user }) {
   return (
-    <div className="bg-white rounded-2xl shadow-lg flex flex-col items-center w-full max-w-md h-[70vh] mx-auto transition-all duration-300 p-1 cursor-pointer">
-      <div className="bg-white bg-opacity-80 rounded-2xl flex flex-col items-center w-full h-full p-0">
-        {/* Photo area: 65% of card height, fixed aspect ratio, cropped */}
-        <div className="w-full flex-shrink-0 flex justify-center items-center" style={{ height: '65%' }}>
-          <div className="w-full h-full aspect-[4/5] max-h-full rounded-t-2xl overflow-hidden bg-gray-100 border-b border-gray-200 flex items-center justify-center">
+    <div className="bg-white rounded-2xl shadow-lg flex flex-col items-center w-[448px] h-[600px] mx-auto transition-all duration-300 p-1 cursor-pointer">
+      <div className="bg-white bg-opacity-80 rounded-2xl flex flex-col items-center w-full h-full p-0 relative">
+        {/* Photo area: full height with overlay */}
+        <div className="w-full h-full flex-shrink-0 flex justify-center items-center">
+          <div className="w-full h-full rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
             {user.photos && user.photos.length > 0 ? (
               <img
                 src={user.photos[0].image_url}
                 alt="User pic"
-                className="w-full h-full object-cover object-top bg-gray-100"
+                className="w-full h-full object-cover object-center bg-gray-100"
                 draggable={false}
               />
             ) : (
@@ -17,18 +17,21 @@ function UserCard({ user }) {
             )}
           </div>
         </div>
-        {/* Info area: 35% of card height */}
-        <div className="flex flex-col justify-between w-full px-4 py-3" style={{ height: '35%' }}>
-          <div className="font-bold text-lg sm:text-xl md:text-2xl text-gray-800 text-center truncate w-full">
-            {user.name} {user.instagram && <span className="text-gray-400 text-base">@{user.instagram}</span>}
+        {/* Info area: overlay on bottom */}
+        <div className="absolute bottom-0 left-0 right-0 flex flex-col justify-end w-full h-[210px] px-4 py-3 bg-gradient-to-t from-black/80 via-black/50 to-transparent rounded-b-2xl">
+          {/* Name and Instagram - fixed height */}
+          <div className="h-8 font-bold text-lg sm:text-xl md:text-2xl text-white text-center truncate w-full">
+            {user.name} {user.instagram && <span className="text-gray-200 text-base">@{user.instagram}</span>}
           </div>
-          <div className="text-sm sm:text-base text-gray-600 text-center w-full break-words line-clamp-3 min-h-[3.5em]">
-            {user.about_me}
+          {/* About Me - fixed height */}
+          <div className="h-[72px] text-sm sm:text-base text-gray-100 text-center w-full overflow-hidden">
+            <p className="line-clamp-3">{user.about_me}</p>
           </div>
+          {/* Tags - fixed height */}
           {user.vibe_tags && user.vibe_tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 justify-center max-h-12 overflow-y-auto mt-2">
+            <div className="h-12 flex flex-wrap gap-1.5 justify-center items-center overflow-hidden px-2">
               {user.vibe_tags.map((tag, i) => (
-                <span key={i} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap">{tag}</span>
+                <span key={i} className="bg-white/20 text-white px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap backdrop-blur-sm">{tag}</span>
               ))}
             </div>
           )}

@@ -161,16 +161,37 @@ function EventForm() {
       return;
     }
     const eventDate = date === '' ? null : date;
-    const { data, error: supabaseError } = await supabase.from('user_events').insert({
-      user_id: userId,
-      name: eventName,
-      date: eventDate,
-      city
-    });
-    if (supabaseError) {
+    
+    // First try to update existing event
+    const { error: updateError } = await supabase
+      .from('user_events')
+      .update({
+        name: eventName,
+        date: eventDate,
+        city
+      })
+      .eq('user_id', userId);
+
+    // If no existing event was found, insert a new one
+    if (updateError && updateError.code === '23505') { // Unique violation
+      const { error: insertError } = await supabase
+        .from('user_events')
+        .insert({
+          user_id: userId,
+          name: eventName,
+          date: eventDate,
+          city
+        });
+      
+      if (insertError) {
+        setError('Error saving event. Please try again.');
+        return;
+      }
+    } else if (updateError) {
       setError('Error saving event. Please try again.');
       return;
     }
+    
     navigate('/matches');
   };
 
