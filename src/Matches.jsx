@@ -23,11 +23,11 @@ function Matches() {
   const rotate = useTransform(x, [-300, 0, 300], [-20, 0, 20]);
 
   const slogans = [
-    "{name} is down to vibe with you at {event} 💃 ",
-    "You and {name} are vibing at {event} — let's go 🎉 ",
-    "Looks like {name} is feeling your vibe for {event} 🎶 ",
-    "You've just synced up with {name} for {event} ✨ ",
-    "{name} is ready to light up {event} with you 🔥 "
+    "🎉 {name} is down to vibe with you at {event}!",
+    "🎉 You and {name} are vibing at {event} — let's go!",
+    "🎉 Looks like {name} is feeling your vibe for {event}!",
+    "🎉 You've just synced up with {name} for {event}!",
+    "🎉 {name} is ready to light up {event} with you!"
   ];
 
   useEffect(() => {
@@ -159,13 +159,11 @@ function Matches() {
         )}
        
        {matchOverlay && (
-  <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-70 p-4 overflow-y-auto">
-    <div className="mb-4 text-xl font-bold text-indigo-600 text-center px-4">
-      <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
-        {matchSlogan}
-      </span>
+  <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-70">
+    <div className="mb-4 md:mb-8 text-xl md:text-2xl font-bold text-black text-center">
+      {matchSlogan}
     </div>
-    <div className="bg-white rounded-2xl shadow-2xl p-0 w-full max-w-md flex flex-col md:flex-row items-stretch text-center relative">
+    <div className="bg-white rounded-2xl shadow-2xl p-0 max-w-3xl w-full flex flex-col md:flex-row items-stretch text-center relative overflow-hidden">
       <div className="w-full flex flex-col items-center justify-center bg-gradient-to-b from-blue-50 via-white to-pink-50 p-4 md:p-6 border-b md:border-b-0 md:border-r border-gray-100">
         <div className="w-full flex flex-col items-center">
           <div className="w-28 h-36 md:w-40 md:h-52 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 mb-4 flex items-center justify-center">

@@ -161,37 +161,38 @@ function EventForm() {
       return;
     }
     const eventDate = date === '' ? null : date;
-    
-    // First try to update existing event
-    const { error: updateError } = await supabase
+
+    // Check if user already has an event
+    const { data: existingEvent, error: fetchError } = await supabase
       .from('user_events')
-      .update({
+      .select('user_id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (fetchError) {
+      setError('Error checking for existing event. Please try again.');
+      return;
+    }
+    if (existingEvent) {
+      setError('You already have an event assigned. Please refresh the page to start over.');
+      return;
+    }
+
+    // Insert new event
+    const { error: insertError } = await supabase
+      .from('user_events')
+      .insert({
+        user_id: userId,
         name: eventName,
         date: eventDate,
         city
-      })
-      .eq('user_id', userId);
+      });
 
-    // If no existing event was found, insert a new one
-    if (updateError && updateError.code === '23505') { // Unique violation
-      const { error: insertError } = await supabase
-        .from('user_events')
-        .insert({
-          user_id: userId,
-          name: eventName,
-          date: eventDate,
-          city
-        });
-      
-      if (insertError) {
-        setError('Error saving event. Please try again.');
-        return;
-      }
-    } else if (updateError) {
+    if (insertError) {
       setError('Error saving event. Please try again.');
       return;
     }
-    
+
     navigate('/matches');
   };
 
