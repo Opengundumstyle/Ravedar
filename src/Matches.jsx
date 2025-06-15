@@ -290,13 +290,13 @@ function Matches() {
           <div className="text-sm md:text-base text-gray-600 text-center w-full break-words line-clamp-3 min-h-[3.5em] mt-3">
             {matchedUser.about_me}
           </div>
-          {matchedUser.vibe_tags && matchedUser.vibe_tags.length > 0 && (
+          {/* {matchedUser.vibe_tags && matchedUser.vibe_tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 justify-center max-h-12 overflow-y-auto mt-3">
               {matchedUser.vibe_tags.map((tag, i) => (
                 <span key={i} className="bg-blue-100 text-blue-800 px-2 py-0.5 md:px-3 md:py-1 rounded-full text-xs font-semibold whitespace-nowrap">{tag}</span>
               ))}
             </div>
-          )}
+          )} */}
         </div>
       </div>
       <div className="w-full flex flex-col items-center justify-center p-4 md:p-6">
