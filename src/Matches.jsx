@@ -145,8 +145,8 @@ function Matches() {
   };
 
   const swipeLabel = useMemo(() => {
-    if (currentX > 40) return "I wanna dance with her/him";
-    if (currentX < -40) return "I don't feel the vibe :(";
+    if (currentX > 40) return { text: "I am down to dance with him/her 🔥", position: "left" };
+    if (currentX < -40) return { text: "I don't feel the vibe :(", position: "right" };
     return null;
   }, [currentX]);
 
@@ -240,8 +240,8 @@ function Matches() {
               >
                 {swipeLabel && (
                   <div
-                    className={`absolute top-4 right-4 px-6 py-2 rounded-full text-lg font-bold shadow-lg
-                      ${currentX > 0
+                    className={`absolute ${swipeLabel.position === 'left' ? 'top-4 left-4' : 'top-4 right-4'} px-6 py-2 rounded-full text-lg font-bold shadow-lg
+                      ${swipeLabel.position === 'left'
                         ? 'bg-green-500 text-white border-2 border-green-700'
                         : 'bg-gray-200 text-gray-700 border-2 border-gray-400'}
                       transition-all duration-200 pointer-events-none select-none z-20`}
@@ -250,7 +250,7 @@ function Matches() {
                       transform: `rotate(${currentX > 0 ? 8 : -8}deg)`
                     }}
                   >
-                    {swipeLabel}
+                    {swipeLabel.text}
                   </div>
                 )}
                 <UserCard user={matches[currentIndex]} />

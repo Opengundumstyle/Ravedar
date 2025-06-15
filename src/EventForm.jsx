@@ -218,11 +218,11 @@ function EventForm() {
             autoComplete="off"
           />
           {eventSuggestions.length > 0 && eventInputFocused && (
-            <ul className="absolute z-10 bg-white border border-gray-200 rounded-lg top-full left-0 w-full max-h-40 overflow-y-auto shadow-lg mt-1">
+            <ul className="absolute z-10 bg-white text-gray-900 border border-gray-200 rounded-lg top-full left-0 w-full max-h-40 overflow-y-auto shadow-lg mt-1">
               {eventSuggestions.map((suggestion, i) => (
                 <li
                   key={i}
-                  className="px-4 py-2 hover:bg-blue-100 cursor-pointer"
+                  className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-gray-900"
                   onMouseDown={(e) => {
                     e.preventDefault();
                     setEventName(suggestion.name);
@@ -252,11 +252,11 @@ function EventForm() {
             autoComplete="off"
           />
           {citySuggestions.length > 0 && cityInputFocused && (
-            <ul className="absolute z-10 bg-white border border-gray-200 rounded-lg top-full left-0 w-full max-h-40 overflow-y-auto shadow-lg mt-1">
+            <ul className="absolute z-10 bg-white text-gray-900 border border-gray-200 rounded-lg top-full left-0 w-full max-h-40 overflow-y-auto shadow-lg mt-1">
               {/* Up and coming city at the top if present and matches input */}
               {happeningSoonCity && (!city || happeningSoonCity.toLowerCase().includes(city.trim().toLowerCase())) && (
                 <li
-                  className="px-4 py-2 hover:bg-blue-100 cursor-pointer font-semibold text-blue-700 flex items-center justify-between"
+                  className="px-4 py-2 hover:bg-blue-100 cursor-pointer font-semibold text-blue-700 flex items-center justify-between text-gray-900"
                   onMouseDown={(e) => {
                     e.preventDefault();
                     setCity(happeningSoonCity);
@@ -270,7 +270,7 @@ function EventForm() {
               {citySuggestions.map((suggestion, i) => (
                 <li
                   key={i}
-                  className="px-4 py-2 hover:bg-blue-100 cursor-pointer"
+                  className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-gray-900"
                   onMouseDown={(e) => {
                     e.preventDefault();
                     setCity(suggestion);
