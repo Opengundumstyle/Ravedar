@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { motion } from 'framer-motion';
 
 const TICKETMASTER_API_KEY = import.meta.env.VITE_TICKETMASTER_API_KEY;
 
@@ -196,13 +197,41 @@ function EventForm() {
     navigate('/matches');
   };
 
+  const formVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: 'spring',
+        stiffness: 100,
+      },
+    },
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-pink-50 py-8 px-2">
-      <form onSubmit={handleSubmit} className="w-full max-w-5xl bg-white rounded-2xl shadow-xl p-8 flex flex-col gap-6 border border-gray-100">
-        <h2 className="text-2xl font-bold text-center text-blue-600 mb-2">Find Your Rave Match</h2>
-        {error && <div className="text-red-600 text-center mb-2">{error}</div>}
-        <div className="flex flex-col gap-1 relative">
-          <label className="font-semibold text-gray-700 mb-1">Event or DJ Name</label>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 py-8 px-2 overflow-hidden">
+      <motion.form 
+        onSubmit={handleSubmit} 
+        className="w-full max-w-5xl bg-black/20 backdrop-blur-lg rounded-2xl shadow-2xl shadow-purple-500/20 p-8 flex flex-col gap-6 border border-white/20"
+        variants={formVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.h2 variants={itemVariants} className="text-3xl font-bold text-center text-white drop-shadow-[0_2px_4px_rgba(168,85,247,0.5)] mb-2">Find Your Rave Match</motion.h2>
+        {error && <motion.div variants={itemVariants} className="text-red-400 bg-red-900/50 rounded-md py-2 text-center mb-2">{error}</motion.div>}
+        <motion.div variants={itemVariants} className="flex flex-col gap-1 relative">
+          <label className="font-semibold text-purple-200 mb-1">Event or DJ Name</label>
           <input
             type="text"
             value={eventName}
@@ -212,17 +241,17 @@ function EventForm() {
             }}
             onFocus={() => setEventInputFocused(true)}
             onBlur={() => setTimeout(() => setEventInputFocused(false), 200)}
-            className="input input-bordered w-full min-h-12 mx-auto rounded-lg border-gray-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition px-4"
+            className="input bg-black/30 text-white border-purple-400/50 placeholder:text-gray-400 w-full min-h-12 mx-auto rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 transition px-4"
             placeholder="Search by Artist or Event"
             autoFocus
             autoComplete="off"
           />
           {eventSuggestions.length > 0 && eventInputFocused && (
-            <ul className="absolute z-10 bg-white text-gray-900 border border-gray-200 rounded-lg top-full left-0 w-full max-h-40 overflow-y-auto shadow-lg mt-1">
+            <ul className="absolute z-10 bg-gray-900/80 backdrop-blur-md border border-white/10 rounded-lg top-full left-0 w-full max-h-40 overflow-y-auto shadow-lg mt-1">
               {eventSuggestions.map((suggestion, i) => (
                 <li
                   key={i}
-                  className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-gray-900"
+                  className="px-4 py-2 hover:bg-purple-500/30 cursor-pointer text-gray-200"
                   onMouseDown={(e) => {
                     e.preventDefault();
                     setEventName(suggestion.name);
@@ -235,9 +264,9 @@ function EventForm() {
               ))}
             </ul>
           )}
-        </div>
-        <div className="flex flex-col gap-1 relative">
-          <label className="font-semibold text-gray-700 mb-1">City</label>
+        </motion.div>
+        <motion.div variants={itemVariants} className="flex flex-col gap-1 relative">
+          <label className="font-semibold text-purple-200 mb-1">City</label>
           <input
             type="text"
             value={city}
@@ -247,16 +276,16 @@ function EventForm() {
             }}
             onFocus={() => setCityInputFocused(true)}
             onBlur={() => setTimeout(() => setCityInputFocused(false), 200)}
-            className="input input-bordered w-full rounded-lg border-gray-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition h-12 px-4"
+            className="input bg-black/30 text-white border-purple-400/50 placeholder:text-gray-400 w-full rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 transition h-12 px-4"
             placeholder="Enter city"
             autoComplete="off"
           />
           {citySuggestions.length > 0 && cityInputFocused && (
-            <ul className="absolute z-10 bg-white text-gray-900 border border-gray-200 rounded-lg top-full left-0 w-full max-h-40 overflow-y-auto shadow-lg mt-1">
+            <ul className="absolute z-10 bg-gray-900/80 backdrop-blur-md border border-white/10 rounded-lg top-full left-0 w-full max-h-40 overflow-y-auto shadow-lg mt-1">
               {/* Up and coming city at the top if present and matches input */}
               {happeningSoonCity && (!city || happeningSoonCity.toLowerCase().includes(city.trim().toLowerCase())) && (
                 <li
-                  className="px-4 py-2 hover:bg-blue-100 cursor-pointer font-semibold text-blue-700 flex items-center justify-between text-gray-900"
+                  className="px-4 py-2 hover:bg-purple-500/30 cursor-pointer font-semibold text-purple-300 flex items-center justify-between"
                   onMouseDown={(e) => {
                     e.preventDefault();
                     setCity(happeningSoonCity);
@@ -264,13 +293,13 @@ function EventForm() {
                   }}
                 >
                   <span>{happeningSoonCity}</span>
-                  <span className="ml-2 text-xs bg-yellow-100 text-yellow-700 rounded px-2 py-0.5">up and coming</span>
+                  <span className="ml-2 text-xs bg-yellow-300 text-yellow-900 rounded px-2 py-0.5">up and coming</span>
                 </li>
               )}
               {citySuggestions.map((suggestion, i) => (
                 <li
                   key={i}
-                  className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-gray-900"
+                  className="px-4 py-2 hover:bg-purple-500/30 cursor-pointer text-gray-200"
                   onMouseDown={(e) => {
                     e.preventDefault();
                     setCity(suggestion);
@@ -282,23 +311,25 @@ function EventForm() {
               ))}
             </ul>
           )}
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="font-semibold text-gray-700 mb-1">Date</label>
+        </motion.div>
+        <motion.div variants={itemVariants} className="flex flex-col gap-1">
+          <label className="font-semibold text-purple-200 mb-1">Date</label>
           <input
             type="date"
             value={date}
             onChange={e => setDate(e.target.value)}
-            className="input input-bordered w-full rounded-lg border-gray-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition"
+            className="input bg-black/30 text-white border-purple-400/50 w-full rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 transition"
           />
-        </div>
-        <button
+        </motion.div>
+        <motion.button
+          variants={itemVariants}
           type="submit"
-          className="btn btn-primary w-full py-3 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-semibold text-lg shadow-md transition"
+          className="btn w-full py-3 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg shadow-lg shadow-purple-500/50 hover:scale-105 transform transition-transform duration-200"
+          whileTap={{ scale: 0.98 }}
         >
-          Submit Event
-        </button>
-      </form>
+          Find My Ravebae
+        </motion.button>
+      </motion.form>
     </div>
   );
 }
