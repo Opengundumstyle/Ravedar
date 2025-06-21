@@ -223,7 +223,7 @@ function EventForm() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 py-8 px-2 overflow-hidden">
       <motion.form 
         onSubmit={handleSubmit} 
-        className="w-full max-w-5xl bg-black/20 backdrop-blur-lg rounded-2xl shadow-2xl shadow-purple-500/20 p-8 flex flex-col gap-6 border border-white/20"
+        className="w-[480px] h-[650px] bg-black/20 backdrop-blur-lg rounded-2xl shadow-2xl shadow-purple-500/20 p-8 flex flex-col gap-6 border border-white/20"
         variants={formVariants}
         initial="hidden"
         animate="visible"
@@ -231,7 +231,10 @@ function EventForm() {
         <motion.h2 variants={itemVariants} className="text-3xl font-bold text-center text-white drop-shadow-[0_2px_4px_rgba(168,85,247,0.5)] mb-2">Find Your Rave Match</motion.h2>
         {error && <motion.div variants={itemVariants} className="text-red-400 bg-red-900/50 rounded-md py-2 text-center mb-2">{error}</motion.div>}
         <motion.div variants={itemVariants} className="flex flex-col gap-1 relative">
-          <label className="font-semibold text-purple-200 mb-1">Event or DJ Name</label>
+          <label className="font-semibold text-purple-200 mb-1 flex items-center justify-between">
+            <span>Event or DJ Name</span>
+            <span className="text-red-400 text-xl">*</span>
+          </label>
           <input
             type="text"
             value={eventName}
@@ -241,7 +244,7 @@ function EventForm() {
             }}
             onFocus={() => setEventInputFocused(true)}
             onBlur={() => setTimeout(() => setEventInputFocused(false), 200)}
-            className="input bg-black/30 text-white border-purple-400/50 placeholder:text-gray-400 w-full min-h-12 mx-auto rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 transition px-4"
+            className="input bg-black/30 text-white border-purple-400/50 placeholder:text-gray-400 w-full h-12 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 transition px-4"
             placeholder="Search by Artist or Event"
             autoFocus
             autoComplete="off"
@@ -266,7 +269,10 @@ function EventForm() {
           )}
         </motion.div>
         <motion.div variants={itemVariants} className="flex flex-col gap-1 relative">
-          <label className="font-semibold text-purple-200 mb-1">City</label>
+          <label className="font-semibold text-purple-200 mb-1 flex items-center justify-between">
+            <span>City</span>
+            <span className="text-red-400 text-xl">*</span>
+          </label>
           <input
             type="text"
             value={city}
@@ -318,16 +324,19 @@ function EventForm() {
             type="date"
             value={date}
             onChange={e => setDate(e.target.value)}
-            className="input bg-black/30 text-white border-purple-400/50 w-full rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 transition"
+            className="input bg-black/30 text-white border-purple-400/50 w-full rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 transition h-12 px-4"
           />
         </motion.div>
         <motion.button
           variants={itemVariants}
           type="submit"
-          className="btn w-full py-3 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg shadow-lg shadow-purple-500/50 hover:scale-105 transform transition-transform duration-200"
+          className="btn w-full py-3 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg shadow-lg shadow-purple-500/50 hover:scale-105 transform transition-transform duration-200 flex items-center justify-center"
           whileTap={{ scale: 0.98 }}
         >
-          Find My Ravebae
+          <span>Find My Ravebae </span>
+          <span className="ml-2 text-xl bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-sky-400 to-lime-300">
+            ❤️
+          </span>
         </motion.button>
       </motion.form>
     </div>

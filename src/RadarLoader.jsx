@@ -1,19 +1,29 @@
 import React from "react";
 
 const RadarLoader = () => (
-  <div className="flex flex-col items-center justify-center h-full w-full">
-    <div className="relative w-40 h-40">
-      {/* Radar circle */}
-      <div className="absolute inset-0 rounded-full border-4 border-blue-300 animate-pulse" />
-      {/* Radar sweep */}
+  <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white">
+    <div className="relative w-48 h-48">
+      {/* Sonar Ping Rings */}
+      <div className="absolute inset-0 rounded-full border-2 border-purple-400/80 animate-sonar-ping" />
+      <div className="absolute inset-0 rounded-full border-2 border-pink-400/60 animate-sonar-ping" style={{ animationDelay: '0.5s' }}/>
+      <div className="absolute inset-0 rounded-full border-2 border-sky-400/40 animate-sonar-ping" style={{ animationDelay: '1s' }}/>
+
+      {/* Radar sweep remains the same */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-36 h-36 rounded-full bg-gradient-to-tr from-blue-400/60 via-blue-200/0 to-blue-200/0 animate-spin-slow origin-bottom-left" />
+        <div 
+          className="w-full h-full rounded-full origin-center"
+          style={{
+            background: 'conic-gradient(from 0deg, rgba(236, 72, 153, 0.5), rgba(168, 85, 247, 0.2), transparent 40%)',
+            animation: 'spin 2.5s linear infinite',
+          }}
+        />
       </div>
-      {/* Center dot */}
-      <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-blue-500 rounded-full -translate-x-1/2 -translate-y-1/2 shadow-lg" />
+
+      {/* Center dot remains the same */}
+      <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-white rounded-full -translate-x-1/2 -translate-y-1/2 shadow-lg shadow-white/50" />
     </div>
-    <div className="mt-8 text-lg text-blue-600 font-semibold tracking-wide animate-pulse">
-      Scanning for rave matches...
+    <div className="mt-12 text-xl text-purple-200 font-semibold tracking-wider animate-text-pulse">
+      Searching for matches...
     </div>
   </div>
 );

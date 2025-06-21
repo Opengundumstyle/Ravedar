@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import EventForm from './EventForm';
 import Matches from './Matches';
 import { ensureUserId } from './ensureUserId';
+import AudioPlayer from './AudioPlayer';
 
 function App() {
   const [userReady, setUserReady] = useState(false);
@@ -30,6 +31,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <AudioPlayer src="/GhostDragon%20&%20Daye%20-%20Blindside%20(Lyrics).mp3" />
       <Routes>
         <Route path="/" element={<EventForm />} />
         <Route path="/matches" element={<Matches />} />

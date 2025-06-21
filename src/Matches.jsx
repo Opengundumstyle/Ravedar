@@ -50,72 +50,50 @@ function Matches() {
   ];
 
   useEffect(() => {
-    const fetchMatches = async () => {
-      setLoading(true);
-      const currentUserId = localStorage.getItem('user_profile_id');
-      if (!currentUserId) {
-        setMatches([]);
-        setLoading(false);
-        return;
-      }
-      // 1. Get current user's event
-      const { data: myEvent } = await supabase
-        .from('user_events')
-        .select('name, date, city')
-        .eq('user_id', currentUserId)
-        .single();
-      if (!myEvent) {
-        setMatches([]);
-        setLoading(false);
-        return;
-      }
-      setEventName(myEvent.name);
-      // 2. Find real users attending the same event (excluding current user)
-      let query = supabase
-        .from('user_events')
-        .select('user_id')
-        .eq('name', myEvent.name.trim())
-        .eq('city', myEvent.city.trim())
-        .neq('user_id', currentUserId);
-      if (myEvent.date) {
-        query = query.eq('date', myEvent.date);
-      } else {
-        query = query.is('date', null);
-      }
-      const { data: realUserEvents } = await query;
-      const realUserIds = (realUserEvents || []).map(u => u.user_id);
-      let realProfiles = [];
-      if (realUserIds.length > 0) {
-        const { data } = await supabase
-          .from('user_profiles')
-          .select('id, name, instagram, vibe_tags, about_me, is_real')
-          .in('id', realUserIds)
-          .eq('is_real', true);
-        realProfiles = data || [];
-      }
-      // 3. Fetch all fake users
-      const { data: fakeProfiles } = await supabase
-        .from('user_profiles')
-        .select('id, name, instagram, vibe_tags, about_me, is_real')
-        .eq('is_real', false);
-      // After fetching realProfiles and fakeProfiles, get all user IDs
-      const allUserIds = [...(realProfiles || []), ...(fakeProfiles || [])].map(u => u.id);
-      const { data: photos } = await supabase
-        .from('user_photos')
-        .select('user_id, image_url, position')
-        .in('user_id', allUserIds);
-      // Merge photos into each user
-      const mergePhotos = (profiles) =>
-        (profiles || []).map(profile => ({
-          ...profile,
-          photos: (photos || []).filter(p => p.user_id === profile.id).sort((a, b) => a.position - b.position),
-        }));
-      const mergedRealProfiles = mergePhotos(realProfiles);
-      const mergedFakeProfiles = mergePhotos(fakeProfiles);
-      setMatches([...mergedRealProfiles, ...mergedFakeProfiles]);
+    const fetchAndBuffer = async () => {
+      const fetchPromise = (async () => {
+        // All the existing data fetching logic goes here
+        const currentUserId = localStorage.getItem('user_profile_id');
+        if (!currentUserId) {
+          setMatches([]);
+          return;
+        }
+        // ... (the rest of your fetch logic from the original useEffect)
+        const { data: myEvent } = await supabase.from('user_events').select('name, date, city').eq('user_id', currentUserId).single();
+        if (!myEvent) {
+          setMatches([]);
+          return;
+        }
+        setEventName(myEvent.name);
+        let query = supabase.from('user_events').select('user_id').eq('name', myEvent.name.trim()).eq('city', myEvent.city.trim()).neq('user_id', currentUserId);
+        if (myEvent.date) {
+          query = query.eq('date', myEvent.date);
+        } else {
+          query = query.is('date', null);
+        }
+        const { data: realUserEvents } = await query;
+        const realUserIds = (realUserEvents || []).map(u => u.user_id);
+        let realProfiles = [];
+        if (realUserIds.length > 0) {
+          const { data } = await supabase.from('user_profiles').select('id, name, instagram, vibe_tags, about_me, is_real').in('id', realUserIds).eq('is_real', true);
+          realProfiles = data || [];
+        }
+        const { data: fakeProfiles } = await supabase.from('user_profiles').select('id, name, instagram, vibe_tags, about_me, is_real').eq('is_real', false);
+        const allUserIds = [...(realProfiles || []), ...(fakeProfiles || [])].map(u => u.id);
+        const { data: photos } = await supabase.from('user_photos').select('user_id, image_url, position').in('user_id', allUserIds);
+        const mergePhotos = (profiles) => (profiles || []).map(profile => ({ ...profile, photos: (photos || []).filter(p => p.user_id === profile.id).sort((a, b) => a.position - b.position), }));
+        const mergedRealProfiles = mergePhotos(realProfiles);
+        const mergedFakeProfiles = mergePhotos(fakeProfiles);
+        setMatches([...mergedRealProfiles, ...mergedFakeProfiles]);
+      })();
+
+      const bufferPromise = new Promise(resolve => setTimeout(resolve, 2500));
+
+      await Promise.all([fetchPromise, bufferPromise]);
       setLoading(false);
     };
-    fetchMatches();
+
+    fetchAndBuffer();
   }, []);
 
   // AnimatePresence: use a key for the card
@@ -145,7 +123,7 @@ function Matches() {
   };
 
   const swipeLabel = useMemo(() => {
-    if (currentX > 40) return { text: "I am down to dance with him/her 🔥", position: "left" };
+    if (currentX > 40) return { text: "I wanna dance with this person :)", position: "left" };
     if (currentX < -40) return { text: "I don't feel the vibe :(", position: "right" };
     return null;
   }, [currentX]);
