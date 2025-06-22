@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const TICKETMASTER_API_KEY = import.meta.env.VITE_TICKETMASTER_API_KEY;
 
@@ -17,6 +17,27 @@ function EventForm() {
   const [cityInputFocused, setCityInputFocused] = useState(false);
   const [happeningSoonCity, setHappeningSoonCity] = useState("");
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
+  const [title, setTitle] = useState({ text: <>&nbsp;</>, weight: 'font-light' });
+
+  // Effect to cycle through titles
+  useEffect(() => {
+    const sequence = [
+      { text: "connect through experience only in ...", weight: 'font-light' },
+      { text: "ravedar", weight: 'font-light' },
+      { text: "Find Your Rave Match", weight: 'font-bold' }
+    ];
+    let index = 0;
+    
+    const cycleTitles = () => {
+      if (index < sequence.length) {
+        setTitle(sequence[index]);
+        index++;
+        setTimeout(cycleTitles, 1800);
+      }
+    };
+    
+    cycleTitles(); // Start the sequence immediately
+  }, []);
 
   // Autocomplete for event/dj name
   useEffect(() => {
@@ -228,7 +249,18 @@ function EventForm() {
         initial="hidden"
         animate="visible"
       >
-        <motion.h2 variants={itemVariants} className="text-3xl font-bold text-center text-white drop-shadow-[0_2px_4px_rgba(168,85,247,0.5)] mb-2">Find Your Rave Match</motion.h2>
+        <AnimatePresence mode="wait">
+          <motion.h2
+            key={title.text}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.5 }}
+            className={`text-3xl text-center text-white drop-shadow-[0_2px_4px_rgba(168,85,247,0.5)] mb-2 h-10 flex items-center justify-center ${title.weight}`}
+          >
+            {title.text}
+          </motion.h2>
+        </AnimatePresence>
         {error && <motion.div variants={itemVariants} className="text-red-400 bg-red-900/50 rounded-md py-2 text-center mb-2">{error}</motion.div>}
         <motion.div variants={itemVariants} className="flex flex-col gap-1 relative">
           <label className="font-semibold text-purple-200 mb-1 flex items-center justify-between">
@@ -319,7 +351,7 @@ function EventForm() {
           )}
         </motion.div>
         <motion.div variants={itemVariants} className="flex flex-col gap-1">
-          <label className="font-semibold text-purple-200 mb-1">Date</label>
+          <label className="font-semibold text-purple-200 mb-1">Date (optional)</label>
           <input
             type="date"
             value={date}
@@ -330,7 +362,7 @@ function EventForm() {
         <motion.button
           variants={itemVariants}
           type="submit"
-          className="btn w-full py-3 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg shadow-lg shadow-purple-500/50 hover:scale-105 transform transition-transform duration-200 flex items-center justify-center"
+          className="btn w-full py-3 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg hover:scale-105 transform transition-transform duration-200 flex items-center justify-center animate-button-glow"
           whileTap={{ scale: 0.98 }}
         >
           <span>Find My Ravebae </span>
