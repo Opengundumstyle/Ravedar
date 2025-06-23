@@ -149,12 +149,12 @@ function Matches() {
   const match = matches[currentIndex];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-pink-50 py-8 px-2">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 py-8 px-2">
       <div className="w-full max-w-lg md:max-w-[480px] flex flex-col items-center justify-center min-h-[70vh] relative" style={{ minHeight: 600 }}>
         {eventName && match && (
-          <div className="mb-8 w-full flex items-center">
-            <span className="text-xl font-medium text-gray-400">You both are going to&nbsp;</span>
-            <span className="text-2xl font-bold text-gray-900">{eventName}</span>
+          <div className="mb-8 w-full flex flex-col md:flex-row items-center text-center md:text-left space-y-1 md:space-y-0">
+            <span className="text-sm md:text-xl font-medium text-gray-300">You both are going to&nbsp;</span>
+            <span className="text-lg md:text-2xl font-bold text-white truncate max-w-[280px] md:max-w-[300px]">{eventName}</span>
           </div>
         )}
         <div className="relative w-full h-[600px] flex items-center justify-center">
@@ -243,7 +243,7 @@ function Matches() {
       {matchSlogan}
     </div>
     <div className="bg-white rounded-2xl shadow-2xl p-0 max-w-3xl w-full flex flex-col md:flex-row items-stretch text-center relative overflow-hidden">
-      <div className="w-full flex flex-col items-center justify-center bg-gradient-to-b from-blue-50 via-white to-pink-50 p-4 md:p-6 border-b md:border-b-0 md:border-r border-gray-100">
+      <div className="w-full flex flex-col items-center justify-center bg-gradient-to-b from-indigo-900 via-purple-900 to-pink-900 p-4 md:p-6 border-b md:border-b-0 md:border-r border-gray-100">
         <div className="w-full flex flex-col items-center">
           <div className="w-28 h-36 md:w-40 md:h-52 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 mb-4 flex items-center justify-center">
             {matchedUser && matchedUser.photos && matchedUser.photos.length > 0 ? (
@@ -254,11 +254,11 @@ function Matches() {
                 draggable={false}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400">No Photo</div>
+              <div className="w-full h-full flex items-center justify-center text-gray-300">No Photo</div>
             )}
           </div>
           <div className="font-bold text-lg md:text-2xl text-gray-800 text-center truncate w-full">
-            {matchedUser.name} {matchedUser.instagram && <span className="text-gray-400 text-sm md:text-base">@{matchedUser.instagram}</span>}
+            {matchedUser.name} {matchedUser.instagram && <span className="text-gray-300 text-sm md:text-base">@{matchedUser.instagram}</span>}
           </div>
           {!matchedUser.is_real && (
             <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-bold uppercase tracking-wide shadow-sm">
@@ -300,7 +300,7 @@ function Matches() {
 )}
 
         <div className="flex justify-between mt-4">
-          <span className="text-gray-400">Swipe left or right</span>
+          <span className="text-gray-300">Swipe left or right</span>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 function UserCard({ user }) {
   return (
-    <div className="bg-white rounded-2xl shadow-lg flex flex-col items-center w-[448px] h-[600px] mx-auto transition-all duration-300 p-1 cursor-pointer">
-      <div className="bg-white bg-opacity-80 rounded-2xl flex flex-col items-center w-full h-full p-0 relative">
+    <div className="bg-black/20 backdrop-blur-lg rounded-2xl shadow-lg flex flex-col items-center w-[448px] h-[600px] mx-auto transition-all duration-300 p-1 cursor-pointer">
+      <div className="bg-black/20 backdrop-blur-lg rounded-2xl flex flex-col items-center w-full h-full p-0 relative">
         {/* Photo area: full height with overlay */}
         <div className="w-full h-full flex-shrink-0 flex justify-center items-center">
           <div className="w-full h-full rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
