@@ -241,7 +241,7 @@ function EventForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 py-8 px-2 overflow-hidden">
+    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 py-8 px-2 overflow-hidden">
       <motion.form 
         onSubmit={handleSubmit} 
         className="w-[480px] h-[650px] bg-black/20 backdrop-blur-lg rounded-2xl shadow-2xl shadow-purple-500/20 p-8 flex flex-col gap-6 border border-white/20"

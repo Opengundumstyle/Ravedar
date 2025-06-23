@@ -1,7 +1,7 @@
 import React from "react";
 
 const RadarLoader = () => (
-  <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white">
+  <div className="h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white overflow-hidden">
     <div className="relative w-48 h-48">
       {/* Sonar Ping Rings */}
       <div className="absolute inset-0 rounded-full border-2 border-purple-400/80 animate-sonar-ping" />
