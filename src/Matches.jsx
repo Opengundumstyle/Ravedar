@@ -7,6 +7,7 @@ import RadarLoader from './RadarLoader';
 
 function Matches() {
   const [matches, setMatches] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showMatch, setShowMatch] = useState(false);
   const [matchOverlay, setMatchOverlay] = useState(false);
@@ -58,6 +59,14 @@ function Matches() {
           setMatches([]);
           return;
         }
+
+        const { data: currentUserProfile } = await supabase
+          .from('user_profiles')
+          .select('id, name, photos:user_photos(image_url, position)')
+          .eq('id', currentUserId)
+          .single();
+        setCurrentUser(currentUserProfile);
+        
         // ... (the rest of your fetch logic from the original useEffect)
         const { data: myEvent } = await supabase.from('user_events').select('name, date, city').eq('user_id', currentUserId).single();
         if (!myEvent) {
@@ -148,6 +157,29 @@ function Matches() {
 
   const match = matches[currentIndex];
 
+  const overlayVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { 
+        when: "beforeChildren",
+        staggerChildren: 0.1,
+        duration: 0.3
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      scale: 0.8,
+      transition: { duration: 0.3 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
+
   return (
     <div className="h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 py-8 px-2 overflow-hidden">
       <div className="w-full max-w-lg md:max-w-[480px] flex flex-col items-center justify-center min-h-[70vh] relative" style={{ minHeight: 600 }}>
@@ -237,67 +269,61 @@ function Matches() {
           </AnimatePresence>
         </div>
        
-       {matchOverlay && matchedUser && (
-  <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-40 backdrop-blur-md">
-    <div className="mb-4 md:mb-8 text-xl md:text-2xl font-extrabold text-center text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-      {matchSlogan}
-    </div>
-    <div className="bg-white rounded-2xl shadow-2xl p-0 max-w-3xl w-full flex flex-col md:flex-row items-stretch text-center relative overflow-hidden">
-      <div className="w-full flex flex-col items-center justify-center bg-gradient-to-b from-indigo-900 via-purple-900 to-pink-900 p-4 md:p-6 border-b md:border-b-0 md:border-r border-gray-100">
-        <div className="w-full flex flex-col items-center">
-          <div className="w-28 h-36 md:w-40 md:h-52 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 mb-4 flex items-center justify-center">
-            {matchedUser && matchedUser.photos && matchedUser.photos.length > 0 ? (
-              <img
-                src={matchedUser.photos[0].image_url}
-                alt="User pic"
-                className="w-full h-full object-cover object-top bg-gray-100"
-                draggable={false}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-300">No Photo</div>
-            )}
-          </div>
-          <div className="font-bold text-lg md:text-2xl text-gray-800 text-center truncate w-full">
-            {matchedUser.name} {matchedUser.instagram && <span className="text-gray-300 text-sm md:text-base">@{matchedUser.instagram}</span>}
-          </div>
-          {!matchedUser.is_real && (
-            <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-bold uppercase tracking-wide shadow-sm">
-              <span role="img" aria-label="star">🌟</span> Demo Raver
-            </div>
-          )}
-          <div className="text-sm md:text-base text-gray-600 text-center w-full break-words line-clamp-3 min-h-[3.5em] mt-3">
-            {matchedUser.about_me}
-          </div>
-          {/* {matchedUser.vibe_tags && matchedUser.vibe_tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 justify-center max-h-12 overflow-y-auto mt-3">
-              {matchedUser.vibe_tags.map((tag, i) => (
-                <span key={i} className="bg-blue-100 text-blue-800 px-2 py-0.5 md:px-3 md:py-1 rounded-full text-xs font-semibold whitespace-nowrap">{tag}</span>
-              ))}
-            </div>
-          )} */}
-        </div>
-      </div>
-      <div className="w-full flex flex-col items-center justify-center p-4 md:p-6">
-        <div className="text-sm md:text-base text-gray-700 mb-3">
-          Your match is part of our <span className="font-semibold text-pink-500">demo raver crew</span>, helping us test and build the ultimate rave connection experience.
-        </div>
-        <div className="text-sm md:text-base text-gray-700 mb-2">💬 <span className="font-semibold">Chat isn't live yet, but you can:</span></div>
-        <div className="text-sm md:text-base text-gray-700 mb-3 flex flex-col items-start w-full">
-          <span className="mb-1">👉 <span className="font-semibold text-indigo-600">Join our Private Discord</span> - your feedback means the world to us!</span>
-        </div>
-        <div className="flex gap-3 w-full justify-center mb-3">
-          <a href="https://discord.gg/hzGwGe5y" target="_blank" rel="noopener noreferrer" className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-bold text-base shadow-lg transition text-center">Join Discord</a>
-        </div>
-        <button
-          onClick={handleKeepSwiping}
-          className="mt-2 px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-full font-semibold text-base shadow-sm hover:bg-gray-50 transition"
-        >
-          Keep Swiping
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+       <AnimatePresence>
+        {matchOverlay && matchedUser && currentUser && (
+          <motion.div 
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/50 backdrop-blur-lg p-4"
+            variants={overlayVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <motion.div 
+              variants={itemVariants}
+              className="text-5xl md:text-7xl font-bold text-white text-center"
+              style={{
+                textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073'
+              }}
+            >
+              It's a Vibe!
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="my-6 flex items-center justify-center -space-x-8">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-pink-500 shadow-lg" style={{ boxShadow: '0 0 20px #e60073' }}>
+                {currentUser.photos && currentUser.photos.length > 0 ? (
+                  <img src={currentUser.photos[0].image_url} alt="You" className="w-full h-full object-cover" />
+                ) : <div className="w-full h-full bg-gray-700" />}
+              </div>
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-purple-500 shadow-lg" style={{ boxShadow: '0 0 20px #a855f7' }}>
+                {matchedUser.photos && matchedUser.photos.length > 0 ? (
+                  <img src={matchedUser.photos[0].image_url} alt={matchedUser.name} className="w-full h-full object-cover" />
+                ) : <div className="w-full h-full bg-gray-700" />}
+              </div>
+            </motion.div>
+
+            <motion.p variants={itemVariants} className="text-lg md:text-xl font-semibold text-center text-white/90 mb-6 max-w-md">
+              {matchSlogan}
+            </motion.p>
+            
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
+               <a 
+                 href="https://discord.gg/hzGwGe5y" 
+                 target="_blank" 
+                 rel="noopener noreferrer" 
+                 className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
+               >
+                 Join Discord
+               </a>
+               <button
+                 onClick={handleKeepSwiping}
+                 className="flex-1 text-center py-3 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold text-lg hover:bg-white/30 transform transition-colors duration-200 shadow-md"
+               >
+                 Keep Swiping
+               </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
         <div className="flex justify-between mt-4">
           <span className="text-gray-300">Swipe left or right</span>

@@ -17,12 +17,18 @@ function App() {
   const [userReady, setUserReady] = useState(false);
   const [userError, setUserError] = useState(false);
 
-  // Randomly select a song on mount and memoize it
-  const randomSong = useMemo(() => {
+  // Randomly select a song and create a clean title
+  const { songFile, songTitle } = useMemo(() => {
     const randomIndex = Math.floor(Math.random() * songList.length);
     const selectedSong = songList[randomIndex];
-    // Replace spaces with %20 for a safe URL path, but leave other characters.
-    return selectedSong.replace(/ /g, '%20');
+    
+    // Create a clean title by removing extension and decoding
+    const title = decodeURIComponent(selectedSong.replace(/\.mp3$/, ''));
+    
+    // Create a safe URL-encoded path for the src prop
+    const file = selectedSong.replace(/ /g, '%20');
+    
+    return { songFile: `/${file}`, songTitle: title };
   }, []);
 
   useEffect(() => {
@@ -48,7 +54,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <AudioPlayer src={`/${randomSong}`} />
+      <AudioPlayer src={songFile} title={songTitle} />
       <Routes>
         <Route path="/" element={<EventForm />} />
         <Route path="/matches" element={<Matches />} />
