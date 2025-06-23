@@ -184,19 +184,14 @@ function EventForm() {
     }
     const eventDate = date === '' ? null : date;
 
-    // Check if user already has an event
-    const { data: existingEvent, error: fetchError } = await supabase
+    // Clear any existing event for this user before inserting a new one
+    const { error: deleteError } = await supabase
       .from('user_events')
-      .select('user_id')
-      .eq('user_id', userId)
-      .maybeSingle();
+      .delete()
+      .eq('user_id', userId);
 
-    if (fetchError) {
-      setError('Error checking for existing event. Please try again.');
-      return;
-    }
-    if (existingEvent) {
-      setError('You already have an event assigned. Please refresh the page to start over.');
+    if (deleteError) {
+      setError('Error clearing previous search. Please try again.');
       return;
     }
 

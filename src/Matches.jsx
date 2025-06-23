@@ -143,14 +143,27 @@ function Matches() {
 
   if (currentIndex >= matches.length) {
     return (
-      <div className="text-center mt-8 flex flex-col items-center">
-        <div className="text-lg font-semibold mb-4">No more users to show :</div>
-        <button
-          className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-          onClick={() => navigate('/')}
+      <div className="h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white overflow-hidden p-4">
+        <motion.div 
+          className="text-center flex flex-col items-center"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          Go Home
-        </button>
+          <div className="text-6xl mb-4">✨</div>
+          <h2 className="text-3xl font-bold text-white mb-2">That's Everyone For Now!</h2>
+          <p className="text-lg text-purple-200 mb-8 max-w-md">
+            You've seen all potential ravebaes for <span className="font-semibold text-white">{eventName}</span>. Check back later for new people!
+          </p>
+          <motion.button
+            className="w-full max-w-xs py-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
+            onClick={() => navigate('/')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Find a New Vibe
+          </motion.button>
+        </motion.div>
       </div>
     );
   }
