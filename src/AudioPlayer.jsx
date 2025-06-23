@@ -1,10 +1,44 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2, VolumeX } from 'lucide-react';
 
 const AudioPlayer = ({ src, title }) => {
   const [isMuted, setIsMuted] = useState(false);
   const audioRef = useRef(null);
+  const location = useLocation();
+  const fadeIntervalRef = useRef(null);
+
+  const isMatchesPage = location.pathname === '/matches';
+
+  // Mute audio automatically when on the matches page by fading out
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (fadeIntervalRef.current) {
+      clearInterval(fadeIntervalRef.current);
+    }
+
+    if (isMatchesPage) {
+      if (isMuted || audio.volume === 0) return;
+
+      const fadeDuration = 2500; // ~2.5 seconds to fade
+      
+      fadeIntervalRef.current = setInterval(() => {
+        if (audio.volume > 0.05) {
+          audio.volume -= 0.05;
+        } else {
+          audio.volume = 0;
+          setIsMuted(true);
+          clearInterval(fadeIntervalRef.current);
+        }
+      }, fadeDuration / 20);
+    }
+    
+    return () => clearInterval(fadeIntervalRef.current);
+
+  }, [isMatchesPage]);
 
   // Effect for handling the first user interaction to start playback
   useEffect(() => {
@@ -48,14 +82,16 @@ const AudioPlayer = ({ src, title }) => {
         className="fixed bottom-4 right-4 z-50 flex items-end gap-4"
         style={{ textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}
       >
-        <div className="text-right">
-          <p className="text-sm font-semibold text-white/90 truncate max-w-[200px]" title={title}>
-            {title}
-          </p>
-          <p className="text-xs text-white/60">
-            Rights reserved. For demo only.
-          </p>
-        </div>
+        {!isMatchesPage && (
+          <div className="text-right">
+            <p className="text-sm font-semibold text-white/90 truncate max-w-[200px]" title={title}>
+              {title}
+            </p>
+            <p className="text-xs text-white/60">
+              Rights reserved. For demo only.
+            </p>
+          </div>
+        )}
         <motion.button
           onClick={toggleMute}
           className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/80 shadow-lg"

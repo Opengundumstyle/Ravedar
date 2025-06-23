@@ -1,6 +1,6 @@
 import React from "react";
 
-const RadarLoader = () => (
+const RadarLoader = ({ eventName }) => (
   <div className="h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white overflow-hidden">
     <div className="relative w-48 h-48">
       {/* Sonar Ping Rings */}
@@ -22,8 +22,11 @@ const RadarLoader = () => (
       {/* Center dot remains the same */}
       <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-white rounded-full -translate-x-1/2 -translate-y-1/2 shadow-lg shadow-white/50" />
     </div>
-    <div className="mt-12 text-xl text-purple-200 font-semibold tracking-wider animate-text-pulse">
-      Searching for matches...
+    <div className="mt-12 text-xl text-purple-200 font-semibold tracking-wider animate-text-pulse text-center px-4">
+      {eventName 
+        ? `Searching for your potential ravebae at ${eventName}...`
+        : 'Searching for matches...'
+      }
     </div>
   </div>
 );

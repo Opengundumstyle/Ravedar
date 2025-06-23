@@ -138,7 +138,7 @@ function Matches() {
   }, [currentX]);
 
   if (loading) {
-    return <RadarLoader />;
+    return <RadarLoader eventName={eventName} />;
   }
 
   if (currentIndex >= matches.length) {
