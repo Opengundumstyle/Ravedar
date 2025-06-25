@@ -178,8 +178,8 @@ const AudioPlayer = ({ src, title }) => {
         )}
         <div 
           className="relative w-16 h-16 flex items-center justify-center"
-          onMouseEnter={() => setShowVolumeSlider(true)}
-          onMouseLeave={() => setShowVolumeSlider(false)}
+          onPointerEnter={() => setShowVolumeSlider(true)}
+          onPointerLeave={() => setShowVolumeSlider(false)}
         >
           <AnimatePresence>
             {showVolumeSlider ? (
