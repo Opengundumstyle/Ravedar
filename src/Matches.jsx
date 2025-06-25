@@ -88,12 +88,25 @@ function Matches() {
           const { data } = await supabase.from('user_profiles').select('id, name, instagram, vibe_tags, about_me, is_real').in('id', realUserIds).eq('is_real', true);
           realProfiles = data || [];
         }
+        // Fetch demo (fake) profiles
         const { data: fakeProfiles } = await supabase.from('user_profiles').select('id, name, instagram, vibe_tags, about_me, is_real').eq('is_real', false);
-        const allUserIds = [...(realProfiles || []), ...(fakeProfiles || [])].map(u => u.id);
+        // Shuffle fakeProfiles using Fisher-Yates
+        function shuffle(array) {
+          let m = array.length, t, i;
+          while (m) {
+            i = Math.floor(Math.random() * m--);
+            t = array[m];
+            array[m] = array[i];
+            array[i] = t;
+          }
+          return array;
+        }
+        const shuffledFakeProfiles = shuffle(fakeProfiles || []);
+        const allUserIds = [...(realProfiles || []), ...(shuffledFakeProfiles || [])].map(u => u.id);
         const { data: photos } = await supabase.from('user_photos').select('user_id, image_url, position').in('user_id', allUserIds);
         const mergePhotos = (profiles) => (profiles || []).map(profile => ({ ...profile, photos: (photos || []).filter(p => p.user_id === profile.id).sort((a, b) => a.position - b.position), }));
         const mergedRealProfiles = mergePhotos(realProfiles);
-        const mergedFakeProfiles = mergePhotos(fakeProfiles);
+        const mergedFakeProfiles = mergePhotos(shuffledFakeProfiles);
         setMatches([...mergedRealProfiles, ...mergedFakeProfiles]);
       })();
 

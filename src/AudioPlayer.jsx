@@ -61,8 +61,10 @@ const AudioPlayer = ({ src, title }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const audioRef = useRef(null);
+  const audioContextRef = useRef(null);
   const location = useLocation();
   const fadeIntervalRef = useRef(null);
   const [analyserNode, setAnalyserNode] = useState(null);
@@ -98,38 +100,57 @@ const AudioPlayer = ({ src, title }) => {
 
   }, [isMatchesPage]);
 
+  // Initialize audio context and setup
+  const setupAudioContext = async () => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      
+      const audioContext = audioContextRef.current;
+      
+      // Resume audio context if suspended (required for mobile)
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+      
+      const audio = audioRef.current;
+      if (!audio) return;
+      
+      const source = audioContext.createMediaElementSource(audio);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+      analyser.connect(audioContext.destination);
+      setAnalyserNode(analyser);
+      
+      return true;
+    } catch (error) {
+      console.error("Failed to setup audio context:", error);
+      return false;
+    }
+  };
+
   // Effect for handling the first user interaction to start playback
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || hasInteracted) return;
 
-    const setupAudioContext = () => {
-      try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const source = audioContext.createMediaElementSource(audio);
-        const analyser = audioContext.createAnalyser();
-        analyser.fftSize = 256;
-        source.connect(analyser);
-        analyser.connect(audioContext.destination);
-        setAnalyserNode(analyser);
-      } catch (error) {
-        console.error("Failed to setup audio context:", error);
-      }
-    };
-
-    const handleFirstInteraction = async () => {
+    const handleFirstInteraction = async (event) => {
       if (hasInteracted) return;
+      
+      // Prevent default to avoid any conflicts
+      event.preventDefault();
       
       setHasInteracted(true);
       
       try {
-        // Resume audio context if suspended (required for mobile)
-        if (audio.context && audio.context.state === 'suspended') {
-          await audio.context.resume();
-        }
-        
-        if (!analyserNode) {
-          setupAudioContext();
+        // Setup audio context first
+        const contextReady = await setupAudioContext();
+        if (!contextReady) {
+          console.error("Audio context setup failed");
+          setHasInteracted(false);
+          return;
         }
         
         // Set initial volume
@@ -139,6 +160,7 @@ const AudioPlayer = ({ src, title }) => {
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           await playPromise;
+          setIsPlaying(true);
         }
       } catch (error) {
         console.error("Audio play failed on interaction:", error);
@@ -151,7 +173,7 @@ const AudioPlayer = ({ src, title }) => {
     const events = ['click', 'touchstart', 'touchend', 'keydown'];
     
     events.forEach(event => {
-      window.addEventListener(event, handleFirstInteraction, { once: true, passive: true });
+      window.addEventListener(event, handleFirstInteraction, { once: true, passive: false });
     });
 
     return () => {
@@ -159,7 +181,7 @@ const AudioPlayer = ({ src, title }) => {
         window.removeEventListener(event, handleFirstInteraction);
       });
     };
-  }, [hasInteracted, analyserNode, volume]);
+  }, [hasInteracted, volume]);
 
   // Effect for syncing the volume state to the audio element
   useEffect(() => {
@@ -183,7 +205,12 @@ const AudioPlayer = ({ src, title }) => {
         
         // If audio was paused due to being muted, try to resume
         if (audio.paused && hasInteracted) {
+          // Ensure audio context is resumed
+          if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+            await audioContextRef.current.resume();
+          }
           await audio.play();
+          setIsPlaying(true);
         }
       }
     } catch (error) {
@@ -215,6 +242,26 @@ const AudioPlayer = ({ src, title }) => {
     }
   };
 
+  // Handle audio play/pause events
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+    const handleEnded = () => setIsPlaying(false);
+
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, []);
+
   return (
     <>
       <audio ref={audioRef} src={src} loop preload="auto" />
@@ -224,9 +271,15 @@ const AudioPlayer = ({ src, title }) => {
       >
         {!isMatchesPage && (
           <div className="text-right">
-            <p className="text-sm font-semibold text-white/90 truncate max-w-[200px]" title={title}>
-              {title}
-            </p>
+            <div className="w-40 overflow-hidden">
+              <span
+                className={`block text-sm font-semibold text-white/90 ${title.length > 24 ? 'marquee' : ''}`}
+                title={title}
+                style={{ minWidth: '100%' }}
+              >
+                {title}
+              </span>
+            </div>
             <p className="text-xs text-white/60">
               Rights reserved. For demo only.
             </p>
@@ -296,7 +349,8 @@ const AudioPlayer = ({ src, title }) => {
                   <VolumeX size={20} />
                 ) : (
                   <>
-                    {analyserNode && <AudioVisualizer analyserNode={analyserNode} />}
+                    {analyserNode && isPlaying && <AudioVisualizer analyserNode={analyserNode} />}
+                    {!isPlaying && hasInteracted && <Volume2 size={20} className="text-white" />}
                   </>
                 )}
               </motion.div>
