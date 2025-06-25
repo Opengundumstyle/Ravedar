@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX, Plus, Minus } from 'lucide-react';
 
 const AudioVisualizer = ({ analyserNode }) => {
   const canvasRef = useRef(null);
@@ -60,6 +60,7 @@ const AudioPlayer = ({ src, title }) => {
   const lastVolumeRef = useRef(1);
   const [isMuted, setIsMuted] = useState(false);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   const audioRef = useRef(null);
   const location = useLocation();
@@ -100,39 +101,65 @@ const AudioPlayer = ({ src, title }) => {
   // Effect for handling the first user interaction to start playback
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || hasInteracted) return;
 
     const setupAudioContext = () => {
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const source = audioContext.createMediaElementSource(audio);
-      const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 256;
-      source.connect(analyser);
-      analyser.connect(audioContext.destination);
-      setAnalyserNode(analyser);
-    };
-
-    const handleFirstInteraction = () => {
-      if (!analyserNode) {
-        setupAudioContext();
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaElementSource(audio);
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+        setAnalyserNode(analyser);
+      } catch (error) {
+        console.error("Failed to setup audio context:", error);
       }
-      audio.play().catch(error => {
-        if (error.name !== 'AbortError') {
-          console.error("Audio play failed on interaction:", error);
-        }
-      });
-      window.removeEventListener('click', handleFirstInteraction);
-      window.removeEventListener('keydown', handleFirstInteraction);
     };
 
-    window.addEventListener('click', handleFirstInteraction);
-    window.addEventListener('keydown', handleFirstInteraction);
+    const handleFirstInteraction = async () => {
+      if (hasInteracted) return;
+      
+      setHasInteracted(true);
+      
+      try {
+        // Resume audio context if suspended (required for mobile)
+        if (audio.context && audio.context.state === 'suspended') {
+          await audio.context.resume();
+        }
+        
+        if (!analyserNode) {
+          setupAudioContext();
+        }
+        
+        // Set initial volume
+        audio.volume = volume;
+        
+        // Try to play audio
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          await playPromise;
+        }
+      } catch (error) {
+        console.error("Audio play failed on interaction:", error);
+        // If autoplay fails, we'll try again on next interaction
+        setHasInteracted(false);
+      }
+    };
+
+    // Add multiple event listeners for better mobile support
+    const events = ['click', 'touchstart', 'touchend', 'keydown'];
+    
+    events.forEach(event => {
+      window.addEventListener(event, handleFirstInteraction, { once: true, passive: true });
+    });
 
     return () => {
-      window.removeEventListener('click', handleFirstInteraction);
-      window.removeEventListener('keydown', handleFirstInteraction);
+      events.forEach(event => {
+        window.removeEventListener(event, handleFirstInteraction);
+      });
     };
-  }, []);
+  }, [hasInteracted, analyserNode, volume]);
 
   // Effect for syncing the volume state to the audio element
   useEffect(() => {
@@ -142,17 +169,46 @@ const AudioPlayer = ({ src, title }) => {
     setIsMuted(volume === 0);
   }, [volume]);
   
-  const toggleMute = () => {
-    if (volume > 0) {
-      lastVolumeRef.current = volume;
-      setVolume(0);
-    } else {
-      setVolume(lastVolumeRef.current || 1);
+  const toggleMute = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    try {
+      if (volume > 0) {
+        lastVolumeRef.current = volume;
+        setVolume(0);
+      } else {
+        const newVolume = lastVolumeRef.current || 1;
+        setVolume(newVolume);
+        
+        // If audio was paused due to being muted, try to resume
+        if (audio.paused && hasInteracted) {
+          await audio.play();
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling mute:", error);
     }
   };
   
   const handleVolumeChange = (e) => {
     const newVolume = parseFloat(e.target.value);
+    setVolume(newVolume);
+    if (newVolume > 0) {
+      lastVolumeRef.current = newVolume;
+    }
+  };
+
+  const increaseVolume = () => {
+    const newVolume = Math.min(1, volume + 0.1);
+    setVolume(newVolume);
+    if (newVolume > 0) {
+      lastVolumeRef.current = newVolume;
+    }
+  };
+
+  const decreaseVolume = () => {
+    const newVolume = Math.max(0, volume - 0.1);
     setVolume(newVolume);
     if (newVolume > 0) {
       lastVolumeRef.current = newVolume;
@@ -180,6 +236,7 @@ const AudioPlayer = ({ src, title }) => {
           className="relative w-16 h-16 flex items-center justify-center"
           onPointerEnter={() => setShowVolumeSlider(true)}
           onPointerLeave={() => setShowVolumeSlider(false)}
+          onClick={() => setShowVolumeSlider(v => !v)}
         >
           <AnimatePresence>
             {showVolumeSlider ? (
@@ -188,8 +245,18 @@ const AudioPlayer = ({ src, title }) => {
                 initial={{ opacity: 0, scale: 0.7 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.7 }}
-                className="absolute w-full h-full flex items-center justify-center"
+                className="absolute right-0 bottom-0 translate-x-1/3 translate-y-1/3 flex flex-row items-center justify-center gap-2 bg-transparent p-0"
+                style={{ boxShadow: 'none', border: 'none' }}
               >
+                <button
+                  onClick={decreaseVolume}
+                  onTouchEnd={decreaseVolume}
+                  className="w-6 h-6 flex items-center justify-center bg-transparent p-0 m-0"
+                  style={{ minWidth: 0, minHeight: 0 }}
+                  tabIndex={-1}
+                >
+                  <Minus size={18} className="text-white" />
+                </button>
                 <input
                   type="range"
                   min="0"
@@ -197,18 +264,23 @@ const AudioPlayer = ({ src, title }) => {
                   step="0.01"
                   value={volume}
                   onChange={handleVolumeChange}
-                  className="w-16 h-3 appearance-none bg-transparent cursor-pointer 
-                             [&::-webkit-slider-runnable-track]:rounded-full 
-                             [&::-webkit-slider-runnable-track]:bg-gradient-to-t 
-                             [&::-webkit-slider-runnable-track]:from-pink-500/50 
-                             [&::-webkit-slider-runnable-track]:to-purple-500/50
-                             [&::-webkit-slider-thumb]:appearance-none 
-                             [&::-webkit-slider-thumb]:h-4 
-                             [&::-webkit-slider-thumb]:w-4 
-                             [&::-webkit-slider-thumb]:rounded-full 
-                             [&::-webkit-slider-thumb]:bg-white"
-                  style={{ transform: 'rotate(-90deg)' }}
+                  className="w-24 h-2 appearance-none bg-gray-300/40 rounded-full cursor-pointer
+                             [&::-webkit-slider-thumb]:appearance-none
+                             [&::-webkit-slider-thumb]:h-4
+                             [&::-webkit-slider-thumb]:w-4
+                             [&::-webkit-slider-thumb]:rounded-full
+                             [&::-webkit-slider-thumb]:bg-white
+                             [&::-webkit-slider-thumb]:shadow"
                 />
+                <button
+                  onClick={increaseVolume}
+                  onTouchEnd={increaseVolume}
+                  className="w-6 h-6 flex items-center justify-center bg-transparent p-0 m-0"
+                  style={{ minWidth: 0, minHeight: 0 }}
+                  tabIndex={-1}
+                >
+                  <Plus size={18} className="text-white" />
+                </button>
               </motion.div>
             ) : (
               <motion.div
@@ -217,6 +289,7 @@ const AudioPlayer = ({ src, title }) => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.7 }}
                 onClick={toggleMute}
+                onTouchEnd={toggleMute}
                 className="w-16 h-10 flex items-center justify-center cursor-pointer"
               >
                 {isMuted ? (
