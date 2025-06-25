@@ -4,7 +4,6 @@ import UserCard from './UserCard';
 import { motion, useAnimation, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import RadarLoader from './RadarLoader';
-import DiscordCTA from './DiscordCTA';
 
 function Matches() {
   const [matches, setMatches] = useState([]);
@@ -318,7 +317,7 @@ function Matches() {
             <motion.p variants={itemVariants} className="text-lg md:text-xl font-semibold text-center text-white/90 mb-6 max-w-md">
               {matchSlogan}
             </motion.p>
-          
+            
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
                <a 
                  href="https://discord.gg/hzGwGe5y" 
@@ -335,11 +334,9 @@ function Matches() {
                  Keep Swiping
                </button>
             </motion.div>
-            <DiscordCTA />
           </motion.div>
         )}
-      
-         </AnimatePresence>
+      </AnimatePresence>
 
         <div className="flex justify-between mt-4">
           <span className="text-gray-300">Swipe left or right</span>
