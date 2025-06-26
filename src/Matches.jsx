@@ -219,7 +219,7 @@ function Matches() {
       {/* Back to Home Button */}
       <motion.button
         onClick={() => navigate("/")}
-        className="absolute top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-white/80 hover:text-white hover:bg-white/20 transition-all duration-300 shadow-lg"
+        className="fixed top-4 left-4 z-[60] flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-white/80 hover:text-white hover:bg-white/20 transition-all duration-300 shadow-lg"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, x: -20 }}
@@ -240,7 +240,7 @@ function Matches() {
         )}
         <div className="relative w-full h-[600px] flex items-center justify-center">
           {showMatch && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[60]">
               <div className="bg-white p-8 rounded shadow text-2xl font-bold text-green-600">It's a match!</div>
             </div>
           )}
@@ -322,7 +322,7 @@ function Matches() {
        <AnimatePresence>
         {matchOverlay && matchedUser && currentUser && (
           <motion.div 
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/50 backdrop-blur-lg p-4"
+            className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/50 backdrop-blur-lg p-4"
             variants={overlayVariants}
             initial="hidden"
             animate="visible"
