@@ -378,7 +378,7 @@ function Matches() {
 
       <ChatNotificationModal 
         isOpen={showChatModal} 
-        onClose={() => setShowChatModal(false)} 
+        onClose={() => { setShowChatModal(false); setMatchOverlay(false); setShowMatch(false); setCurrentIndex(i => i + 1); setToggled(false); }} 
       />
     </div>
   );
