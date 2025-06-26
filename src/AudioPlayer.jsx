@@ -190,7 +190,13 @@ const AudioPlayer = ({ src, title }) => {
     setIsMuted(volume === 0);
   }, [volume]);
   
-  const toggleMute = async () => {
+  const toggleMute = async (event) => {
+    // Prevent any default behavior that might interfere
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
     const audio = audioRef.current;
     if (!audio) return;
 
@@ -215,6 +221,23 @@ const AudioPlayer = ({ src, title }) => {
     } catch (error) {
       console.error("Error toggling mute:", error);
     }
+  };
+
+  // Handle touch events specifically for iOS
+  const handleTouchStart = (event) => {
+    event.preventDefault();
+  };
+
+  const handleTouchEnd = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    toggleMute(event);
+  };
+
+  const handleClick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    toggleMute(event);
   };
 
   // Handle audio play/pause events
@@ -266,9 +289,19 @@ const AudioPlayer = ({ src, title }) => {
           <motion.div
             initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
-            onClick={toggleMute}
-            onTouchEnd={toggleMute}
+            onClick={handleClick}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
             className="w-16 h-10 flex items-center justify-center cursor-pointer"
+            style={{
+              WebkitTapHighlightColor: 'transparent',
+              WebkitTouchCallout: 'none',
+              WebkitUserSelect: 'none',
+              userSelect: 'none',
+              touchAction: 'manipulation',
+              minHeight: '44px', // iOS minimum touch target
+              minWidth: '44px'
+            }}
           >
             {isMuted ? (
               <VolumeX size={20} className="text-white" />
