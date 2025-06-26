@@ -5,6 +5,7 @@ import { motion, useAnimation, useMotionValue, useTransform, AnimatePresence } f
 import { useNavigate } from 'react-router-dom';
 import RadarLoader from './RadarLoader';
 import DiscordCTA from './DiscordCTA';
+import ChatNotificationModal from './ChatNotificationModal';
 
 function Matches() {
   const [matches, setMatches] = useState([]);
@@ -15,6 +16,8 @@ function Matches() {
   const [loading, setLoading] = useState(true);
   const [eventName, setEventName] = useState("");
   const [matchSlogan, setMatchSlogan] = useState("");
+  const [showChatModal, setShowChatModal] = useState(false);
+  const [matchCount, setMatchCount] = useState(0);
   const controls = useAnimation();
   const dragging = useRef(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -145,6 +148,10 @@ function Matches() {
     setToggled(false);
   };
 
+  const handleStartChat = () => {
+    setShowChatModal(true);
+  };
+
   const swipeLabel = useMemo(() => {
     if (currentX > 40) return { text: "I wanna dance with this person :)", position: "left" };
     if (currentX < -40) return { text: "I don't feel the vibe :(", position: "right" };
@@ -245,6 +252,7 @@ function Matches() {
                   .replace('{event}', eventName);
                 setMatchSlogan(slogan);
                 setMatchOverlay(true);
+                setMatchCount(prev => prev + 1);
               }
               setCurrentIndex(i => i + 1);
               setSwipeDirection(null);
@@ -333,22 +341,31 @@ function Matches() {
             </motion.p>
           
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
-               <a 
-                 href="https://discord.gg/hzGwGe5y" 
-                 target="_blank" 
-                 rel="noopener noreferrer" 
-                 className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
-               >
-                 Join Discord
-               </a>
-               <button
-                 onClick={handleKeepSwiping}
-                 className="flex-1 text-center py-3 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold text-lg hover:bg-white/30 transform transition-colors duration-200 shadow-md"
-               >
-                 Keep Swiping
-               </button>
+              {matchCount <= 2 ? (
+                <button
+                  onClick={handleStartChat}
+                  className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
+                >
+                  Start Chat
+                </button>
+              ) : (
+                <a 
+                  href="https://discord.gg/hzGwGe5y" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
+                >
+                  Join Discord
+                </a>
+              )}
+              <button
+                onClick={handleKeepSwiping}
+                className="flex-1 text-center py-3 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold text-lg hover:bg-white/30 transform transition-colors duration-200 shadow-md"
+              >
+                Keep Swiping
+              </button>
             </motion.div>
-            <DiscordCTA />
+            {matchCount > 2 && <DiscordCTA />}
           </motion.div>
         )}
       
@@ -358,8 +375,13 @@ function Matches() {
           <span className="text-gray-300">Swipe left or right</span>
         </div>
       </div>
+
+      <ChatNotificationModal 
+        isOpen={showChatModal} 
+        onClose={() => setShowChatModal(false)} 
+      />
     </div>
   );
 }
 
-export default Matches;
+export default Matches; 
