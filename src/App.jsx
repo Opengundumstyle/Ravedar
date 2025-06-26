@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import EventForm from './EventForm';
 import Matches from './Matches';
+import RadarLoader from './RadarLoader';
 import { ensureUserId } from './ensureUserId';
 
 function App() {
@@ -25,8 +26,7 @@ function App() {
   }
 
   if (!userReady) {
-    // You might want to use your RadarLoader here instead of "Loading..."
-    return <div className="flex items-center justify-center h-screen text-xl">Loading...</div>;
+    return <RadarLoader eventName={null} />;
   }
 
   return (

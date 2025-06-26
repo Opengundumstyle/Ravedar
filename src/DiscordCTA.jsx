@@ -9,7 +9,7 @@ const DiscordCTA = () => {
       transition={{ delay: 0.3 }}
     >
       <p className="text-sm mb-2 text-center max-w-xs">
-        Share your feedback & help us build the ultimate rave community! 
+        Share your feedback & help us build the ultimate matching platform for rave events! 
       </p>
     </motion.div>
   );
