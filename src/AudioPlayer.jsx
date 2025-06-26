@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Volume2, VolumeX, Plus, Minus } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 
 const AudioVisualizer = ({ analyserNode }) => {
   const canvasRef = useRef(null);
@@ -59,7 +59,6 @@ const AudioPlayer = ({ src, title }) => {
   const [volume, setVolume] = useState(1);
   const lastVolumeRef = useRef(1);
   const [isMuted, setIsMuted] = useState(false);
-  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -217,30 +216,6 @@ const AudioPlayer = ({ src, title }) => {
       console.error("Error toggling mute:", error);
     }
   };
-  
-  const handleVolumeChange = (e) => {
-    const newVolume = parseFloat(e.target.value);
-    setVolume(newVolume);
-    if (newVolume > 0) {
-      lastVolumeRef.current = newVolume;
-    }
-  };
-
-  const increaseVolume = () => {
-    const newVolume = Math.min(1, volume + 0.1);
-    setVolume(newVolume);
-    if (newVolume > 0) {
-      lastVolumeRef.current = newVolume;
-    }
-  };
-
-  const decreaseVolume = () => {
-    const newVolume = Math.max(0, volume - 0.1);
-    setVolume(newVolume);
-    if (newVolume > 0) {
-      lastVolumeRef.current = newVolume;
-    }
-  };
 
   // Handle audio play/pause events
   useEffect(() => {
@@ -287,75 +262,23 @@ const AudioPlayer = ({ src, title }) => {
         )}
         <div 
           className="relative w-16 h-16 flex items-center justify-center"
-          onPointerEnter={() => setShowVolumeSlider(true)}
-          onPointerLeave={() => setShowVolumeSlider(false)}
-          onClick={() => setShowVolumeSlider(v => !v)}
         >
-          <AnimatePresence>
-            {showVolumeSlider ? (
-              <motion.div
-                key="slider"
-                initial={{ opacity: 0, scale: 0.7 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.7 }}
-                className="absolute right-0 bottom-0 translate-x-1/3 translate-y-1/3 flex flex-row items-center justify-center gap-2 bg-transparent p-0"
-                style={{ boxShadow: 'none', border: 'none' }}
-              >
-                <button
-                  onClick={decreaseVolume}
-                  onTouchEnd={decreaseVolume}
-                  className="w-6 h-6 flex items-center justify-center bg-transparent p-0 m-0"
-                  style={{ minWidth: 0, minHeight: 0 }}
-                  tabIndex={-1}
-                >
-                  <Minus size={18} className="text-white" />
-                </button>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={volume}
-                  onChange={handleVolumeChange}
-                  className="w-24 h-2 appearance-none bg-gray-300/40 rounded-full cursor-pointer
-                             [&::-webkit-slider-thumb]:appearance-none
-                             [&::-webkit-slider-thumb]:h-4
-                             [&::-webkit-slider-thumb]:w-4
-                             [&::-webkit-slider-thumb]:rounded-full
-                             [&::-webkit-slider-thumb]:bg-white
-                             [&::-webkit-slider-thumb]:shadow"
-                />
-                <button
-                  onClick={increaseVolume}
-                  onTouchEnd={increaseVolume}
-                  className="w-6 h-6 flex items-center justify-center bg-transparent p-0 m-0"
-                  style={{ minWidth: 0, minHeight: 0 }}
-                  tabIndex={-1}
-                >
-                  <Plus size={18} className="text-white" />
-                </button>
-              </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={toggleMute}
+            onTouchEnd={toggleMute}
+            className="w-16 h-10 flex items-center justify-center cursor-pointer"
+          >
+            {isMuted ? (
+              <VolumeX size={20} className="text-white" />
             ) : (
-              <motion.div
-                key="visualizer"
-                initial={{ opacity: 0, scale: 0.7 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.7 }}
-                onClick={toggleMute}
-                onTouchEnd={toggleMute}
-                className="w-16 h-10 flex items-center justify-center cursor-pointer"
-              >
-                {isMuted ? (
-                  <VolumeX size={20} />
-                ) : (
-                  <>
-                    {analyserNode && isPlaying && <AudioVisualizer analyserNode={analyserNode} />}
-                    {!isPlaying && hasInteracted && <Volume2 size={20} className="text-white" />}
-                  </>
-                )}
-              </motion.div>
+              <>
+                {analyserNode && isPlaying && <AudioVisualizer analyserNode={analyserNode} />}
+                {!isPlaying && hasInteracted && <Volume2 size={20} className="text-white" />}
+              </>
             )}
-          </AnimatePresence>
+          </motion.div>
         </div>
       </div>
     </>
