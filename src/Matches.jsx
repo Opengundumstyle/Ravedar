@@ -219,7 +219,7 @@ function Matches() {
       {/* Back to Home Button */}
       <motion.button
         onClick={() => navigate("/")}
-        className="absolute bottom-4 left-4 z-40 flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-white/80 hover:text-white hover:bg-white/20 transition-all duration-300 shadow-lg"
+        className="absolute top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-white/80 hover:text-white hover:bg-white/20 transition-all duration-300 shadow-lg"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, x: -20 }}
@@ -300,7 +300,7 @@ function Matches() {
               >
                 {swipeLabel && (
                   <div
-                    className={`absolute ${swipeLabel.position === 'left' ? 'bottom-4 left-4' : 'top-4 right-4'} px-6 py-3 rounded-full text-lg font-bold shadow-lg
+                    className={`absolute ${swipeLabel.position === 'left' ? 'top-4 left-4' : 'top-4 right-4'} px-6 py-3 rounded-full text-lg font-bold shadow-lg
                       ${swipeLabel.position === 'left'
                         ? 'bg-gradient-to-r from-green-400/90 to-emerald-500/90 text-white border border-green-300/50 shadow-[0_0_20px_rgba(34,197,94,0.3)] backdrop-blur-md'
                         : 'bg-gradient-to-r from-gray-100/90 to-gray-200/90 text-gray-800 border border-gray-300/50 shadow-[0_0_20px_rgba(156,163,175,0.3)] backdrop-blur-md'}
