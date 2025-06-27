@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ensureSectionId } from './ensureUserId';
 
 const TICKETMASTER_API_KEY = import.meta.env.VITE_TICKETMASTER_API_KEY;
 
@@ -18,6 +19,11 @@ function EventForm() {
   const [happeningSoonCity, setHappeningSoonCity] = useState("");
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
   const [title, setTitle] = useState({ text: <>&nbsp;</>, weight: 'font-light' });
+
+  // Ensure section ID is generated for workflow
+  useEffect(() => {
+    ensureSectionId();
+  }, []);
 
   // Effect to cycle through titles
   useEffect(() => {

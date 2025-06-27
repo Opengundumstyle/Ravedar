@@ -28,4 +28,19 @@ export async function ensureUserId() {
   }
   console.log('Returning userId from ensureUserId:', userId);
   return userId;
+}
+
+export function ensureSectionId() {
+  let sectionId = localStorage.getItem('user_section_id');
+  if (!sectionId) {
+    sectionId = uuidv4();
+    localStorage.setItem('user_section_id', sectionId);
+  }
+  return sectionId;
+}
+
+export function clearSessionData() {
+  localStorage.removeItem('user_profile_id');
+  localStorage.removeItem('user_section_id');
+  localStorage.removeItem('user_event_data');
 } 

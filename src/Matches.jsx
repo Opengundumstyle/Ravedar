@@ -60,6 +60,14 @@ function Matches() {
     const fetchAndBuffer = async () => {
       const fetchPromise = (async () => {
         // All the existing data fetching logic goes here
+        // Check if user has proper session data, redirect to home if not
+        const userId = localStorage.getItem('user_profile_id');
+        const sectionId = localStorage.getItem('user_section_id');
+        
+        if (!userId || !sectionId) {
+          navigate('/');
+          return;
+        }
         const currentUserId = localStorage.getItem('user_profile_id');
         if (!currentUserId) {
           setMatches([]);
