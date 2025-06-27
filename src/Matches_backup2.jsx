@@ -219,7 +219,7 @@ function Matches() {
       {/* Back to Home Button */}
       <motion.button
         onClick={() => navigate("/")}
-        className="fixed top-[200px] left-4 z-[60] flex items-center gap-2 px-4 py-2 bg-black/80 backdrop-blur-md border border-white/30 rounded-full text-white hover:text-white hover:bg-black/90 shadow-xl transition-all duration-300 shadow-lg"
+        className="absolute top-4 left-4 z-40 flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-white/80 hover:text-white hover:bg-white/20 transition-all duration-200 shadow-lg"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, x: -20 }}
@@ -240,7 +240,7 @@ function Matches() {
         )}
         <div className="relative w-full h-[600px] flex items-center justify-center">
           {showMatch && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[60]">
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
               <div className="bg-white p-8 rounded shadow text-2xl font-bold text-green-600">It's a match!</div>
             </div>
           )}
@@ -300,17 +300,40 @@ function Matches() {
               >
                 {swipeLabel && (
                   <div
-                    className={`absolute ${swipeLabel.position === 'left' ? 'top-[200px] left-4' : 'top-4 right-4'} px-6 py-3 rounded-full text-lg font-bold shadow-lg
-                      ${swipeLabel.position === 'left'
-                        ? 'bg-gradient-to-r from-green-400/90 to-emerald-500/90 text-white border border-green-300/50 shadow-[0_0_20px_rgba(34,197,94,0.3)] backdrop-blur-md'
-                        : 'bg-gradient-to-r from-gray-100/90 to-gray-200/90 text-gray-800 border border-gray-300/50 shadow-[0_0_20px_rgba(156,163,175,0.3)] backdrop-blur-md'}
+                    className={`absolute ${swipeLabel.position === "left" ? "top-4 left-4" : "top-4 right-4"} px-6 py-3 rounded-full text-lg font-bold backdrop-blur-md
+                      ${swipeLabel.position === "left"
+                        ? "bg-gradient-to-r from-green-400/90 to-emerald-500/90 text-white border border-green-300/50 shadow-[0_0_20px_rgba(34,197,94,0.3)]"
+                        : "bg-gradient-to-r from-gray-100/90 to-gray-200/90 text-gray-800 border border-gray-300/50 shadow-[0_0_20px_rgba(156,163,175,0.3)]"}
                       transition-all duration-300 pointer-events-none select-none z-20`}
                     style={{
                       opacity: Math.min(Math.abs(currentX) / 60, 1),
+                      transform: `rotate(${currentX > 0 ? 8 : -8}deg) scale(${Math.min(Math.abs(currentX) / 100, 1) * 0.1 + 1})`,
+                      filter: "blur(0.5px)",
+                      backdropFilter: "blur(8px)",
+                    }}
+                  >
+                    <div className="relative">
+                      {/* Glow effect behind text */}
+                      <div 
+                        className={`absolute inset-0 rounded-full blur-sm ${
+                          swipeLabel.position === "left" 
+                            ? "bg-green-400/40" 
+                            : "bg-gray-300/40"
+                        }`}
+                      />
+                      {/* Main text */}
+                      <span className="relative z-10 drop-shadow-sm">
+                        {swipeLabel.text}
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    className={`absolute ${swipeLabel.position === 'left' ? 'top-4 left-4' : 'top-4 right-4'} px-6 py-2 rounded-full text-lg font-bold shadow-lg
+                      ${swipeLabel.position === 'left'
                       transform: `rotate(${currentX > 0 ? 8 : -8}deg)`
                     }}
                   >
-                    <span className="relative z-10">{swipeLabel.text}</span><div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+                    {swipeLabel.text}
                   </div>
                 )}
                 <UserCard user={matches[currentIndex]} />
@@ -322,7 +345,7 @@ function Matches() {
        <AnimatePresence>
         {matchOverlay && matchedUser && currentUser && (
           <motion.div 
-            className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/50 backdrop-blur-lg p-4"
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/50 backdrop-blur-lg p-4"
             variants={overlayVariants}
             initial="hidden"
             animate="visible"
