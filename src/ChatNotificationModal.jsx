@@ -73,7 +73,7 @@ const ChatNotificationModal = ({ isOpen, onClose }) => {
             <div className="text-center mb-6">
               <div className="text-4xl mb-3">💬</div>
               <h2 className="text-2xl font-bold text-white mb-2">
-                Chat Feature Coming Soon!
+                Coming Soon!
               </h2>
               <p className="text-white/80 text-sm leading-relaxed">
                 Chat is not public yet. To ensure we have like-minded people for soft launch, 

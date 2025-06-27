@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import RadarLoader from './RadarLoader';
 import DiscordCTA from './DiscordCTA';
 import ChatNotificationModal from './ChatNotificationModal';
+import FounderMatchModal from './FounderMatchModal';
 
 function Matches() {
   const [matches, setMatches] = useState([]);
@@ -15,6 +16,7 @@ function Matches() {
   const [matchOverlay, setMatchOverlay] = useState(false);
   const [loading, setLoading] = useState(true);
   const [eventName, setEventName] = useState("");
+  const [showFounderModal, setShowFounderModal] = useState(false);
   const [matchSlogan, setMatchSlogan] = useState("");
   const [showChatModal, setShowChatModal] = useState(false);
   const [matchCount, setMatchCount] = useState(0);
@@ -88,11 +90,11 @@ function Matches() {
         const realUserIds = (realUserEvents || []).map(u => u.user_id);
         let realProfiles = [];
         if (realUserIds.length > 0) {
-          const { data } = await supabase.from('user_profiles').select('id, name, instagram, vibe_tags, about_me, is_real').in('id', realUserIds).eq('is_real', true);
+          const { data } = await supabase.from('user_profiles').select('id, name, instagram, vibe_tags, about_me, is_real, role').in('id', realUserIds).eq('is_real', true);
           realProfiles = data || [];
         }
         // Fetch demo (fake) profiles
-        const { data: fakeProfiles } = await supabase.from('user_profiles').select('id, name, instagram, vibe_tags, about_me, is_real').eq('is_real', false);
+        const { data: fakeProfiles } = await supabase.from('user_profiles').select('id, name, instagram, vibe_tags, about_me, is_real, role').eq('is_real', false);
         // Shuffle fakeProfiles using Fisher-Yates
         function shuffle(array) {
           let m = array.length, t, i;
@@ -266,7 +268,12 @@ function Matches() {
                   .replace('{name}', swipedMatch.name)
                   .replace('{event}', eventName);
                 setMatchSlogan(slogan);
-                setMatchOverlay(true);
+                if (swipedMatch.role === "founder" || swipedMatch.role === "co-founder") {
+                  setShowFounderModal(true);
+                } else {
+                  setMatchOverlay(true);
+                  setMatchCount(prev => prev + 1);
+                }
                 setMatchCount(prev => prev + 1);
               }
               setCurrentIndex(i => i + 1);
@@ -300,17 +307,17 @@ function Matches() {
               >
                 {swipeLabel && (
                   <div
-                    className={`absolute ${swipeLabel.position === 'left' ? 'top-[200px] left-4' : 'top-4 right-4'} px-6 py-3 rounded-full text-lg font-bold shadow-lg
+                    className={`absolute ${swipeLabel.position === 'left' ? 'top-4 left-4' : 'top-4 right-4'} px-6 py-2 rounded-full text-lg font-bold shadow-lg
                       ${swipeLabel.position === 'left'
-                        ? 'bg-gradient-to-r from-green-400/90 to-emerald-500/90 text-white border border-green-300/50 shadow-[0_0_20px_rgba(34,197,94,0.3)] backdrop-blur-md'
-                        : 'bg-gradient-to-r from-gray-100/90 to-gray-200/90 text-gray-800 border border-gray-300/50 shadow-[0_0_20px_rgba(156,163,175,0.3)] backdrop-blur-md'}
-                      transition-all duration-300 pointer-events-none select-none z-20`}
+                        ? 'bg-green-500 text-white border-2 border-green-700'
+                        : 'bg-gray-200 text-gray-700 border-2 border-gray-400'}
+                      transition-all duration-200 pointer-events-none select-none z-20`}
                     style={{
                       opacity: Math.min(Math.abs(currentX) / 60, 1),
                       transform: `rotate(${currentX > 0 ? 8 : -8}deg)`
                     }}
                   >
-                    <span className="relative z-10">{swipeLabel.text}</span><div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+                    {swipeLabel.text}
                   </div>
                 )}
                 <UserCard user={matches[currentIndex]} />
@@ -391,7 +398,12 @@ function Matches() {
         </div>
       </div>
 
-      <ChatNotificationModal 
+      <FounderMatchModal 
+        isOpen={showFounderModal} 
+        onClose={() => { setShowFounderModal(false); setCurrentIndex(i => i + 1); setToggled(false); }} 
+        matchedUser={matchedUser} 
+        currentUser={currentUser} 
+      />      <ChatNotificationModal 
         isOpen={showChatModal} 
         onClose={() => { setShowChatModal(false); setMatchOverlay(false); setShowMatch(false); setCurrentIndex(i => i + 1); setToggled(false); }} 
       />

@@ -14,6 +14,20 @@ function UserCard({ user }) {
           </div>
         )}
         
+        {/* Founder Badge */}
+        {user.role === 'founder' && (
+          <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg border border-white/20 backdrop-blur-sm animate-pulse">
+            FOUNDER
+          </div>
+        )}
+        
+        {/* Co-Founder Badge */}
+        {user.role === 'co-founder' && (
+          <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg border border-white/20 backdrop-blur-sm animate-pulse">
+            CO-FOUNDER
+          </div>
+        )}
+        
         {/* Photo area: full height with overlay */}
         <div className="w-full h-full flex-shrink-0 flex justify-center items-center">
           <div className="w-full h-full rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
