@@ -219,7 +219,7 @@ function Matches() {
       {/* Back to Home Button */}
       <motion.button
         onClick={() => navigate("/")}
-        className="fixed top-4 left-4 z-[60] flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-white/80 hover:text-white hover:bg-white/20 transition-all duration-300 shadow-lg"
+        className="fixed top-4 left-4 z-[60] flex items-center gap-2 px-4 py-2 bg-black/80 backdrop-blur-md border border-white/30 rounded-full text-white hover:text-white hover:bg-black/90 shadow-xl transition-all duration-300 shadow-lg"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, x: -20 }}
