@@ -101,8 +101,8 @@ function Matches() {
           const { data } = await supabase.from('user_profiles').select('id, name, instagram, vibe_tags, about_me, is_real, role').in('id', realUserIds).eq('is_real', true);
           realProfiles = data || [];
         }
-        // Fetch demo (fake) profiles
-        const { data: fakeProfiles } = await supabase.from('user_profiles').select('id, name, instagram, vibe_tags, about_me, is_real, role').eq('is_real', false);
+        // Fetch demo (fake) profiles and founder/co-founder profiles
+        const { data: fakeProfiles } = await supabase.from('user_profiles').select('id, name, instagram, vibe_tags, about_me, is_real, role').or('is_real.eq.false,role.eq.founder,role.eq.co-founder');
         // Shuffle fakeProfiles using Fisher-Yates
         function shuffle(array) {
           let m = array.length, t, i;
