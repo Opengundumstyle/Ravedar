@@ -18,8 +18,8 @@ function App() {
       clearSessionData();
       
       // Redirect to home page if not already there
-      if (window.location.pathname !== '/') {
-        window.location.href = '/';
+      if (window.location.pathname !== 'https://www.rave-dar.com/') {
+        window.location.href = 'https://www.rave-dar.com/';
         return;
       }
     }

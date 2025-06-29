@@ -88,14 +88,14 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
             </div>
 
             <div className="text-center mb-6">
-             
+           
               <h2 className="text-2xl font-bold text-white mb-2">
-                You Found a Rare Breed 
+                You Found a Rare Breed!
               </h2>
               <p className="text-white/80 text-sm leading-relaxed">
-                You matched with the {matchedUser.role === 'founder' ? 'founder' : 'co-founder'} of Ravedar! 
-                Leave a message for him:) 
-                If the feedback is helpful, you will have a chance to win an EDC ticket or more! 🎫✨
+                Hey! I'm {matchedUser.name}, the {matchedUser.role === 'founder' ? 'founder' : 'co-founder'} of Ravedar! 
+                We are working hard to build the best matching platform for rave events. I'd love to hear what you think about our app. 
+                Comment below, and you will get a chance to win an EDC ticket or more! 🎫✨
               </p>
             </div>
 
@@ -104,7 +104,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
               <div>
                 <textarea
                   name="message"
-                  placeholder={`Leave your message for the ${matchedUser.name}...`}
+                  placeholder={`Tell me what you think about Ravedar...`}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   rows="4"
@@ -129,8 +129,8 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
               Message Sent!
             </h2>
             <p className="text-white/80 text-sm">
-              Your message has been sent to the {matchedUser.name}! 
-              Keep an eye on your notifications for a response.
+              Thanks for your message! I'll get back to you soon. 
+              Keep an eye on your notifications for my response.
             </p>
           </div>
         )}
