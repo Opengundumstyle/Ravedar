@@ -10,6 +10,19 @@ function App() {
   const [userError, setUserError] = useState(false);
 
   useEffect(() => {
+    // Immediate redirect check - if we're on a route other than home and this looks like a refresh, redirect immediately
+    const currentPath = window.location.pathname;
+    const isNotHome = currentPath !== '/';
+    
+    // Check if we have proper session data for non-home routes
+    const hasSessionData = localStorage.getItem('user_profile_id') && localStorage.getItem('user_section_id');
+    
+    // If we're on a non-home route without session data, redirect to home
+    if (isNotHome && !hasSessionData) {
+      window.location.href = '/';
+      return;
+    }
+    
     // Simple and reliable refresh detection
     const currentTime = Date.now();
     const lastLoadTime = sessionStorage.getItem('lastLoadTime');
@@ -17,15 +30,12 @@ function App() {
     // If we have a last load time and it's recent (within 5 seconds), this is likely a refresh
     const isRefresh = lastLoadTime && (currentTime - parseInt(lastLoadTime)) < 5000;
     
-    if (isRefresh) {
+    // If this looks like a refresh and we're not on home, redirect immediately
+    if (isRefresh && isNotHome) {
       // Clear all session data on refresh
       clearSessionData();
-      
-      // Redirect to home page if not already there
-      if (window.location.pathname !== '/') {
-        window.location.href = '/';
-        return;
-      }
+      window.location.href = '/';
+      return;
     }
     
     // Store current load time
