@@ -73,10 +73,10 @@ const ChatNotificationModal = ({ isOpen, onClose }) => {
             <div className="text-center mb-6">
               <div className="text-4xl mb-3">💬</div>
               <h2 className="text-2xl font-bold text-white mb-2">
-                Coming Soon!
+                Coming Soon
               </h2>
               <p className="text-white/80 text-sm leading-relaxed">
-                Chat is launching soon! 🚀 We're carefully selecting our first 200 users for the exclusive soft launch. 
+                Chat is launching soon 🚀 We're carefully selecting our first 100 users for the exclusive soft launch. 
                 Leave us your email to get early access and be among the first to experience real-time rave connections!
               </p>
             </div>
@@ -140,7 +140,7 @@ const ChatNotificationModal = ({ isOpen, onClose }) => {
                   </svg>
                 </a>
                 <a
-                  href="https://instagram.com/yourhandle"
+                  href="https://instagram.com/ravedar.app"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-white/80 hover:text-white transition-colors"
