@@ -5,42 +5,43 @@ import Matches from './Matches';
 import RadarLoader from './RadarLoader';
 import { ensureUserId, ensureSectionId, clearSessionData } from './ensureUserId';
 
+// Immediate redirect check - runs before React loads
+(function() {
+  const currentPath = window.location.pathname;
+  const isNotHome = currentPath !== '/';
+  
+  // Check if we have proper session data for non-home routes
+  const hasSessionData = localStorage.getItem('user_profile_id') && localStorage.getItem('user_section_id');
+  
+  // If we're on a non-home route without session data, redirect immediately
+  if (isNotHome && !hasSessionData) {
+    window.location.href = '/';
+    return;
+  }
+  
+  // Check for refresh on non-home routes
+  const currentTime = Date.now();
+  const lastLoadTime = sessionStorage.getItem('lastLoadTime');
+  const isRefresh = lastLoadTime && (currentTime - parseInt(lastLoadTime)) < 5000;
+  
+  if (isRefresh && isNotHome) {
+    // Clear session data and redirect
+    localStorage.removeItem('user_profile_id');
+    localStorage.removeItem('user_section_id');
+    localStorage.removeItem('user_event_data');
+    window.location.href = '/';
+    return;
+  }
+  
+  // Store current load time
+  sessionStorage.setItem('lastLoadTime', currentTime.toString());
+})();
+
 function App() {
   const [userReady, setUserReady] = useState(false);
   const [userError, setUserError] = useState(false);
 
   useEffect(() => {
-    // Immediate redirect check - if we're on a route other than home and this looks like a refresh, redirect immediately
-    const currentPath = window.location.pathname;
-    const isNotHome = currentPath !== '/';
-    
-    // Check if we have proper session data for non-home routes
-    const hasSessionData = localStorage.getItem('user_profile_id') && localStorage.getItem('user_section_id');
-    
-    // If we're on a non-home route without session data, redirect to home
-    if (isNotHome && !hasSessionData) {
-      window.location.href = '/';
-      return;
-    }
-    
-    // Simple and reliable refresh detection
-    const currentTime = Date.now();
-    const lastLoadTime = sessionStorage.getItem('lastLoadTime');
-    
-    // If we have a last load time and it's recent (within 5 seconds), this is likely a refresh
-    const isRefresh = lastLoadTime && (currentTime - parseInt(lastLoadTime)) < 5000;
-    
-    // If this looks like a refresh and we're not on home, redirect immediately
-    if (isRefresh && isNotHome) {
-      // Clear all session data on refresh
-      clearSessionData();
-      window.location.href = '/';
-      return;
-    }
-    
-    // Store current load time
-    sessionStorage.setItem('lastLoadTime', currentTime.toString());
-
     // Always clear the old user ID on load/refresh
     localStorage.removeItem('user_profile_id');
     ensureUserId().then((userId) => {
