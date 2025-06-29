@@ -69,7 +69,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
                 textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073'
               }}
             >
-              It's a Vibe!
+              It's a Vibe.
             </motion.div>
 
            
@@ -93,7 +93,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
                 You Found a Rare Breed!
               </h2>
               <p className="text-white/80 text-sm leading-relaxed">
-                Hey! I'm {matchedUser.name}, the {matchedUser.role === 'founder' ? 'founder' : 'co-founder'} of Ravedar! 
+                Hey! I'm {matchedUser.name}, the {matchedUser.role === 'founder' ? 'founder' : 'co-founder'} of Ravedar.
                 We are working hard to build the best matching platform for rave events. I'd love to hear what you think about our app. 
                 Comment below, and you will get a chance to win an EDC ticket or more! 🎫✨
               </p>
