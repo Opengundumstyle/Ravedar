@@ -29,8 +29,8 @@ function EventForm() {
   useEffect(() => {
     const sequence = [
       { text: "connect through experience only in ...", weight: 'font-light' },
-      { text: "ravedar", weight: 'font-light' },
-      { text: "Find Your Rave Match", weight: 'font-bold' }
+      { text: "Ravedar", weight: 'font-bold' },
+      { text: "Find Your Rave Match", weight: 'font-light' }
     ];
     let index = 0;
     
