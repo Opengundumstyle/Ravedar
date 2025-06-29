@@ -7,27 +7,68 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // Test function to verify RLS policy
+  const testRLS = async () => {
+    try {
+      console.log('Testing RLS policy...');
+      const { data, error } = await supabase
+        .from('chat_notifications')
+        .insert({
+          name: 'Test User',
+          email: 'test@example.com',
+          message: 'Test message'
+        })
+        .select();
+      
+      console.log('RLS test result:', { data, error });
+      if (error) {
+        console.error('RLS test failed:', error);
+      } else {
+        console.log('RLS test successful:', data);
+      }
+    } catch (error) {
+      console.error('RLS test exception:', error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
     
     setIsSubmitting(true);
 
+    // Test RLS first
+    await testRLS();
+
     try {
-      const { error } = await supabase
-        .from('founder_messages')
-        .insert({
-          from_user_id: currentUser.id,
-          to_user_id: matchedUser.id,
-          message: message.trim(),
-          founder_role: matchedUser.role,
-          founder_name: matchedUser.name
-        });
+      const messageData = {
+        name: currentUser.name || 'Anonymous',
+        email: 'founder-feedback@ravedar.com', // Placeholder email
+        message: `Founder Feedback from ${currentUser.name || 'Anonymous'} to ${matchedUser.name} (${matchedUser.role}): ${message.trim()}`
+      };
+
+      console.log('Submitting founder message with data:', messageData);
+      console.log('Current user:', currentUser);
+      console.log('Matched user:', matchedUser);
+
+      const { data, error } = await supabase
+        .from('chat_notifications')
+        .insert(messageData)
+        .select();
+
+      console.log('Supabase response:', { data, error });
 
       if (error) {
         console.error('Error submitting message:', error);
-        alert('Something went wrong. Please try again.');
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        alert(`Error: ${error.message || 'Something went wrong. Please try again.'}`);
       } else {
+        console.log('Message submitted successfully:', data);
         setIsSubmitted(true);
         setTimeout(() => {
           onClose();
@@ -36,8 +77,13 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
         }, 3000);
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('Something went wrong. Please try again.');
+      console.error('Exception caught:', error);
+      console.error('Exception details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+      alert(`Exception: ${error.message || 'Something went wrong. Please try again.'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -90,7 +136,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
             <div className="text-center mb-6">
            
               <h2 className="text-2xl font-bold text-white mb-2">
-                You Found a Rare Breed!
+                You Found a Rare Breed
               </h2>
               <p className="text-white/80 text-sm leading-relaxed">
                 Hey! I'm {matchedUser.name}, the {matchedUser.role === 'founder' ? 'founder' : 'co-founder'} of Ravedar.

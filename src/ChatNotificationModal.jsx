@@ -76,8 +76,8 @@ const ChatNotificationModal = ({ isOpen, onClose }) => {
                 Coming Soon!
               </h2>
               <p className="text-white/80 text-sm leading-relaxed">
-                Chat is not public yet. To ensure we have like-minded people for soft launch, 
-                we're still in progress promoting this platform. Leave us your email or follow our socials for updates!
+                Chat is launching soon! 🚀 We're carefully selecting our first 200 users for the exclusive soft launch. 
+                Leave us your email to get early access and be among the first to experience real-time rave connections!
               </p>
             </div>
 

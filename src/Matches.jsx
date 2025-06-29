@@ -380,7 +380,7 @@ function Matches() {
                 </button>
               ) : (
                 <a 
-                  href="https://discord.gg/hzGwGe5y" 
+                  href="https://discord.gg/R3VYAUzWwd" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
