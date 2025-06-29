@@ -13,22 +13,24 @@ import { ensureUserId, ensureSectionId, clearSessionData } from './ensureUserId'
   // Check if we have proper session data for non-home routes
   const hasSessionData = localStorage.getItem('user_profile_id') && localStorage.getItem('user_section_id');
   
-  // If we're on a non-home route without session data, redirect immediately
-  if (isNotHome && !hasSessionData) {
-    window.location.href = '/';
-    return;
-  }
-  
   // Check for refresh on non-home routes
   const currentTime = Date.now();
   const lastLoadTime = sessionStorage.getItem('lastLoadTime');
   const isRefresh = lastLoadTime && (currentTime - parseInt(lastLoadTime)) < 5000;
   
+  // If this is a refresh on a non-home route, clear data and redirect
   if (isRefresh && isNotHome) {
-    // Clear session data and redirect
+    // Clear session data
     localStorage.removeItem('user_profile_id');
     localStorage.removeItem('user_section_id');
     localStorage.removeItem('user_event_data');
+    // Redirect to home
+    window.location.href = '/';
+    return;
+  }
+  
+  // If we're on a non-home route without session data, redirect to home
+  if (isNotHome && !hasSessionData) {
     window.location.href = '/';
     return;
   }
@@ -42,11 +44,10 @@ function App() {
   const [userError, setUserError] = useState(false);
 
   useEffect(() => {
-    // Always clear the old user ID on load/refresh
-    localStorage.removeItem('user_profile_id');
+    // Generate user ID and section ID for new sessions
     ensureUserId().then((userId) => {
       if (userId) {
-        // Ensure section ID is generated for workflow
+        // Always ensure section ID is generated for workflow
         ensureSectionId();
         setUserReady(true);
       } else {
