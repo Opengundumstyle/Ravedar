@@ -10,19 +10,26 @@ function App() {
   const [userError, setUserError] = useState(false);
 
   useEffect(() => {
-    // Check if this is a page refresh
-    const isRefresh = !window.performance.navigation || window.performance.navigation.type === 1;
+    // Simple and reliable refresh detection
+    const currentTime = Date.now();
+    const lastLoadTime = sessionStorage.getItem('lastLoadTime');
+    
+    // If we have a last load time and it's recent (within 5 seconds), this is likely a refresh
+    const isRefresh = lastLoadTime && (currentTime - parseInt(lastLoadTime)) < 5000;
     
     if (isRefresh) {
       // Clear all session data on refresh
       clearSessionData();
       
       // Redirect to home page if not already there
-      if (window.location.pathname !== 'https://www.rave-dar.com/') {
-        window.location.href = 'https://www.rave-dar.com/';
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
         return;
       }
     }
+    
+    // Store current load time
+    sessionStorage.setItem('lastLoadTime', currentTime.toString());
 
     // Always clear the old user ID on load/refresh
     localStorage.removeItem('user_profile_id');
