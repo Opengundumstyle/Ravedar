@@ -232,28 +232,6 @@ const RadarLoader = ({ eventName }) => {
             ))}
           </div>
         </div>
-
-        {/* Rave-themed decorative elements */}
-        <div className="mt-8 flex justify-center space-x-4 text-2xl">
-          <motion.span
-            animate={{ rotate: [0, 360] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-          >
-            🎵
-          </motion.span>
-          <motion.span
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          >
-            🎪
-          </motion.span>
-          <motion.span
-            animate={{ rotate: [0, -360] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-          >
-            💫
-          </motion.span>
-        </div>
       </div>
 
       {/* Bottom decorative line */}
