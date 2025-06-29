@@ -115,7 +115,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
                 textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073'
               }}
             >
-              It's a Vibe.
+              It's a Vibe
             </motion.div>
 
            
@@ -136,12 +136,12 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
             <div className="text-center mb-6">
            
               <h2 className="text-2xl font-bold text-white mb-2">
-                You Found a Rare Breed
+                You Found a Rare Breed!
               </h2>
               <p className="text-white/80 text-sm leading-relaxed">
-                Hey! I'm {matchedUser.name}, the {matchedUser.role === 'founder' ? 'founder' : 'co-founder'} of Ravedar.
-                We are working hard to build the best matching platform for rave events. I'd love to hear what you think about our app. 
-                Comment below, and you will get a chance to win an EDC ticket or more! 🎫✨
+              
+                Yo, I’m {matchedUser.name} — co-founder of Ravedar. We made this app cuz rave love is broken and Tinder isn’t fixing it.
+                Tell me what you think. Roast us, hype us, drop your feels. You might win an EDC ticket (for real).
               </p>
             </div>
 
@@ -150,7 +150,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
               <div>
                 <textarea
                   name="message"
-                  placeholder={`Tell me what you think about Ravedar...`}
+                  placeholder={`This app is…`}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   rows="4"
@@ -164,7 +164,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
                 disabled={isSubmitting || !message.trim()}
                 className="w-full py-3 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold hover:scale-105 transform transition-transform duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Sending...' : 'Send Message'}
+                {isSubmitting ? 'Sending...' : 'Submit & Enter Giveaway 🎟️'}
               </button>
             </form>
           </>
