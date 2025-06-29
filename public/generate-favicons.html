@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favicon Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .favicon-preview {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            align-items: center;
+        }
+        .favicon-size {
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #333;
+            background: white;
+        }
+        .instructions {
+            background: #333;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ravedar Favicon Generator</h1>
+    
+    <div class="instructions">
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Right-click on each favicon size below</li>
+            <li>Select "Save image as..."</li>
+            <li>Save with the correct filename in the public folder</li>
+            <li>Delete this file when done</li>
+        </ol>
+    </div>
+
+    <div class="favicon-preview">
+        <div class="favicon-size">
+            <h4>16x16</h4>
+            <canvas id="canvas16" width="16" height="16"></canvas>
+        </div>
+        <div class="favicon-size">
+            <h4>32x32</h4>
+            <canvas id="canvas32" width="32" height="32"></canvas>
+        </div>
+        <div class="favicon-size">
+            <h4>180x180 (Apple Touch)</h4>
+            <canvas id="canvas180" width="180" height="180"></canvas>
+        </div>
+    </div>
+
+    <script>
+        function drawFavicon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#8B5CF6');
+            gradient.addColorStop(1, '#EC4899');
+            
+            // Draw background circle
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2 - 1, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw white border
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // Draw R letter
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = `bold ${size * 0.5}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('R', size/2, size/2 + size * 0.1);
+            
+            // Draw decorative dots
+            ctx.fillStyle = '#FFFFFF';
+            ctx.globalAlpha = 0.8;
+            const dotSize = Math.max(1, size * 0.03);
+            const margin = size * 0.25;
+            
+            ctx.beginPath();
+            ctx.arc(margin, margin, dotSize, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(size - margin, margin, dotSize, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(margin, size - margin, dotSize, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(size - margin, size - margin, dotSize, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.globalAlpha = 1;
+        }
+        
+        // Generate all favicon sizes
+        drawFavicon('canvas16', 16);
+        drawFavicon('canvas32', 32);
+        drawFavicon('canvas180', 180);
+    </script>
+</body>
+</html> 
