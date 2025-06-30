@@ -150,7 +150,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
               <div>
                 <textarea
                   name="message"
-                  placeholder={`This app is…`}
+                  placeholder={`What would make this your go-to app before a rave?`}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   rows="4"
