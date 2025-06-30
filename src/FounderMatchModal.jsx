@@ -200,7 +200,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
                   onChange={(e) => setMessage(e.target.value)}
                   rows="3"
                   required
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-pink-400 transition-colors resize-none text-sm sm:text-base"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-pink-400 transition-colors resize-none text-base"
                 />
               </div>
 
@@ -228,7 +228,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
 
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center rounded-full bg-white text-purple-900 hover:bg-gray-100 transition-all duration-200 shadow-lg font-bold text-xl"
+          className="fixed top-2 right-2 sm:absolute sm:top-3 sm:right-3 w-10 h-10 flex items-center justify-center rounded-full bg-white text-purple-900 hover:bg-gray-100 transition-all duration-200 shadow-lg font-bold text-xl z-50"
           aria-label="Close modal"
         >
           ✕
