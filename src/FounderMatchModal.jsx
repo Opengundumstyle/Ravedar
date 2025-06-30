@@ -7,6 +7,54 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // Early return if modal is not open or required props are missing
+  if (!isOpen || !matchedUser || !currentUser) return null;
+
+  // Function to get founder-specific content
+  const getFounderContent = (founderName) => {
+    const name = founderName?.toLowerCase() || '';
+    
+    // Define different CTAs for different founders
+    const founderCTAs = {
+      'Brian': {
+        message: `"Yo, I'm ${matchedUser.name} — co-founder of Ravedar. We made this app cuz rave love is broken and Tinder isn't fixing it. Tell me what you think. Roast us, hype us, drop your feels. You might win an EDC ticket (for real)."`,
+        placeholder: "What would make this your go-to app before a rave?",
+        buttonText: "Submit & Enter Giveaway 🎟️"
+      },
+      'Nicholas': {
+        message: `"Hey! I'm ${matchedUser.name}, the tech co-founder. I built this app from scratch(Thanks ChatGPT) because I was tired of missing connections at raves. What's your biggest pain point with dating apps? I'm all ears!"`,
+        placeholder: "What's the worst thing about current dating apps?",
+        buttonText: "Share Your Thoughts 💭"
+      },
+      'Gin': {
+        message: `"What's up! ${matchedUser.name} here, the growth guy. We're trying to build something that actually works for the rave community. What would make you tell your rave fam about this app?"`,
+        placeholder: "What would make you recommend this to your rave crew?",
+        buttonText: "Give Feedback & Win 🏆"
+      },
+      'sarah': {
+        message: `"Hi! I'm ${matchedUser.name}, co-founder and rave enthusiast. We're building this for people who get it. What's missing from your rave experience that an app could fix?"`,
+        placeholder: "What's your biggest struggle at raves?",
+        buttonText: "Share & Get Rewarded 🎁"
+      }
+    };
+
+    // Return specific founder content or default
+    for (const [founder, content] of Object.entries(founderCTAs)) {
+      if (name.includes(founder.toLowerCase())) {
+        return content;
+      }
+    }
+
+    // Default content for unknown founders
+    return {
+      message: `"Yo, I'm ${matchedUser.name} — co-founder of Ravedar. We made this app cuz rave love is broken and Tinder isn't fixing it. Tell me what you think. Roast us, hype us, drop your feels. You might win an EDC ticket (for real)."`,
+      placeholder: "What would make this your go-to app before a rave?",
+      buttonText: "Submit & Enter Giveaway 🎟️"
+    };
+  };
+
+  const founderContent = getFounderContent(matchedUser.name);
+
   // Test function to verify RLS policy
   const testRLS = async () => {
     try {
@@ -33,7 +81,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim() || !matchedUser) return;
     
     setIsSubmitting(true);
 
@@ -42,9 +90,9 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
 
     try {
       const messageData = {
-        name: currentUser.name || 'Anonymous',
-        email: 'founder-feedback@ravedar.com', // Placeholder email
-        message: `Founder Feedback from ${currentUser.name || 'Anonymous'} to ${matchedUser.name} (${matchedUser.role}): ${message.trim()}`
+        name: currentUser?.name || 'Anonymous',
+        email: 'ravedarapp@gmail.com', // Placeholder email
+        message: `Founder Feedback from ${currentUser?.name || 'Anonymous'} to ${matchedUser?.name || 'Unknown'} (${matchedUser?.role || 'Founder'}): ${message.trim()}`
       };
 
       console.log('Submitting founder message with data:', messageData);
@@ -88,8 +136,6 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
       setIsSubmitting(false);
     }
   };
-
-  if (!isOpen) return null;
 
   return (
     <motion.div
@@ -140,8 +186,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
               </h2>
               <p className="text-white/80 text-sm leading-relaxed">
               
-                "Yo, I'm {matchedUser.name} — co-founder of Ravedar. We made this app cuz rave love is broken and Tinder isn't fixing it.
-                Tell me what you think. Roast us, hype us, drop your feels. You might win an EDC ticket (for real)."
+                {founderContent.message}
               </p>
             </div>
 
@@ -150,7 +195,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
               <div>
                 <textarea
                   name="message"
-                  placeholder={`What would make this your go-to app before a rave?`}
+                  placeholder={founderContent.placeholder}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   rows="4"
@@ -164,7 +209,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
                 disabled={isSubmitting || !message.trim()}
                 className="w-full py-3 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold hover:scale-105 transform transition-transform duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Sending...' : 'Submit & Enter Giveaway 🎟️'}
+                {isSubmitting ? 'Sending...' : founderContent.buttonText}
               </button>
             </form>
           </>
