@@ -367,9 +367,20 @@ function EventForm() {
           whileTap={{ scale: 0.98 }}
         >
           <span>Find My Ravebae </span>
-          <span className="ml-2 text-xl bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-sky-400 to-lime-300">
+          <motion.span 
+            className="ml-2 text-xl bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-sky-400 to-lime-300"
+            animate={{ 
+              rotateY: [0, 1440, 1440],
+              scale: [1, 1.5, 1]
+            }}
+            transition={{ 
+              duration: 5,
+              times: [0, 0.4, 0.6],
+              ease: "easeOut"
+            }}
+          >
             ❤️
-          </span>
+          </motion.span>
         </motion.button>
       </motion.form>
     </div>
