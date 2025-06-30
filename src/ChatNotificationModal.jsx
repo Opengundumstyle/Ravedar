@@ -176,7 +176,8 @@ const ChatNotificationModal = ({ isOpen, onClose }) => {
 
         <button
           onClick={onClose}
-          className="fixed top-2 right-2 sm:absolute sm:top-3 sm:right-3 w-10 h-10 flex items-center justify-center rounded-full bg-white text-purple-900 hover:bg-gray-100 transition-all duration-200 shadow-lg font-bold text-xl z-50"
+          className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center rounded-full bg-white text-purple-900 hover:bg-gray-100 transition-all duration-200 shadow-lg font-bold text-xl z-50 transform-gpu"
+          style={{ transform: 'translateZ(0)' }}
           aria-label="Close modal"
         >
           ✕
