@@ -100,7 +100,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
       onClick={onClose}
     >
       <motion.div
-        className="bg-gradient-to-br from-purple-900 to-pink-900 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl border border-white/20 relative"
+        className="bg-black/80 backdrop-blur-md rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl border border-white/20 relative"
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.8, opacity: 0 }}
@@ -140,8 +140,8 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
               </h2>
               <p className="text-white/80 text-sm leading-relaxed">
               
-                Yo, I’m {matchedUser.name} — co-founder of Ravedar. We made this app cuz rave love is broken and Tinder isn’t fixing it.
-                Tell me what you think. Roast us, hype us, drop your feels. You might win an EDC ticket (for real).
+                "Yo, I'm {matchedUser.name} — co-founder of Ravedar. We made this app cuz rave love is broken and Tinder isn't fixing it.
+                Tell me what you think. Roast us, hype us, drop your feels. You might win an EDC ticket (for real)."
               </p>
             </div>
 
