@@ -5,6 +5,7 @@ import Matches from './Matches';
 import RadarLoader from './RadarLoader';
 import { ensureUserId, ensureSectionId, clearSessionData } from './ensureUserId';
 
+// Site reverted to pre-photo-upload state - triggering new deployment
 // Immediate redirect check - runs before React loads
 (function() {
   const currentPath = window.location.pathname;
