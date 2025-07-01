@@ -7,6 +7,29 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const overlayVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { 
+        when: "beforeChildren",
+        staggerChildren: 0.1,
+        duration: 0.3
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      scale: 0.8,
+      transition: { duration: 0.3 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
+
   // Early return if modal is not open or required props are missing
   if (!isOpen || !matchedUser || !currentUser) return null;
 
@@ -147,15 +170,17 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
     >
       <motion.div
         className="bg-black/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 w-full h-full sm:h-auto sm:max-w-md sm:mx-4 shadow-2xl border border-white/20 relative flex flex-col justify-center"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.8, opacity: 0 }}
+        variants={overlayVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
         onClick={(e) => e.stopPropagation()}
       >
         {!isSubmitted ? (
           <>
             <motion.div 
+              variants={itemVariants}
               className="text-4xl sm:text-5xl md:text-7xl font-bold text-white text-center mb-4"
               style={{
                 textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073'
@@ -166,7 +191,10 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
 
            
             {/* Avatar crossing animation */}
-            <div className="my-4 sm:my-6 flex items-center justify-center -space-x-6 sm:-space-x-8">
+            <motion.div 
+              variants={itemVariants}
+              className="my-4 sm:my-6 flex items-center justify-center -space-x-6 sm:-space-x-8"
+            >
               <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-pink-500 shadow-lg" style={{ boxShadow: '0 0 20px #e60073' }}>
                 {currentUser.photos && currentUser.photos.length > 0 ? (
                   <img src={currentUser.photos[0].image_url} alt="You" className="w-full h-full object-cover" />
@@ -177,9 +205,12 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
                   <img src={matchedUser.photos[0].image_url} alt={matchedUser.name} className="w-full h-full object-cover" />
                 ) : <div className="w-full h-full bg-gray-700" />}
               </div>
-            </div>
+            </motion.div>
 
-            <div className="text-center mb-4 sm:mb-6">
+            <motion.div 
+              variants={itemVariants}
+              className="text-center mb-4 sm:mb-6"
+            >
            
               <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
                 You Found a Rare Breed!
@@ -188,10 +219,14 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
               
                 {founderContent.message}
               </p>
-            </div>
+            </motion.div>
 
 
-            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+            <motion.form 
+              variants={itemVariants}
+              onSubmit={handleSubmit} 
+              className="space-y-3 sm:space-y-4"
+            >
               <div>
                 <textarea
                   name="message"
@@ -211,7 +246,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
               >
                 {isSubmitting ? 'Sending...' : founderContent.buttonText}
               </button>
-            </form>
+            </motion.form>
           </>
         ) : (
           <div className="text-center">
