@@ -257,16 +257,16 @@ function EventForm() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.5 }}
-            className={`text-3xl text-center text-white drop-shadow-[0_2px_4px_rgba(168,85,247,0.5)] mb-2 h-10 flex items-center justify-center ${title.weight}`}
+            className={`text-3xl text-center text-white drop-shadow-[0_2px_4px_rgba(168,85,247,0.5)] mb-2 h-10 flex items-center justify-center ${title.weight === 'font-light' ? 'font-light' : 'font-semibold'}`}
           >
             {title.text}
           </motion.h2>
         </AnimatePresence>
-        {error && <motion.div variants={itemVariants} className="text-red-400 bg-red-900/50 rounded-md py-2 text-center mb-2">{error}</motion.div>}
+        {error && <motion.div variants={itemVariants} className="text-red-400 bg-red-900/50 rounded-md py-2 text-center mb-2 text-sm font-medium">{error}</motion.div>}
         <motion.div variants={itemVariants} className="flex flex-col gap-1 relative">
-          <label className="font-semibold text-purple-200 mb-1 flex items-center justify-between">
+          <label className="font-medium text-purple-200 mb-1 flex items-center justify-between text-sm">
             <span>Event or DJ Name</span>
-            <span className="text-red-400 text-xl">*</span>
+            <span className="text-red-400 text-lg">*</span>
           </label>
           <input
             type="text"
@@ -302,9 +302,9 @@ function EventForm() {
           )}
         </motion.div>
         <motion.div variants={itemVariants} className="flex flex-col gap-1 relative">
-          <label className="font-semibold text-purple-200 mb-1 flex items-center justify-between">
+          <label className="font-medium text-purple-200 mb-1 flex items-center justify-between text-sm">
             <span>City</span>
-            <span className="text-red-400 text-xl">*</span>
+            <span className="text-red-400 text-lg">*</span>
           </label>
           <input
             type="text"
@@ -352,7 +352,7 @@ function EventForm() {
           )}
         </motion.div>
         <motion.div variants={itemVariants} className="flex flex-col gap-1">
-          <label className="font-semibold text-purple-200 mb-1">Date (optional)</label>
+          <label className="font-medium text-purple-200 mb-1 text-sm">Date (optional)</label>
           <input
             type="date"
             value={date}

@@ -207,9 +207,9 @@ function Matches() {
           transition={{ duration: 0.5 }}
         >
           <div className="text-6xl mb-4">✨</div>
-          <h2 className="text-3xl font-bold text-white mb-2">That's Everyone For Now!</h2>
-          <p className="text-lg text-purple-200 mb-8 max-w-md">
-            You've seen all potential ravebaes for <span className="font-semibold text-white">{eventName}</span>. Check back later for new people!
+          <h2 className="text-3xl font-semibold text-white mb-2">That's Everyone For Now!</h2>
+          <p className="text-lg text-purple-200 mb-8 max-w-md leading-relaxed">
+            You've seen all potential ravebaes for <span className="font-medium text-white">{eventName}</span>. Check back later for new people!
           </p>
           <motion.button
             className="w-full max-w-xs py-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
@@ -256,7 +256,7 @@ function Matches() {
         {eventName && match && (
           <div className="mb-8 w-full flex flex-col md:flex-row items-center text-center md:text-left space-y-1 md:space-y-0">
             <span className="text-sm md:text-xl font-medium text-gray-300">You both are going to&nbsp;</span>
-            <span className="text-lg md:text-2xl font-bold text-white truncate max-w-[280px] md:max-w-[300px]">{eventName}</span>
+            <span className="text-lg md:text-2xl font-semibold text-white truncate max-w-[280px] md:max-w-[300px]">{eventName}</span>
           </div>
         )}
         <div className="relative w-full h-[600px] flex items-center justify-center">

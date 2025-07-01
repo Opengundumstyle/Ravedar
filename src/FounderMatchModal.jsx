@@ -181,7 +181,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
           <>
             <motion.div 
               variants={itemVariants}
-              className="text-4xl sm:text-5xl md:text-7xl font-bold text-white text-center mb-4"
+              className="text-4xl sm:text-5xl md:text-6xl font-bold text-white text-center mb-4 tracking-tight"
               style={{
                 textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073'
               }}
