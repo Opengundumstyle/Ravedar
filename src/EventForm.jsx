@@ -370,12 +370,22 @@ function EventForm() {
           <motion.span 
             className="ml-2 text-xl bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-sky-400 to-lime-300"
             animate={{ 
-              rotateY: [0, 1440, 1440],
-              scale: [1, 1.5, 1]
+              rotateY: [0, 1440, 1440, 1440],
+              scale: [1, 1.5, 1, 1.8, 0.6, 1.2, 0.9, 1],
+              filter: [
+                "brightness(1) blur(0px)",
+                "brightness(1.2) blur(0px)", 
+                "brightness(1.5) blur(1px)",
+                "brightness(2) blur(2px)",
+                "brightness(1.8) blur(1px)",
+                "brightness(1.3) blur(0.5px)",
+                "brightness(1.1) blur(0px)",
+                "brightness(1) blur(0px)"
+              ]
             }}
             transition={{ 
               duration: 5,
-              times: [0, 0.4, 0.6],
+              times: [0, 0.4, 0.6, 0.7, 0.8, 0.9, 0.95, 1],
               ease: "easeOut"
             }}
           >
