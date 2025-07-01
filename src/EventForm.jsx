@@ -28,7 +28,7 @@ function EventForm() {
   // Effect to cycle through titles
   useEffect(() => {
     const sequence = [
-      { text: "connect through experience only in ...", weight: 'font-light' },
+      { text: "Connect through experience with", weight: 'font-light' },
       { text: "Ravedar", weight: 'font-bold' },
       { text: "Find Your Rave Match", weight: 'font-light' }
     ];

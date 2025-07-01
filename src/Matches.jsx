@@ -328,9 +328,9 @@ function Matches() {
                   <div
                     className={`absolute ${swipeLabel.position === 'left' ? 'left-4' : 'right-4'} px-6 py-3 rounded-full text-lg font-bold shadow-lg
                       ${swipeLabel.position === 'left'
-                        ? 'bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white backdrop-blur-sm animate-pulse'
+                        ? 'bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white backdrop-blur-sm'
                         : 'bg-gray-200 text-gray-700 border-2 border-gray-400'}
-                      transition-all duration-200 pointer-events-none select-none z-20 transform-gpu ${currentX > 0 ? 'animate-gradient-shift' : ''}`}
+                      transition-all duration-200 pointer-events-none select-none z-20 transform-gpu`}
                     style={{
                       top: '25%',
                       opacity: currentX > 0 ? 1 : Math.min(Math.abs(currentX) / 60, 1),
