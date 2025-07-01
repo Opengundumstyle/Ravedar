@@ -326,17 +326,32 @@ function Matches() {
               >
                 {swipeLabel && (
                   <div
-                    className={`absolute ${swipeLabel.position === 'left' ? 'top-4 left-4' : 'top-4 right-4'} px-6 py-2 rounded-full text-lg font-bold shadow-lg
+                    className={`absolute ${swipeLabel.position === 'left' ? 'left-4' : 'right-4'} px-6 py-3 rounded-full text-lg font-bold shadow-lg
                       ${swipeLabel.position === 'left'
-                        ? 'bg-green-500 text-white border-2 border-green-700'
+                        ? 'bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white backdrop-blur-sm animate-pulse'
                         : 'bg-gray-200 text-gray-700 border-2 border-gray-400'}
-                      transition-all duration-200 pointer-events-none select-none z-20`}
+                      transition-all duration-200 pointer-events-none select-none z-20 transform-gpu ${currentX > 0 ? 'animate-gradient-shift' : ''}`}
                     style={{
+                      top: currentX > 0 ? '25%' : '1rem',
                       opacity: Math.min(Math.abs(currentX) / 60, 1),
-                      transform: `rotate(${currentX > 0 ? 8 : -8}deg)`
+                      transform: `rotate(${currentX > 0 ? 8 : -8}deg) scale(${Math.min(Math.abs(currentX) / 100 + 0.8, 1.2)}) ${currentX > 0 ? 'rotate(-12deg)' : 'rotate(12deg)'}`,
+                      boxShadow: currentX > 0 ? '0 0 25px rgba(236, 72, 153, 0.8), 0 0 50px rgba(168, 85, 247, 0.6), 0 0 75px rgba(255, 255, 255, 0.4), 0 0 100px rgba(255, 255, 255, 0.3), 0 0 125px rgba(255, 255, 255, 0.2)' : '0 4px 12px rgba(0, 0, 0, 0.3)',
+                      backgroundSize: currentX > 0 ? '200% 200%' : undefined,
+                      textShadow: currentX > 0 ? '0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6)' : undefined,
+                      filter: currentX > 0 ? 'blur(0.5px)' : undefined,
                     }}
                   >
-                    {swipeLabel.text}
+                    {currentX > 0 ? (
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold tracking-wide">
+                          {swipeLabel.text}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="font-semibold">
+                        {swipeLabel.text}
+                      </span>
+                    )}
                   </div>
                 )}
                 <UserCard user={matches[currentIndex]} />

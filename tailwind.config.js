@@ -35,6 +35,7 @@ export default {
         'sonar-ping': 'sonar-ping 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'text-pulse': 'text-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'button-glow': 'button-glow 3s ease-in-out infinite',
+        'gradient-shift': 'gradientShift 2s ease infinite',
       },
       keyframes: {
         'sonar-ping': {
@@ -52,6 +53,11 @@ export default {
           '50%': { 
             boxShadow: '0 0 35px rgba(219, 39, 119, 0.7), 0 0 50px rgba(168, 85, 247, 0.5)' 
           },
+        },
+        'gradientShift': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
         }
       }
     },
