@@ -169,8 +169,8 @@ function Matches() {
   };
 
   const swipeLabel = useMemo(() => {
-    if (currentX > 40) return { text: "I wanna dance with this person :)", position: "left" };
-    if (currentX < -40) return { text: "I don't feel the vibe :(", position: "right" };
+    if (currentX > 40) return { text: "Down to Dance!", position: "left" };
+    if (currentX < -40) return { text: "Not Vibing:/", position: "right" };
     return null;
   }, [currentX]);
 
@@ -332,8 +332,8 @@ function Matches() {
                         : 'bg-gray-200 text-gray-700 border-2 border-gray-400'}
                       transition-all duration-200 pointer-events-none select-none z-20 transform-gpu ${currentX > 0 ? 'animate-gradient-shift' : ''}`}
                     style={{
-                      top: currentX > 0 ? '25%' : '1rem',
-                      opacity: Math.min(Math.abs(currentX) / 60, 1),
+                      top: '25%',
+                      opacity: currentX > 0 ? 1 : Math.min(Math.abs(currentX) / 60, 1),
                       transform: `rotate(${currentX > 0 ? 8 : -8}deg) scale(${Math.min(Math.abs(currentX) / 100 + 0.8, 1.2)}) ${currentX > 0 ? 'rotate(-12deg)' : 'rotate(12deg)'}`,
                       boxShadow: currentX > 0 ? '0 0 25px rgba(236, 72, 153, 0.8), 0 0 50px rgba(168, 85, 247, 0.6), 0 0 75px rgba(255, 255, 255, 0.4), 0 0 100px rgba(255, 255, 255, 0.3), 0 0 125px rgba(255, 255, 255, 0.2)' : '0 4px 12px rgba(0, 0, 0, 0.3)',
                       backgroundSize: currentX > 0 ? '200% 200%' : undefined,
