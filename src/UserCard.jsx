@@ -34,7 +34,17 @@ function UserCard({ user, onSurveyAction }) {
                   RAVEDAR
                 </div>
                 <div className="text-xl text-white/80 font-medium tracking-wide">
-                  Rave Dating App
+                  <a 
+                    href="#" 
+                    className="hover:text-white transition-colors duration-300 underline decoration-white/30 hover:decoration-white/60"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      // Placeholder for future functionality
+                      console.log('Connect through experience clicked');
+                    }}
+                  >
+                    Connect through experience
+                  </a>
                 </div>
               </div>
               

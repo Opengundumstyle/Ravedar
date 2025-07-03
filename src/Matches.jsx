@@ -23,6 +23,7 @@ function Matches() {
   const [showCTACard, setShowCTACard] = useState(false);
   const [currentCTA, setCurrentCTA] = useState(null);
   const [totalSwipes, setTotalSwipes] = useState(0);
+  const [showTooFakeModal, setShowTooFakeModal] = useState(false);
   const controls = useAnimation();
   const dragging = useRef(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -139,7 +140,31 @@ function Matches() {
         const { data: photos } = await supabase.from('user_photos').select('user_id, image_url, position').in('user_id', allUserIds);
         const mergePhotos = (profiles) => (profiles || []).map(profile => ({ ...profile, photos: (photos || []).filter(p => p.user_id === profile.id).sort((a, b) => a.position - b.position), }));
         const mergedFakeProfiles = mergePhotos(shuffledFakeProfiles);
-        setMatches([...mergedFakeProfiles]);
+        
+        // Create survey card
+        const surveyCard = {
+          id: 'survey-card',
+          name: "Quick Demo Survey",
+          about_me: "How's your matching experience?!",
+          is_survey: true,
+          survey_options: [
+            { text: "👍 Good", action: "good", color: "bg-green-500 hover:bg-green-600" },
+            { text: "😕 Poor", action: "poor", color: "bg-red-500 hover:bg-red-600" },
+            { text: "💀 too fake", action: "too fake", color: "bg-red-500 hover:bg-red-600" },
+          ],
+          photos: [{ image_url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=600&fit=crop&crop=center', position: 0 }]
+        };
+        
+        // Insert survey card at position 15 (after 14 regular cards)
+        const finalProfiles = [...mergedFakeProfiles];
+        if (finalProfiles.length >= 15) {
+          finalProfiles.splice(15, 0, surveyCard);
+        } else {
+          // If we have fewer than 15 profiles, add survey card at the end
+          finalProfiles.push(surveyCard);
+        }
+        
+        setMatches(finalProfiles);
       })();
 
       const bufferPromise = new Promise(resolve => setTimeout(resolve, 2500));
@@ -177,10 +202,9 @@ function Matches() {
       setTimeout(() => setShowMatch(false), 1500);
     }
     
-    // Increment total swipes and check for survey
+    // Increment total swipes
     const newTotalSwipes = totalSwipes + 1;
     setTotalSwipes(newTotalSwipes);
-    checkForSurvey(newTotalSwipes);
   };
 
   const handleKeepSwiping = () => {
@@ -240,36 +264,6 @@ function Matches() {
     }
   };
 
-  // Survey card logic
-  const checkForSurvey = (swipeCount) => {
-    if (swipeCount === 15) {
-      console.log('Triggering survey at swipe 15');
-      
-      // Create a survey card and insert it into the matches array
-      const surveyCard = {
-        id: `survey-${Date.now()}`,
-        name: "Quick Demo Survey",
-        about_me: "How's your matching experience?!",
-        is_survey: true,
-        survey_options: [
-          { text: "👍 Good", action: "good", color: "bg-green-500 hover:bg-green-600" },
-          { text: "🤔 Okay", action: "okay", color: "bg-yellow-500 hover:bg-yellow-600" },
-          { text: "😕 Poor", action: "poor", color: "bg-red-500 hover:bg-red-600" },
-          { text: "💀 too fake", action: "poor", color: "bg-red-500 hover:bg-red-600" },
-        ],
-        photos: [{ image_url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=600&fit=crop&crop=center', position: 0 }]
-      };
-      
-      // Insert survey card at the next position (after current card)
-      const newMatches = [...matches];
-      const insertPosition = currentIndex + 1;
-      newMatches.splice(insertPosition, 0, surveyCard);
-      setMatches(newMatches);
-      
-      console.log(`Survey card inserted at position ${insertPosition}`);
-    }
-  };
-
   const handleSurveyAction = (action) => {
     // Handle different survey responses
     switch (action) {
@@ -282,6 +276,9 @@ function Matches() {
       case 'poor':
         alert('We appreciate your honesty! Please join our Discord to give detailed feedback! 📝');
         break;
+      case 'too fake':
+        setShowTooFakeModal(true);
+        return; // Don't move to next card yet
     }
     
     // Move to next card
@@ -541,7 +538,7 @@ function Matches() {
                 <button
                   onClick={() => {
                     // Subtle message for disabled chat
-                    alert('Oops! Chat feature coming soon... 🚀');
+                    alert('Oops! Chat feature coming soon 😏');
                   }}
                   className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-gray-400 to-gray-500 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 shadow-lg cursor-not-allowed"
                   title="Chat feature coming soon..."
@@ -626,6 +623,47 @@ function Matches() {
         isOpen={showChatModal} 
         onClose={() => { setShowChatModal(false); setMatchOverlay(false); setShowMatch(false); setCurrentIndex(i => i + 1); setToggled(false); }} 
       />
+
+      {/* Too Fake Modal */}
+      <AnimatePresence>
+        {showTooFakeModal && (
+          <motion.div
+            className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-black/90 backdrop-blur-md rounded-2xl p-8 w-full max-w-md mx-4 shadow-2xl border border-white/20"
+              initial={{ scale: 0.8, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            >
+              <div className="text-center">
+              
+                <h2 className="text-2xl font-bold text-white mb-4">
+                  Chill... it's only the demo
+                </h2>
+                <p className="text-gray-300 text-lg leading-relaxed mb-6">
+                  Swipe till the end we have a surprise for you ;)
+                </p>
+                <motion.button
+                  onClick={() => {
+                    setShowTooFakeModal(false);
+                    setCurrentIndex(i => i + 1); // Move to next card after closing modal
+                  }}
+                  className="w-full py-3 px-6 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 shadow-lg"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Got it! 😄
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
