@@ -16,17 +16,43 @@ function UserCard({ user, onSurveyAction }) {
           
           {/* Photo area: full height with overlay */}
           <div className="w-full h-full flex-shrink-0 flex justify-center items-center">
-            <div className="w-full h-full rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
-              {user.photos && user.photos.length > 0 ? (
-                <img
-                  src={user.photos[0].image_url}
-                  alt="Survey"
-                  className="w-full h-full object-cover object-center bg-gray-100"
-                  draggable={false}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400">No Photo</div>
-              )}
+            <div className="w-full h-full rounded-2xl overflow-hidden bg-gradient-to-br from-purple-900 via-pink-900 to-indigo-900 flex items-center justify-center relative">
+              {/* Background pattern */}
+              <div className="absolute inset-0 opacity-20">
+                <div className="w-full h-full bg-gradient-to-br from-purple-500/30 via-pink-500/30 to-indigo-500/30"></div>
+              </div>
+              
+              {/* Ravedar Logo/Text */}
+              <div className="relative z-10 text-center">
+                <div className="text-8xl font-black text-white mb-4 tracking-wider" style={{
+                  textShadow: '0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3)',
+                  background: 'linear-gradient(45deg, #fff, #e0e7ff, #fff)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}>
+                  RAVEDAR
+                </div>
+                <div className="text-xl text-white/80 font-medium tracking-wide">
+                  Rave Dating App
+                </div>
+              </div>
+              
+              {/* Animated particles effect */}
+              <div className="absolute inset-0 overflow-hidden">
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="absolute w-2 h-2 bg-white/30 rounded-full animate-pulse"
+                    style={{
+                      left: `${20 + i * 15}%`,
+                      top: `${30 + i * 10}%`,
+                      animationDelay: `${i * 0.5}s`,
+                      animationDuration: '2s'
+                    }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
           
@@ -49,7 +75,25 @@ function UserCard({ user, onSurveyAction }) {
                     e.stopPropagation();
                     onSurveyAction && onSurveyAction(option.action);
                   }}
-                  className={`${option.color} text-white px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap backdrop-blur-sm transition-all duration-200 hover:scale-105 transform`}
+                  className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap backdrop-blur-sm transition-all duration-300 hover:scale-110 transform shadow-lg border-2 ${
+                    option.text === "👍 Good" 
+                      ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 border-green-400/50 text-white shadow-green-500/25" 
+                      : option.text === "🤔 Okay"
+                      ? "bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 border-yellow-400/50 text-white shadow-yellow-500/25"
+                      : option.text === "😕 Poor"
+                      ? "bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 border-red-400/50 text-white shadow-red-500/25"
+                      : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 border-purple-400/50 text-white shadow-purple-500/25"
+                  }`}
+                  style={{
+                    textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                    boxShadow: option.text === "👍 Good" 
+                      ? '0 4px 15px rgba(34, 197, 94, 0.3), 0 0 20px rgba(34, 197, 94, 0.2)' 
+                      : option.text === "🤔 Okay"
+                      ? '0 4px 15px rgba(234, 179, 8, 0.3), 0 0 20px rgba(234, 179, 8, 0.2)'
+                      : option.text === "😕 Poor"
+                      ? '0 4px 15px rgba(239, 68, 68, 0.3), 0 0 20px rgba(239, 68, 68, 0.2)'
+                      : '0 4px 15px rgba(168, 85, 247, 0.3), 0 0 20px rgba(168, 85, 247, 0.2)'
+                  }}
                 >
                   {option.text}
                 </button>

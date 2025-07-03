@@ -7,18 +7,9 @@ const RadarLoader = ({ eventName }) => {
 
   // Animated loading text
   useEffect(() => {
-    const baseText = eventName 
-      ? `Searching for your potential ravebae at ${eventName}`
-      : 'Initializing your rave experience';
-    
-    const interval = setInterval(() => {
-      setDots(prev => prev.length >= 3 ? "" : prev + ".");
-    }, 500);
-
+    const baseText = 'Initializing your rave experience';
     setLoadingText(baseText);
-    
-    return () => clearInterval(interval);
-  }, [eventName]);
+  }, []);
 
   // Loading messages that cycle
   const loadingMessages = [
@@ -197,7 +188,7 @@ const RadarLoader = ({ eventName }) => {
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          {loadingText}{dots}
+          {loadingText}
         </motion.div>
 
         {/* Cycling messages */}

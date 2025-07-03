@@ -242,21 +242,22 @@ function Matches() {
 
   // Survey card logic
   const checkForSurvey = (swipeCount) => {
-    if (swipeCount === 12) {
-      console.log('Triggering survey at swipe 12');
+    if (swipeCount === 15) {
+      console.log('Triggering survey at swipe 15');
       
       // Create a survey card and insert it into the matches array
       const surveyCard = {
         id: `survey-${Date.now()}`,
-        name: "Quick Survey",
-        about_me: "How's your matching experience?",
+        name: "Quick Demo Survey",
+        about_me: "How's your matching experience?!",
         is_survey: true,
         survey_options: [
           { text: "👍 Good", action: "good", color: "bg-green-500 hover:bg-green-600" },
           { text: "🤔 Okay", action: "okay", color: "bg-yellow-500 hover:bg-yellow-600" },
-          { text: "😕 Poor", action: "poor", color: "bg-red-500 hover:bg-red-600" }
+          { text: "😕 Poor", action: "poor", color: "bg-red-500 hover:bg-red-600" },
+          { text: "💀 too fake", action: "poor", color: "bg-red-500 hover:bg-red-600" },
         ],
-        photos: [{ image_url: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=600&fit=crop&crop=center', position: 0 }]
+        photos: [{ image_url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=600&fit=crop&crop=center', position: 0 }]
       };
       
       // Insert survey card at the next position (after current card)
@@ -561,8 +562,8 @@ function Matches() {
               <motion.div variants={itemVariants} className="mt-4 text-center">
                 <p className="text-white/70 text-sm leading-relaxed max-w-xs mx-auto">
                 Join Discord to give instant feedback,<br />
-                your opinion matters to us !<br />
-                (raver or not)
+                your opinion matters to us 
+                
                 </p>
               </motion.div>
             )}
