@@ -76,7 +76,7 @@ const ChatNotificationModal = ({ isOpen, onClose }) => {
                 Coming Soon
               </h2>
               <p className="text-white/80 text-sm leading-relaxed">
-                Chat is launching soon 🚀 We're carefully selecting our first 100 users for the exclusive soft launch. 
+                Chat is launching soon 🚀 
                 Leave us your email to get early access and be among the first to experience real-time rave connections!
               </p>
             </div>
@@ -122,7 +122,7 @@ const ChatNotificationModal = ({ isOpen, onClose }) => {
                 disabled={isSubmitting}
                 className="w-full py-2.5 sm:py-3 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-base sm:text-lg hover:scale-105 transform transition-transform duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Submitting...' : 'Get Notified!'}
+                {isSubmitting ? 'Submitting...' : 'Get Notified'}
               </button>
             </form>
 

@@ -45,9 +45,9 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
         buttonText: "Submit & Enter Giveaway 🎟️"
       },
       'Nicholas': {
-        message: `"Hey! I'm ${matchedUser.name}, the tech co-founder. I built this app from scratch(Thanks ChatGPT) because I was tired of missing connections at raves. What's your biggest pain point with dating apps? I'm all ears!"`,
-        placeholder: "What's the worst thing about current dating apps?",
-        buttonText: "Share Your Thoughts 💭"
+        message: `"Hey! I'm ${matchedUser.name}, the co-founder. I built this app because I was tired of missing connections at raves. What's your biggest 'what if' moment from an event?"`,
+        placeholder: "Comment to win EDC tickets + VIP experience! Drop your IG handle & tag us 🎵",
+        buttonText: "Share Your Story 💭"
       },
       'Gin': {
         message: `"What's up! ${matchedUser.name} here, the growth guy. We're trying to build something that actually works for the rave community. What would make you tell your rave fam about this app?"`,
