@@ -34,14 +34,15 @@ function Matches() {
   const [swipeDirection, setSwipeDirection] = useState(null);
   const lastSwipe = useRef({ direction: null, index: null });
 
-  // Place x and rotate in component scope
+  // Place x and rotate in component scope with optimized values
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-300, 0, 300], [-20, 0, 20]);
+  const rotate = useTransform(x, [-200, 0, 200], [-15, 0, 15]);
+  const scale = useTransform(x, [-200, 0, 200], [0.95, 1, 0.95]);
 
   // Reset x when currentIndex changes
   useEffect(() => {
     x.set(0);
-  }, [currentIndex]);
+  }, [currentIndex, x]);
 
   const [currentX, setCurrentX] = useState(0);
 
@@ -286,8 +287,8 @@ function Matches() {
   };
 
   const swipeLabel = useMemo(() => {
-    if (currentX > 40) return { text: "Down to Dance!", position: "left" };
-    if (currentX < -40) return { text: "Not Vibing:/", position: "right" };
+    if (currentX > 30) return { text: "Down to Dance!", position: "left" };
+    if (currentX < -30) return { text: "Not Vibing:/", position: "right" };
     return null;
   }, [currentX]);
 
@@ -393,7 +394,7 @@ function Matches() {
             </div>
           )}
           {/* Top card: only rendered if swipeDirection is null, animates out on swipe */}
-          <AnimatePresence initial={false} onExitComplete={() => {
+          <AnimatePresence initial={false} mode="wait" onExitComplete={() => {
             if (lastSwipe.current.direction) {
               const swipedMatch = matches[lastSwipe.current.index];
               handleSwipe(lastSwipe.current.direction, swipedMatch);
@@ -421,22 +422,48 @@ function Matches() {
               <motion.div
                 key={`top-${currentIndex}`}
                 className="absolute w-full h-full flex items-center justify-center"
-                style={{ zIndex: 1, x, rotate, top: 0, left: 0 }}
+                style={{ zIndex: 1, x, rotate, scale, top: 0, left: 0 }}
                 initial={{ scale: 1, y: 0, opacity: 1 }}
                 animate={{ scale: 1, y: 0, opacity: 1 }}
-                exit={lastSwipe.current.direction === 'right' ? { x: 500, opacity: 0 } : lastSwipe.current.direction === 'left' ? { x: -500, opacity: 0 } : { opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 20, opacity: { duration: 0.35 } }}
+                exit={lastSwipe.current.direction === 'right' ? 
+                  { x: 500, opacity: 0, scale: 0.8, rotate: 20 } : 
+                  lastSwipe.current.direction === 'left' ? 
+                  { x: -500, opacity: 0, scale: 0.8, rotate: -20 } : 
+                  { opacity: 0, scale: 0.8 }
+                }
+                transition={{ 
+                  type: 'spring', 
+                  stiffness: 300, 
+                  damping: 30, 
+                  opacity: { duration: 0.2 },
+                  scale: { duration: 0.2 }
+                }}
                 drag="x"
                 dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.1}
+                dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
+                onDragStart={() => {
+                  // Prevent text selection during drag
+                  document.body.style.userSelect = 'none';
+                }}
                 onDragEnd={(_, info) => {
-                  if (info.offset.x > 120) {
+                  // Restore text selection
+                  document.body.style.userSelect = '';
+                  
+                  const threshold = 100; // Reduced threshold for more responsive swipes
+                  const velocity = info.velocity.x;
+                  
+                  if (info.offset.x > threshold || velocity > 500) {
                     x.set(0);
                     setSwipeDirection('right');
                     lastSwipe.current = { direction: 'right', index: currentIndex };
-                  } else if (info.offset.x < -120) {
+                  } else if (info.offset.x < -threshold || velocity < -500) {
                     x.set(0);
                     setSwipeDirection('left');
                     lastSwipe.current = { direction: 'left', index: currentIndex };
+                  } else {
+                    // Snap back to center with smooth animation
+                    x.set(0);
                   }
                 }}
               >
@@ -446,11 +473,11 @@ function Matches() {
                       ${swipeLabel.position === 'left'
                         ? 'bg-black/20 text-white backdrop-blur-sm'
                         : 'bg-gray-200 text-gray-700 border-2 border-gray-400'}
-                      transition-all duration-200 pointer-events-none select-none z-20 transform-gpu`}
+                      transition-all duration-150 pointer-events-none select-none z-20 transform-gpu`}
                     style={{
                       top: '25%',
-                      opacity: currentX > 0 ? 1 : Math.min(Math.abs(currentX) / 60, 1),
-                      transform: `rotate(${currentX > 0 ? 8 : -8}deg) scale(${Math.min(Math.abs(currentX) / 100 + 0.8, 1.2)}) ${currentX > 0 ? 'rotate(-12deg)' : 'rotate(12deg)'}`,
+                      opacity: currentX > 0 ? Math.min(Math.abs(currentX) / 50, 1) : Math.min(Math.abs(currentX) / 50, 1),
+                      transform: `rotate(${currentX > 0 ? 8 : -8}deg) scale(${Math.min(Math.abs(currentX) / 80 + 0.9, 1.1)})`,
                       boxShadow: currentX > 0 ? '0 0 5px #ff69b4, 0 0 10px #ff69b4, 0 0 15px #ff69b4, 0 0 20px #ff69b4, 0 0 35px #ff69b4, 0 0 40px #ff69b4, inset 0 0 20px rgba(255, 105, 180, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.3)',
                       textShadow: currentX > 0 ? '0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #ff69b4, 0 0 35px #ff69b4, 0 0 40px #ff69b4, 0 0 55px #ff69b4, 0 0 75px #ff69b4' : undefined,
                       filter: currentX > 0 ? 'blur(0.3px)' : undefined,
