@@ -643,10 +643,10 @@ function Matches() {
               <div className="text-center">
               
                 <h2 className="text-2xl font-bold text-white mb-4">
-                  Chill... it's only the demo
+                  Chill... it's only the Demo
                 </h2>
                 <p className="text-gray-300 text-lg leading-relaxed mb-6">
-                  Swipe till the end we have a surprise for you ;)
+                  Swipe more we have a surprise for you ;)
                 </p>
                 <motion.button
                   onClick={() => {
@@ -657,7 +657,7 @@ function Matches() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  Got it! 😄
+                  Got it 😄
                 </motion.button>
               </div>
             </motion.div>
