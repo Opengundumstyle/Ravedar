@@ -29,8 +29,7 @@ function EventForm() {
   useEffect(() => {
     const sequence = [
       { text: "Connect through experience with", weight: 'font-light' },
-      { text: "✨", weight: 'font-bold' }, // Star phase
-      { text: "Ravedar", weight: 'font-light' },
+      { text: "Ravedar", weight: 'font-bold' }, // font-bold will show star
       { text: "Find Your Rave Match", weight: 'font-light' }
     ];
     let index = 0;
@@ -40,7 +39,7 @@ function EventForm() {
         setTitle(sequence[index]);
         index++;
         if (index < sequence.length) {
-          setTimeout(cycleTitles, 2000); // Shorter duration for star phase
+          setTimeout(cycleTitles, 3000); // Back to 3 seconds
         }
         // Stop at "Find Your Rave Match" - don't loop
       }
@@ -264,11 +263,9 @@ function EventForm() {
             transition={{ duration: 0.6 }}
           >
             <AnimatePresence mode="wait">
-              <motion.h1
+              <motion.div
                 key={title.text}
-                className={`text-display mb-2 text-center absolute ${
-                  title.text === "✨" ? "text-yellow-400" : "text-gradient-primary"
-                }`}
+                className="flex items-center justify-center gap-2"
                 initial={{ opacity: 0, y: 20, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 0, scale: 0.9 }}
@@ -277,8 +274,28 @@ function EventForm() {
                   ease: [0.4, 0.0, 0.2, 1] // Custom easing for smoother motion
                 }}
               >
-                {title.text}
-              </motion.h1>
+                <h1 className={`text-display text-center ${
+                  title.text === "✨" ? "text-yellow-400" : "text-gradient-primary"
+                }`}>
+                  {title.text}
+                </h1>
+                {title.weight === 'font-bold' && (
+                  <motion.div
+                    key="star"
+                    className="text-4xl text-yellow-400"
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ 
+                      delay: 0.2, // Small delay to appear after "Ravedar"
+                      duration: 0.6,
+                      ease: [0.4, 0.0, 0.2, 1]
+                    }}
+                  >
+                    ✨
+                  </motion.div>
+                )}
+              </motion.div>
             </AnimatePresence>
           </motion.div>
           
