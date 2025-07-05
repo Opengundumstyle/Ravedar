@@ -1,0 +1,1 @@
+ALTER TABLE user_profiles ALTER COLUMN expires_at DROP NOT NULL; 

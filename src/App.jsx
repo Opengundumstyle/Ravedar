@@ -2,7 +2,10 @@ import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-ro
 import { useEffect, useState } from 'react';
 import EventForm from './EventForm';
 import Matches from './Matches';
+import SignupForm from './SignupForm';
+import OAuthCallback from './OAuthCallback';
 import RadarLoader from './RadarLoader';
+import { AuthProvider } from './AuthContext';
 import { ensureUserId, ensureSectionId, clearSessionData } from './ensureUserId';
 
 // Site reverted to pre-photo-upload state - triggering new deployment
@@ -66,12 +69,16 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<EventForm />} />
-        <Route path="/matches" element={<Matches />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<EventForm />} />
+          <Route path="/matches" element={<Matches />} />
+          <Route path="/signup" element={<SignupForm />} />
+          <Route path="/oauth/callback" element={<OAuthCallback />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
