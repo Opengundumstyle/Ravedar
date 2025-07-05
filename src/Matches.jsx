@@ -24,6 +24,8 @@ function Matches() {
   const [totalSwipes, setTotalSwipes] = useState(0);
   const [showTooFakeModal, setShowTooFakeModal] = useState(false);
   const [showAuthCTAModal, setShowAuthCTAModal] = useState(false);
+  const [showGoodFeedbackModal, setShowGoodFeedbackModal] = useState(false);
+  const [showPoorFeedbackModal, setShowPoorFeedbackModal] = useState(false);
   const controls = useAnimation();
   const dragging = useRef(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -255,13 +257,13 @@ function Matches() {
     // Handle different survey responses
     switch (action) {
       case 'good':
-        alert('Thanks for the feedback! We\'re glad you like it! 👍');
+        setShowGoodFeedbackModal(true);
         break;
       case 'okay':
         alert('Thanks for your honest feedback! We\'ll keep improving! 💪');
         break;
       case 'poor':
-        alert('We appreciate your honesty! Please join our Discord to give detailed feedback! 📝');
+        setShowPoorFeedbackModal(true);
         break;
       case 'too fake':
         setShowTooFakeModal(true);
@@ -285,7 +287,6 @@ function Matches() {
     } else if (action === 'continue_demo') {
       setShowAuthCTAModal(false);
       setMatchOverlay(false); // Close the match overlay
-      setCurrentIndex(i => i + 1);
     } else if (action === 'signup') {
       // Navigate to signup page
       navigate('/signup');
@@ -662,6 +663,100 @@ function Matches() {
                 >
                   Got it 😄
                 </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Good Feedback Modal */}
+      <AnimatePresence>
+        {showGoodFeedbackModal && (
+          <motion.div
+            className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-black/90 backdrop-blur-md rounded-2xl p-8 w-full max-w-md mx-4 shadow-2xl border border-white/20"
+              initial={{ scale: 0.8, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            >
+              <div className="text-center">
+                <div className="text-4xl mb-4">👍</div>
+                <h2 className="text-2xl font-bold text-white mb-4">
+                  Thanks for the feedback!
+                </h2>
+                <p className="text-gray-300 text-lg leading-relaxed mb-6">
+                  We're glad you like it! Your feedback helps us improve the experience for everyone.
+                </p>
+                <motion.button
+                  onClick={() => {
+                    setShowGoodFeedbackModal(false);
+                    setCurrentIndex(i => i + 1); // Move to next card after closing modal
+                  }}
+                  className="w-full py-3 px-6 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 shadow-lg"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Continue Swiping ✨
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Poor Feedback Modal */}
+      <AnimatePresence>
+        {showPoorFeedbackModal && (
+          <motion.div
+            className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-black/90 backdrop-blur-md rounded-2xl p-8 w-full max-w-md mx-4 shadow-2xl border border-white/20"
+              initial={{ scale: 0.8, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            >
+              <div className="text-center">
+                <div className="text-4xl mb-4">📝</div>
+                <h2 className="text-2xl font-bold text-white mb-4">
+                  We appreciate your honesty!
+                </h2>
+                <p className="text-gray-300 text-lg leading-relaxed mb-6">
+                  Your feedback is valuable to us. Please join our Discord to give detailed feedback and help us improve!
+                </p>
+                <div className="space-y-3">
+                  <motion.a
+                    href="https://discord.gg/R3VYAUzWwd"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full py-3 px-6 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 shadow-lg"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Join Discord 💬
+                  </motion.a>
+                  <motion.button
+                    onClick={() => {
+                      setShowPoorFeedbackModal(false);
+                      setCurrentIndex(i => i + 1); // Move to next card after closing modal
+                    }}
+                    className="w-full py-3 px-6 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold text-lg hover:bg-white/30 transform transition-colors duration-200 shadow-md"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Continue Swiping
+                  </motion.button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
