@@ -115,99 +115,22 @@ const SignupForm = () => {
     setError('');
 
     try {
-      // Validate passwords match
-      if (formData.password !== formData.confirmPassword) {
-        throw new Error('Passwords do not match');
-      }
-
-      // Create user account first
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            name: formData.name,
-            instagram: formData.instagram
-          }
-        }
-      });
-
-      if (authError) {
-        console.error('Auth error:', authError);
-        throw authError;
-      }
-
-      // Check if we have a user and session
-      if (!authData?.user?.id) {
-        throw new Error('User account creation failed');
-      }
-
-      console.log('User created successfully:', authData.user.id);
-      console.log('Session data:', authData.session);
-
-      // Check if we have a session (for email/password signup with confirmations disabled)
-      if (!authData.session) {
-        console.log('No session returned - user may need email confirmation or there was an issue');
-        // For now, we'll proceed with profile creation using the user ID from the signup response
-        // The user can sign in later after email confirmation if needed
-      }
-
-      // Create user profile using the user ID from signup response
-      const profileData = {
-        id: authData.user.id,
-        name: formData.name,
-        instagram: formData.instagram,
-        about_me: formData.aboutMe,
-        vibe_tags: formData.vibeTags,
-        is_real: true
-      };
+      // Simulate loading for better UX
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      console.log('Attempting to create profile with data:', profileData);
+      // Show temporary message
+      setSuccess('Sorry, something went wrong with signup... We are working hard on this! Come back later! 🚧');
       
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .insert(profileData);
-
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-        // If profile creation fails, we should clean up the auth user
-        await supabase.auth.signOut();
-        throw new Error(`Profile creation failed: ${profileError.message || profileError.details || 'Unknown error'}`);
-      }
-
-      console.log('Profile created successfully');
-
-      // Upload photos if any
-      if (photos.length > 0) {
-        const photoData = photos.map((photo, index) => ({
-          user_id: authData.user.id,
-          image_url: photo.image_url,
-          position: index
-        }));
-
-        const { error: photoError } = await supabase
-          .from('user_photos')
-          .insert(photoData);
-
-        if (photoError) {
-          console.error('Photo upload error:', photoError);
-          // Don't throw error for photo upload failure, just log it
-        }
-      }
-
-      // Store the new user ID in localStorage to replace the demo user ID
-      localStorage.setItem('user_profile_id', authData.user.id);
-      
-      setSuccess('Account created successfully! Welcome to Ravedar! 🎉');
-      
-      // Redirect to matches after a short delay
+      // Reset form after showing message
       setTimeout(() => {
+        setLoading(false);
+        setSuccess('');
         navigate('/matches');
-      }, 2000);
+      }, 3000);
 
     } catch (error) {
       console.error('Signup error:', error);
-      setError(error.message || 'Account creation failed. Please try again.');
+      setError('Sorry, something went wrong with signup... We are working hard on this! Come back later!');
     } finally {
       setLoading(false);
     }
@@ -218,20 +141,21 @@ const SignupForm = () => {
     setError('');
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/matches`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
-        }
-      });
-
-      if (error) throw error;
+      // Simulate loading for better UX
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Show temporary message
+      setSuccess('Sorry, something went wrong with signup... We are working hard on this! Come back later! 🚧');
+      
+      // Reset form after showing message
+      setTimeout(() => {
+        setLoading(false);
+        setSuccess('');
+        navigate('/matches');
+      }, 3000);
+      
     } catch (error) {
-      setError(error.message);
+      setError('Sorry, something went wrong with signup... We are working hard on this! Come back later!');
       setLoading(false);
     }
   };

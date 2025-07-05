@@ -30,7 +30,7 @@ const RadarLoader = ({ eventName }) => {
       {/* Main content container */}
       <div className="relative z-10 flex flex-col items-center justify-center">
         {/* Simplified radar animation */}
-        <div className="relative w-32 h-32 mb-8">
+        <div className="relative w-32 h-32 mb-8 flex items-center justify-center">
           {/* Main radar ring */}
           <motion.div
             className="absolute inset-0 rounded-full border-2 border-pink-400/60"
@@ -62,7 +62,7 @@ const RadarLoader = ({ eventName }) => {
 
           {/* Center dot */}
           <motion.div 
-            className="absolute top-1/2 left-1/2 w-3 h-3 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"
+            className="w-4 h-4 bg-white rounded-full shadow-lg"
             animate={{
               scale: [1, 1.2, 1],
               opacity: [0.8, 1, 0.8],
@@ -112,13 +112,15 @@ const RadarLoader = ({ eventName }) => {
           )}
 
           {/* Clean progress bar */}
-          <div className="w-48 h-1 bg-white/20 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-gradient-to-r from-pink-500 to-purple-600 rounded-full"
-              initial={{ width: "0%" }}
-              animate={{ width: "100%" }}
-              transition={{ duration: 2.5, ease: "easeInOut" }}
-            />
+          <div className="flex justify-center">
+            <div className="w-48 h-1 bg-white/20 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-pink-500 to-purple-600 rounded-full"
+                initial={{ width: "0%" }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 2.5, ease: "easeInOut" }}
+              />
+            </div>
           </div>
         </div>
       </div>

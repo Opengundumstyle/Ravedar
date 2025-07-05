@@ -381,16 +381,16 @@ function Matches() {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 py-8 px-2 overflow-hidden relative">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 py-4 px-4 sm:py-8 sm:px-2 overflow-hidden relative">
       {newSearchButton}
-      <div className="w-full max-w-lg md:max-w-[480px] flex flex-col items-center justify-center min-h-[70vh] relative" style={{ minHeight: 600 }}>
+      <div className="w-full max-w-lg md:max-w-[480px] flex flex-col items-center justify-center min-h-[80vh] sm:min-h-[70vh] relative" style={{ minHeight: 'calc(100vh - 2rem)' }}>
         {eventName && match && (
-          <div className="mb-8 w-full flex flex-col md:flex-row items-center text-center md:text-left space-y-1 md:space-y-0">
+          <div className="mb-4 sm:mb-8 w-full flex flex-col md:flex-row items-center text-center md:text-left space-y-1 md:space-y-0 px-2">
             <span className="text-body text-white/70">You both are going to&nbsp;</span>
-            <span className="text-heading text-xl text-white truncate max-w-[280px] md:max-w-[300px]">{eventName}</span>
+            <span className="text-heading text-lg sm:text-xl text-white truncate max-w-[280px] md:max-w-[300px]">{eventName}</span>
           </div>
         )}
-        <div className="relative w-full h-[600px] flex items-center justify-center">
+        <div className="relative w-full h-[500px] sm:h-[600px] flex items-center justify-center">
           {/* Next card: always present, never animates */}
           {matches[currentIndex + 1] && (
             <div
@@ -491,7 +491,7 @@ function Matches() {
        <AnimatePresence>
         {matchOverlay && matchedUser && currentUser && (
           <motion.div 
-            className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/50 backdrop-blur-lg p-4"
+            className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/50 backdrop-blur-lg p-4 sm:p-6"
             variants={overlayVariants}
             initial="hidden"
             animate="visible"
@@ -499,7 +499,7 @@ function Matches() {
           >
             <motion.div 
               variants={itemVariants}
-              className="text-display text-5xl md:text-7xl font-bold text-white text-center"
+              className="text-display text-4xl sm:text-5xl md:text-7xl font-bold text-white text-center px-2"
               style={{
                 textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073'
               }}
@@ -507,30 +507,30 @@ function Matches() {
               It's a Vibe!
             </motion.div>
 
-            <motion.div variants={itemVariants} className="my-6 flex items-center justify-center -space-x-8">
-              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-pink-500 shadow-lg" style={{ boxShadow: '0 0 20px #e60073' }}>
+            <motion.div variants={itemVariants} className="my-4 sm:my-6 flex items-center justify-center -space-x-4 sm:-space-x-8">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-pink-500 shadow-lg" style={{ boxShadow: '0 0 20px #e60073' }}>
                 {currentUser.photos && currentUser.photos.length > 0 ? (
                   <img src={currentUser.photos[0].image_url} alt="You" className="w-full h-full object-cover" />
                 ) : <div className="w-full h-full bg-gray-700" />}
               </div>
-              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-purple-500 shadow-lg" style={{ boxShadow: '0 0 20px #a855f7' }}>
+              <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-purple-500 shadow-lg" style={{ boxShadow: '0 0 20px #a855f7' }}>
                 {matchedUser.photos && matchedUser.photos.length > 0 ? (
                   <img src={matchedUser.photos[0].image_url} alt={matchedUser.name} className="w-full h-full object-cover" />
                 ) : <div className="w-full h-full bg-gray-700" />}
               </div>
             </motion.div>
 
-            <motion.p variants={itemVariants} className="text-body-large text-white/90 mb-6 max-w-md">
+            <motion.p variants={itemVariants} className="text-body text-sm sm:text-body-large text-white/90 mb-4 sm:mb-6 max-w-md px-4 text-center">
               {matchSlogan}
             </motion.p>
           
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full max-w-sm px-4">
               {matchCount === 1 ? (
                 <button
                   onClick={() => {
                     handleStartChat();
                   }}
-                  className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
+                  className="flex-1 text-center py-3 px-4 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-base sm:text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
                 >
                   Start Chat
                 </button>
@@ -539,7 +539,7 @@ function Matches() {
                   href="https://discord.gg/R3VYAUzWwd" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
+                  className="flex-1 text-center py-3 px-4 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold text-base sm:text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
                 >
                   Join Discord
                 </a>
@@ -549,7 +549,7 @@ function Matches() {
                     // Show signup modal instead of alert for disabled chat
                     setShowAuthCTAModal(true);
                   }}
-                  className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-gray-400 to-gray-500 text-white font-semibold text-lg hover:scale-105 transform transition-transform duration-200 shadow-lg cursor-pointer"
+                  className="flex-1 text-center py-3 px-4 rounded-full bg-gradient-to-r from-gray-400 to-gray-500 text-white font-semibold text-base sm:text-lg hover:scale-105 transform transition-transform duration-200 shadow-lg cursor-pointer"
                   title="Chat feature coming soon..."
                 >
                   Start Chat
@@ -557,7 +557,7 @@ function Matches() {
               )}
               <button
                 onClick={handleKeepSwiping}
-                className="flex-1 text-center py-3 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold text-lg hover:bg-white/30 transform transition-colors duration-200 shadow-md"
+                className="flex-1 text-center py-3 px-4 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold text-base sm:text-lg hover:bg-white/30 transform transition-colors duration-200 shadow-md"
               >
                 Keep Swiping
               </button>
@@ -565,8 +565,8 @@ function Matches() {
             
             {/* Feedback text for Discord match */}
             {matchCount === 2 && (
-              <motion.div variants={itemVariants} className="mt-4 text-center">
-                <p className="text-body text-white/70 leading-relaxed max-w-xs mx-auto">
+              <motion.div variants={itemVariants} className="mt-4 text-center px-4">
+                <p className="text-body text-sm sm:text-base text-white/70 leading-relaxed max-w-xs mx-auto">
                 Join Discord to give instant feedback,<br />
                 your opinion matters to us 
                 
@@ -576,11 +576,11 @@ function Matches() {
             
             {/* Social Media Icons - Only show for 3rd match onwards */}
             {matchCount > 2 && (
-              <motion.div variants={itemVariants} className="mt-4 text-center">
-                <p className="text-body text-white/70 mb-3">Follow us at</p>
-                <div className="flex justify-center gap-4">
+              <motion.div variants={itemVariants} className="mt-4 text-center px-4">
+                <p className="text-body text-sm sm:text-base text-white/70 mb-3">Follow us at</p>
+                <div className="flex justify-center gap-3 sm:gap-4">
                   <a 
-                    href="https://instagram.com/ravedar" 
+                    href="https://instagram.com/ravedar.app" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 flex items-center justify-center text-white hover:scale-110 transform transition-transform duration-200 shadow-lg"
@@ -589,26 +589,22 @@ function Matches() {
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                     </svg>
                   </a>
-                  <a 
-                    href="https://tiktok.com/@ravedar" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 flex items-center justify-center text-white hover:scale-110 transform transition-transform duration-200 shadow-lg"
+                  <div 
+                    className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white/40 cursor-not-allowed"
+                    title="Coming soon"
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
                     </svg>
-                  </a>
-                  <a 
-                    href="https://facebook.com/ravedar" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 flex items-center justify-center text-white hover:scale-110 transform transition-transform duration-200 shadow-lg"
+                  </div>
+                  <div 
+                    className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white/40 cursor-not-allowed"
+                    title="Coming soon"
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                     </svg>
-                  </a>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -741,7 +737,7 @@ function Matches() {
                 </p>
                 <div className="space-y-3">
                   <motion.a
-                    href="https://discord.gg/R3VYAUzWwd"
+                    href="https://discord.gg/YOUR_NEW_LINK_HERE"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block w-full py-3 px-6 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 shadow-lg"
