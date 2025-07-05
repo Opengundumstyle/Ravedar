@@ -425,16 +425,15 @@ function EventForm() {
             <label className="text-caption text-white/70 block">
               Date (Optional)
             </label>
-            <div className="relative w-full">
+            <div className="relative w-full max-w-full">
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200 h-12 sm:h-auto max-w-full"
+                className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
                 style={{
                   minHeight: '48px',
-                  height: '48px',
-                  maxWidth: '100%'
+                  height: '48px'
                 }}
               />
             </div>
