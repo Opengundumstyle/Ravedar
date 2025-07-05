@@ -29,7 +29,8 @@ function EventForm() {
   useEffect(() => {
     const sequence = [
       { text: "Connect through experience with", weight: 'font-light' },
-      { text: "Ravedar", weight: 'font-bold' },
+      { text: "✨", weight: 'font-bold' }, // Star phase
+      { text: "Ravedar", weight: 'font-light' },
       { text: "Find Your Rave Match", weight: 'font-light' }
     ];
     let index = 0;
@@ -38,11 +39,18 @@ function EventForm() {
       if (index < sequence.length) {
         setTitle(sequence[index]);
         index++;
-        setTimeout(cycleTitles, 1800);
+        if (index < sequence.length) {
+          setTimeout(cycleTitles, 2000); // Shorter duration for star phase
+        }
+        // Stop at "Find Your Rave Match" - don't loop
       }
     };
     
-    cycleTitles(); // Start the sequence immediately
+    // Start with the first text
+    setTitle(sequence[0]);
+    setTimeout(() => {
+      cycleTitles();
+    }, 1000); // Start cycling after 1 second
   }, []);
 
   // Autocomplete for event/dj name
@@ -255,29 +263,33 @@ function EventForm() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-display text-gradient-primary mb-2 text-center">
-              {title.text}
-            </h1>
-            {title.weight === 'font-bold' && (
-              <motion.div
-                className="text-6xl mb-4"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+            <AnimatePresence mode="wait">
+              <motion.h1
+                key={title.text}
+                className={`text-display mb-2 text-center absolute ${
+                  title.text === "✨" ? "text-yellow-400" : "text-gradient-primary"
+                }`}
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 0, scale: 0.9 }}
+                transition={{ 
+                  duration: 0.8,
+                  ease: [0.4, 0.0, 0.2, 1] // Custom easing for smoother motion
+                }}
               >
-                ✨
-              </motion.div>
-            )}
+                {title.text}
+              </motion.h1>
+            </AnimatePresence>
           </motion.div>
           
-          <motion.p 
+          {/* <motion.p 
             className="text-body-large text-white/80 leading-relaxed"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             Find your perfect rave match at your next event
-          </motion.p>
+          </motion.p> */}
         </div>
 
         {/* Form */}
