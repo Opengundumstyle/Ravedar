@@ -24,7 +24,6 @@ function Matches() {
   const [totalSwipes, setTotalSwipes] = useState(0);
   const [showTooFakeModal, setShowTooFakeModal] = useState(false);
   const [showAuthCTAModal, setShowAuthCTAModal] = useState(false);
-  const [authCTATriggered, setAuthCTATriggered] = useState(false);
   const controls = useAnimation();
   const dragging = useRef(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -52,21 +51,6 @@ function Matches() {
     });
     return () => unsubscribe();
   }, [x]);
-
-  // Check for auth CTA trigger
-  useEffect(() => {
-    if (!authCTATriggered) {
-      const totalCards = matches.length;
-      const triggerPosition = Math.max(totalCards - 4, 10); // 4 cards from end, but at least after 10 cards
-      const nearEndCondition = currentIndex >= triggerPosition;
-      const matchCondition = matchCount >= 4;
-      
-      if (nearEndCondition || matchCondition) {
-        setShowAuthCTAModal(true);
-        setAuthCTATriggered(true);
-      }
-    }
-  }, [currentIndex, matchCount, matches.length, authCTATriggered]);
 
   const slogans = [
     "🎉 {name} is down to vibe with you at {event}!",
@@ -203,7 +187,7 @@ function Matches() {
       to_user_id: match.id,
       liked: direction === 'right',
     });
-    if (direction === 'right') {
+    if (direction === 'right' && match.role !== "founder" && match.role !== "co-founder") {
       setMatchOverlay(true);
       // Don't auto-close the match overlay - let user click "Keep Swiping"
     }
@@ -300,6 +284,7 @@ function Matches() {
       setCurrentIndex(i => i + 1);
     } else if (action === 'continue_demo') {
       setShowAuthCTAModal(false);
+      setMatchOverlay(false); // Close the match overlay
       setCurrentIndex(i => i + 1);
     } else if (action === 'signup') {
       // Navigate to signup page
@@ -424,6 +409,7 @@ function Matches() {
                 setMatchSlogan(slogan);
                 if (swipedMatch.role === "founder" || swipedMatch.role === "co-founder") {
                   setShowFounderModal(true);
+                  // Don't show regular match overlay for founders
                 } else {
                   setMatchOverlay(true);
                   setMatchCount(prev => prev + 1);
@@ -554,10 +540,10 @@ function Matches() {
               ) : (
                 <button
                   onClick={() => {
-                    // Subtle message for disabled chat
-                    alert('Oops! Chat feature coming soon 😏');
+                    // Show signup modal instead of alert for disabled chat
+                    setShowAuthCTAModal(true);
                   }}
-                  className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-gray-400 to-gray-500 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 shadow-lg cursor-not-allowed"
+                  className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-gray-400 to-gray-500 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 shadow-lg cursor-pointer"
                   title="Chat feature coming soon..."
                 >
                   Start Chat
