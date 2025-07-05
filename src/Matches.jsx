@@ -614,8 +614,9 @@ function Matches() {
       
          </AnimatePresence>
 
-        <div className="flex justify-between mt-4">
-          <span className="text-body text-white/60">Swipe left or right</span>
+        {/* Swipe instruction text - moved outside card container */}
+        <div className="flex justify-center mt-4 mb-2">
+          <span className="text-body text-white/60 text-sm sm:text-base">Swipe left or right</span>
         </div>
       </div>
 
