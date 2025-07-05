@@ -430,7 +430,11 @@ function EventForm() {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
+                className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200 h-12 sm:h-auto"
+                style={{
+                  minHeight: '48px',
+                  height: '48px'
+                }}
               />
             </div>
           </div>
@@ -467,8 +471,11 @@ function EventForm() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.8 }}
         >
-          <p className="text-body-small text-white/60">
+          <p className="text-body-small text-white/60 mb-2">
             Connect with fellow ravers who share your vibe
+          </p>
+          <p className="text-body-small text-white/40">
+            © 202% Ravedar. All rights reserved.
           </p>
         </motion.div>
       </div>
