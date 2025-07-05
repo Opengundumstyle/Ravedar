@@ -253,7 +253,7 @@ function EventForm() {
       {/* Background Animation */}
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 via-purple-900/20 to-pink-900/20 animate-pulse"></div>
       
-      <div className="relative z-10 w-full max-w-md mx-auto">
+      <div className="relative z-10 w-full max-w-md mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8">
           <motion.div
@@ -312,7 +312,7 @@ function EventForm() {
         {/* Form */}
         <motion.form
           onSubmit={handleSubmit}
-          className="space-y-6"
+          className="space-y-6 w-full max-w-full"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
@@ -425,15 +425,16 @@ function EventForm() {
             <label className="text-caption text-white/70 block">
               Date (Optional)
             </label>
-            <div className="relative">
+            <div className="relative w-full">
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200 h-12 sm:h-auto"
+                className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200 h-12 sm:h-auto max-w-full"
                 style={{
                   minHeight: '48px',
-                  height: '48px'
+                  height: '48px',
+                  maxWidth: '100%'
                 }}
               />
             </div>
@@ -475,7 +476,7 @@ function EventForm() {
             Connect with fellow ravers who share your vibe
           </p>
           <p className="text-body-small text-white/40">
-            © 202% Ravedar. All rights reserved.
+            © Ravedar
           </p>
         </motion.div>
       </div>
