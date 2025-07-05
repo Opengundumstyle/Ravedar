@@ -300,8 +300,8 @@ function Matches() {
   };
 
   const swipeLabel = useMemo(() => {
-    if (currentX > 40) return { text: "Down to Dance!", position: "left" };
-    if (currentX < -40) return { text: "Not Vibing:/", position: "right" };
+    if (currentX > 40) return { text: "Yes :D", position: "left" };
+    if (currentX < -40) return { text: "Nah :/", position: "right" };
     return null;
   }, [currentX]);
 
