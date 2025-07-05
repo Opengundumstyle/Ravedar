@@ -242,157 +242,205 @@ function EventForm() {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 py-8 px-2 overflow-hidden">
-      <motion.form 
-        onSubmit={handleSubmit} 
-        className="w-[480px] h-[650px] bg-black/20 backdrop-blur-lg rounded-2xl shadow-2xl shadow-purple-500/20 p-8 flex flex-col gap-6 border border-white/20"
-        variants={formVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <AnimatePresence mode="wait">
-          <motion.h2
-            key={title.text}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Animation */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 via-purple-900/20 to-pink-900/20 animate-pulse"></div>
+      
+      <div className="relative z-10 w-full max-w-md mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <motion.div
+            className="mb-6"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.5 }}
-            className={`text-3xl text-center text-white drop-shadow-[0_2px_4px_rgba(168,85,247,0.5)] mb-2 h-10 flex items-center justify-center ${title.weight === 'font-light' ? 'font-light' : 'font-semibold'}`}
+            transition={{ duration: 0.6 }}
           >
-            {title.text}
-          </motion.h2>
-        </AnimatePresence>
-        {error && <motion.div variants={itemVariants} className="text-red-400 bg-red-900/50 rounded-md py-2 text-center mb-2 text-sm font-medium">{error}</motion.div>}
-        <motion.div variants={itemVariants} className="flex flex-col gap-1 relative">
-          <label className="font-medium text-purple-200 mb-1 flex items-center justify-between text-sm">
-            <span>Event or DJ Name</span>
-            <span className="text-red-400 text-lg">*</span>
-          </label>
-          <input
-            type="text"
-            value={eventName}
-            onChange={e => {
-              setEventName(e.target.value);
-              setSelectedSuggestion(null);
-            }}
-            onFocus={() => setEventInputFocused(true)}
-            onBlur={() => setTimeout(() => setEventInputFocused(false), 200)}
-            className="input bg-black/30 text-white border-purple-400/50 placeholder:text-gray-400 w-full h-12 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 transition px-4"
-            placeholder="Search by Artist or Event"
-            autoFocus
-            autoComplete="off"
-          />
-          {eventSuggestions.length > 0 && eventInputFocused && (
-            <ul className="absolute z-10 bg-gray-900/80 backdrop-blur-md border border-white/10 rounded-lg top-full left-0 w-full max-h-40 overflow-y-auto shadow-lg mt-1">
-              {eventSuggestions.map((suggestion, i) => (
-                <li
-                  key={i}
-                  className="px-4 py-2 hover:bg-purple-500/30 cursor-pointer text-gray-200"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    setEventName(suggestion.name);
-                    setSelectedSuggestion(suggestion);
-                    setEventInputFocused(false);
-                  }}
-                >
-                  {suggestion.name} <span className="ml-2 text-xs text-gray-400">({suggestion.type})</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </motion.div>
-        <motion.div variants={itemVariants} className="flex flex-col gap-1 relative">
-          <label className="font-medium text-purple-200 mb-1 flex items-center justify-between text-sm">
-            <span>City</span>
-            <span className="text-red-400 text-lg">*</span>
-          </label>
-          <input
-            type="text"
-            value={city}
-            onChange={e => {
-              setCity(e.target.value);
-              setCityInputFocused(true);
-            }}
-            onFocus={() => setCityInputFocused(true)}
-            onBlur={() => setTimeout(() => setCityInputFocused(false), 200)}
-            className="input bg-black/30 text-white border-purple-400/50 placeholder:text-gray-400 w-full rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 transition h-12 px-4"
-            placeholder="Enter city"
-            autoComplete="off"
-          />
-          {citySuggestions.length > 0 && cityInputFocused && (
-            <ul className="absolute z-10 bg-gray-900/80 backdrop-blur-md border border-white/10 rounded-lg top-full left-0 w-full max-h-40 overflow-y-auto shadow-lg mt-1">
-              {/* Up and coming city at the top if present and matches input */}
-              {happeningSoonCity && (!city || happeningSoonCity.toLowerCase().includes(city.trim().toLowerCase())) && (
-                <li
-                  className="px-4 py-2 hover:bg-purple-500/30 cursor-pointer font-semibold text-purple-300 flex items-center justify-between"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    setCity(happeningSoonCity);
-                    setCityInputFocused(false);
-                  }}
-                >
-                  <span>{happeningSoonCity}</span>
-                  <span className="ml-2 text-xs bg-yellow-300 text-yellow-900 rounded px-2 py-0.5">up and coming</span>
-                </li>
-              )}
-              {citySuggestions.map((suggestion, i) => (
-                <li
-                  key={i}
-                  className="px-4 py-2 hover:bg-purple-500/30 cursor-pointer text-gray-200"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    setCity(suggestion);
-                    setCityInputFocused(false);
-                  }}
-                >
-                  {suggestion}
-                </li>
-              ))}
-            </ul>
-          )}
-        </motion.div>
-        <motion.div variants={itemVariants} className="flex flex-col gap-1">
-          <label className="font-medium text-purple-200 mb-1 text-sm">Date (optional)</label>
-          <input
-            type="date"
-            value={date}
-            onChange={e => setDate(e.target.value)}
-            className="input bg-black/30 text-white border-purple-400/50 w-full rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 transition h-12 px-4"
-          />
-        </motion.div>
-        <motion.button
-          variants={itemVariants}
-          type="submit"
-          className="btn w-full py-3 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg hover:scale-105 transform transition-transform duration-200 flex items-center justify-center animate-button-glow"
-          whileTap={{ scale: 0.98 }}
+            <h1 className="text-display text-gradient-primary mb-2">
+              {title.text}
+            </h1>
+            {title.weight === 'font-bold' && (
+              <motion.div
+                className="text-6xl mb-4"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+              >
+                ✨
+              </motion.div>
+            )}
+          </motion.div>
+          
+          <motion.p 
+            className="text-body-large text-white/80 leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            Find your perfect rave match at your next event
+          </motion.p>
+        </div>
+
+        {/* Form */}
+        <motion.form
+          onSubmit={handleSubmit}
+          className="space-y-6"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <span>Find My Ravebae </span>
-          <motion.span 
-            className="ml-2 text-xl bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-sky-400 to-lime-300"
-            animate={{ 
-              rotateY: [0, 1440, 1440, 1440],
-              scale: [1, 1.5, 1, 1.8, 0.6, 1.2, 0.9, 1],
-              filter: [
-                "brightness(1) blur(0px)",
-                "brightness(1.2) blur(0px)", 
-                "brightness(1.5) blur(1px)",
-                "brightness(2) blur(2px)",
-                "brightness(1.8) blur(1px)",
-                "brightness(1.3) blur(0.5px)",
-                "brightness(1.1) blur(0px)",
-                "brightness(1) blur(0px)"
-              ]
-            }}
-            transition={{ 
-              duration: 5,
-              times: [0, 0.4, 0.6, 0.7, 0.8, 0.9, 0.95, 1],
-              ease: "easeOut"
+          {/* Event/DJ Input */}
+          <div className="space-y-2">
+            <label className="text-caption text-white/70 block">
+              Event or DJ Name
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={eventName}
+                onChange={(e) => setEventName(e.target.value)}
+                onFocus={() => setEventInputFocused(true)}
+                onBlur={() => setTimeout(() => setEventInputFocused(false), 200)}
+                placeholder="e.g., EDC, Tomorrowland, Skrillex..."
+                className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
+                required
+              />
+              <AnimatePresence>
+                {eventInputFocused && eventSuggestions.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute top-full left-0 right-0 mt-2 bg-black/90 backdrop-blur-md border border-white/20 rounded-xl overflow-hidden z-20 max-h-48 overflow-y-auto"
+                  >
+                    {eventSuggestions.map((suggestion, index) => (
+                      <motion.button
+                        key={`${suggestion.type}-${suggestion.id}`}
+                        type="button"
+                        onClick={() => {
+                          setEventName(suggestion.name);
+                          setSelectedSuggestion(suggestion);
+                          setEventSuggestions([]);
+                        }}
+                        className="w-full px-4 py-3 text-left text-body hover:bg-white/10 transition-colors duration-150 flex items-center gap-3"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        <span className="text-xs bg-pink-500/20 text-pink-300 px-2 py-1 rounded-full">
+                          {suggestion.type}
+                        </span>
+                        <span className="text-white">{suggestion.name}</span>
+                      </motion.button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* City Input */}
+          <div className="space-y-2">
+            <label className="text-caption text-white/70 block">
+              City
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                onFocus={() => setCityInputFocused(true)}
+                onBlur={() => setTimeout(() => setCityInputFocused(false), 200)}
+                placeholder="e.g., Las Vegas, Miami, Amsterdam..."
+                className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
+                required
+              />
+              <AnimatePresence>
+                {cityInputFocused && citySuggestions.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute top-full left-0 right-0 mt-2 bg-black/90 backdrop-blur-md border border-white/20 rounded-xl overflow-hidden z-20 max-h-48 overflow-y-auto"
+                  >
+                    {happeningSoonCity && (
+                      <div className="px-4 py-2 bg-pink-500/20 border-b border-white/10">
+                        <span className="text-xs text-pink-300 font-medium">
+                          Happening soon in: {happeningSoonCity}
+                        </span>
+                      </div>
+                    )}
+                    {citySuggestions.map((suggestion, index) => (
+                      <motion.button
+                        key={suggestion}
+                        type="button"
+                        onClick={() => {
+                          setCity(suggestion);
+                          setCitySuggestions([]);
+                        }}
+                        className="w-full px-4 py-3 text-left text-body hover:bg-white/10 transition-colors duration-150"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        {suggestion}
+                      </motion.button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Date Input */}
+          <div className="space-y-2">
+            <label className="text-caption text-white/70 block">
+              Date (Optional)
+            </label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
+            />
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="px-4 py-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-300 text-body-small"
+            >
+              {error}
+            </motion.div>
+          )}
+
+          {/* Submit Button */}
+          <motion.button
+            type="submit"
+            className="w-full py-4 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg rounded-xl hover:scale-105 transform transition-all duration-200 shadow-lg hover:shadow-xl"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            style={{
+              boxShadow: '0 0 20px rgba(236, 72, 153, 0.3), 0 0 40px rgba(168, 85, 247, 0.2)'
             }}
           >
-            ❤️
-          </motion.span>
-        </motion.button>
-      </motion.form>
+            Find My Rave Match
+          </motion.button>
+        </motion.form>
+
+        {/* Footer */}
+        <motion.div
+          className="text-center mt-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+        >
+          <p className="text-body-small text-white/60">
+            Connect with fellow ravers who share your vibe
+          </p>
+        </motion.div>
+      </div>
     </div>
   );
 }

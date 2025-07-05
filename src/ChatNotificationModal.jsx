@@ -72,10 +72,10 @@ const ChatNotificationModal = ({ isOpen, onClose }) => {
           <>
             <div className="text-center mb-4 sm:mb-6">
               <div className="text-3xl sm:text-4xl mb-3">💬</div>
-              <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
+              <h2 className="text-heading text-xl sm:text-2xl text-white mb-2">
                 Coming Soon
               </h2>
-              <p className="text-white/80 text-sm leading-relaxed">
+              <p className="text-body text-white/80 leading-relaxed">
                 Chat is launching soon 🚀 
                 Leave us your email to get early access and be among the first to experience real-time rave connections!
               </p>
@@ -90,7 +90,7 @@ const ChatNotificationModal = ({ isOpen, onClose }) => {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-pink-400 transition-colors text-base"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-pink-400 transition-colors text-body"
                 />
               </div>
               
@@ -102,7 +102,7 @@ const ChatNotificationModal = ({ isOpen, onClose }) => {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-pink-400 transition-colors text-base"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-pink-400 transition-colors text-body"
                 />
               </div>
               
@@ -113,7 +113,7 @@ const ChatNotificationModal = ({ isOpen, onClose }) => {
                   value={formData.message}
                   onChange={handleInputChange}
                   rows="3"
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-pink-400 transition-colors resize-none text-base"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-pink-400 transition-colors resize-none text-body"
                 />
               </div>
 
@@ -127,7 +127,7 @@ const ChatNotificationModal = ({ isOpen, onClose }) => {
             </form>
 
             <div className="mt-4 sm:mt-6 text-center">
-              <p className="text-white/60 text-sm mb-3">Or follow us on social media:</p>
+              <p className="text-body text-white/60 mb-3">Or follow us on social media:</p>
               <div className="flex justify-center space-x-4">
                 <a
                   href="https://tiktok.com/@yourhandle"
@@ -165,10 +165,10 @@ const ChatNotificationModal = ({ isOpen, onClose }) => {
         ) : (
           <div className="text-center">
             <div className="text-3xl sm:text-4xl mb-3">✅</div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
+            <h2 className="text-heading text-xl sm:text-2xl text-white mb-2">
               Thanks for signing up!
             </h2>
-            <p className="text-white/80 text-sm">
+            <p className="text-body text-white/80">
               We'll notify you when chat is ready. Keep an eye on your email!
             </p>
           </div>

@@ -184,7 +184,7 @@ const RadarLoader = ({ eventName }) => {
       <div className="mt-12 text-center px-4 relative z-10">
         {/* Main loading text */}
         <motion.div
-          className="text-xl text-purple-200 font-semibold tracking-wider mb-4"
+          className="text-heading text-xl text-purple-200 tracking-wider mb-4"
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
@@ -194,7 +194,7 @@ const RadarLoader = ({ eventName }) => {
         {/* Cycling messages */}
         <motion.div
           key={currentMessage}
-          className="text-lg text-white/80 font-medium"
+          className="text-body-large text-white/80 font-medium"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
@@ -203,26 +203,44 @@ const RadarLoader = ({ eventName }) => {
           {loadingMessages[currentMessage]}
         </motion.div>
 
+        {/* Event name if provided */}
+        {eventName && (
+          <motion.div
+            className="mt-4 text-body text-white/60"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1, duration: 0.5 }}
+          >
+            Preparing for <span className="text-gradient-primary font-semibold">{eventName}</span>
+          </motion.div>
+        )}
+
         {/* Progress indicator */}
         <div className="mt-8 flex justify-center">
-          <div className="flex space-x-2">
-            {[...Array(3)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="w-3 h-3 bg-white/30 rounded-full"
-                animate={{
-                  scale: [1, 1.2, 1],
-                  opacity: [0.3, 1, 0.3],
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  delay: i * 0.2,
-                }}
-              />
-            ))}
-          </div>
+          <motion.div
+            className="w-32 h-1 bg-white/20 rounded-full overflow-hidden"
+            initial={{ opacity: 0, scaleX: 0 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+          >
+            <motion.div
+              className="h-full bg-gradient-to-r from-pink-500 to-purple-600 rounded-full"
+              initial={{ width: "0%" }}
+              animate={{ width: "100%" }}
+              transition={{ duration: 3, ease: "easeInOut" }}
+            />
+          </motion.div>
         </div>
+
+        {/* Additional info */}
+        <motion.div
+          className="mt-6 text-caption text-white/40"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 0.5 }}
+        >
+          Connecting to the rave universe...
+        </motion.div>
       </div>
 
       {/* Bottom decorative line */}

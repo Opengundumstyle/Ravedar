@@ -10,7 +10,7 @@ function UserCard({ user, onSurveyAction }) {
       <div className="bg-black/20 backdrop-blur-lg rounded-2xl shadow-lg flex flex-col items-center w-[448px] h-[600px] mx-auto transition-all duration-300 p-1 cursor-pointer">
         <div className="bg-black/20 backdrop-blur-lg rounded-2xl flex flex-col items-center w-full h-full p-0 relative">
           {/* Survey Badge */}
-          <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg border border-white/20 backdrop-blur-sm animate-pulse">
+          <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full text-caption font-semibold shadow-lg border border-white/20 backdrop-blur-sm animate-pulse">
             SURVEY
           </div>
           
@@ -24,8 +24,7 @@ function UserCard({ user, onSurveyAction }) {
               
               {/* Ravedar Logo/Text */}
               <div className="relative z-10 text-center">
-                <div className="text-8xl font-black text-white mb-4 tracking-wider" style={{
-                  textShadow: '0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3)',
+                <div className="text-display text-6xl font-black text-white mb-4 tracking-wider text-neon" style={{
                   background: 'linear-gradient(45deg, #fff, #e0e7ff, #fff)',
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
@@ -33,7 +32,7 @@ function UserCard({ user, onSurveyAction }) {
                 }}>
                   RAVEDAR
                 </div>
-                <div className="text-xl text-white/80 font-medium tracking-wide">
+                <div className="text-body-large text-white/80 font-medium tracking-wide">
                   <a 
                     href="#" 
                     className="hover:text-white transition-colors duration-300 underline decoration-white/30 hover:decoration-white/60"
@@ -69,11 +68,11 @@ function UserCard({ user, onSurveyAction }) {
           {/* Survey Info area: overlay on bottom */}
           <div className="absolute bottom-0 left-0 right-0 flex flex-col justify-end w-full h-[210px] px-4 py-3 bg-gradient-to-t from-black/80 via-black/50 to-transparent rounded-b-2xl">
             {/* Title */}
-            <div className="h-8 font-semibold text-lg sm:text-xl md:text-2xl text-white text-center truncate w-full">
+            <div className="h-8 text-heading text-xl text-white text-center truncate w-full">
               {user.name}
             </div>
             {/* Question */}
-            <div className="h-[72px] text-sm sm:text-base text-gray-100 text-center w-full overflow-hidden leading-relaxed">
+            <div className="h-[72px] text-body text-gray-100 text-center w-full overflow-hidden leading-relaxed">
               <p className="line-clamp-3">{user.about_me}</p>
             </div>
             {/* Survey Options */}
@@ -85,7 +84,7 @@ function UserCard({ user, onSurveyAction }) {
                     e.stopPropagation();
                     onSurveyAction && onSurveyAction(option.action);
                   }}
-                  className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap backdrop-blur-sm transition-all duration-300 hover:scale-110 transform shadow-lg border-2 ${
+                  className={`px-4 py-2 rounded-full text-caption font-bold whitespace-nowrap backdrop-blur-sm transition-all duration-300 hover:scale-110 transform shadow-lg border-2 ${
                     option.text === "👍 Good" 
                       ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 border-green-400/50 text-white shadow-green-500/25" 
                       : option.text === "🤔 Okay"
@@ -120,21 +119,21 @@ function UserCard({ user, onSurveyAction }) {
       <div className="bg-black/20 backdrop-blur-lg rounded-2xl flex flex-col items-center w-full h-full p-0 relative">
         {/* Demo Badge */}
         {user.is_real === false && (
-          <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg border border-white/20 backdrop-blur-sm animate-pulse">
+          <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full text-caption font-semibold shadow-lg border border-white/20 backdrop-blur-sm animate-pulse">
             DEMO USER
           </div>
         )}
         
         {/* Founder Badge */}
         {user.role === 'founder' && (
-          <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg border border-white/20 backdrop-blur-sm animate-pulse">
+          <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full text-caption font-semibold shadow-lg border border-white/20 backdrop-blur-sm animate-pulse">
             FOUNDER
           </div>
         )}
         
         {/* Co-Founder Badge */}
         {user.role === 'co-founder' && (
-          <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg border border-white/20 backdrop-blur-sm animate-pulse">
+          <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-full text-caption font-semibold shadow-lg border border-white/20 backdrop-blur-sm animate-pulse">
             CO-FOUNDER
           </div>
         )}
@@ -150,25 +149,25 @@ function UserCard({ user, onSurveyAction }) {
                 draggable={false}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400">No Photo</div>
+              <div className="w-full h-full flex items-center justify-center text-gray-400 text-body">No Photo</div>
             )}
           </div>
         </div>
         {/* Info area: overlay on bottom */}
         <div className="absolute bottom-0 left-0 right-0 flex flex-col justify-end w-full h-[210px] px-4 py-3 bg-gradient-to-t from-black/80 via-black/50 to-transparent rounded-b-2xl">
           {/* Name and Instagram - fixed height */}
-          <div className="h-8 font-semibold text-lg sm:text-xl md:text-2xl text-white text-center truncate w-full">
-            {user.name} {user.instagram && <span className="text-gray-200 text-base font-normal">@{user.instagram}</span>}
+          <div className="h-8 text-heading text-xl text-white text-center truncate w-full">
+            {user.name} {user.instagram && <span className="text-body text-gray-200 font-normal">@{user.instagram}</span>}
           </div>
           {/* About Me - fixed height */}
-          <div className="h-[72px] text-sm sm:text-base text-gray-100 text-center w-full overflow-hidden leading-relaxed">
+          <div className="h-[72px] text-body text-gray-100 text-center w-full overflow-hidden leading-relaxed">
             <p className="line-clamp-3">{user.about_me}</p>
           </div>
           {/* Tags - fixed height */}
           {user.vibe_tags && user.vibe_tags.length > 0 && (
             <div className="h-12 flex flex-wrap gap-1.5 justify-center items-center overflow-hidden px-2">
               {user.vibe_tags.map((tag, i) => (
-                <span key={i} className="bg-white/20 text-white px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap backdrop-blur-sm">{tag}</span>
+                <span key={i} className="bg-white/20 text-white px-2 py-0.5 rounded-full text-caption font-medium whitespace-nowrap backdrop-blur-sm">{tag}</span>
               ))}
             </div>
           )}

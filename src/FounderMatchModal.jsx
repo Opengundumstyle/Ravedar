@@ -181,7 +181,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
           <>
             <motion.div 
               variants={itemVariants}
-              className="text-5xl md:text-7xl font-bold text-white text-center"
+              className="text-display text-5xl md:text-7xl font-bold text-white text-center"
               style={{
                 textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073'
               }}
@@ -210,10 +210,10 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
               variants={itemVariants}
               className="text-center mb-6"
             >
-              <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
+              <h2 className="text-heading text-xl sm:text-2xl text-white mb-2">
                 You Found a Rare Breed!
               </h2>
-              <p className="text-white/90 text-sm leading-relaxed max-w-md mx-auto">
+              <p className="text-body text-white/80 leading-relaxed max-w-md mx-auto">
                 {founderContent.message}
               </p>
             </motion.div>
@@ -231,7 +231,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
                   onChange={(e) => setMessage(e.target.value)}
                   rows="3"
                   required
-                  className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-pink-400 transition-colors resize-none text-base"
+                  className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-pink-400 transition-colors resize-none text-body"
                 />
               </div>
 
@@ -239,7 +239,7 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
                 <button
                   type="submit"
                   disabled={isSubmitting || !message.trim()}
-                  className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 disabled:opacity-50 disabled:cursor-not-allowed animate-button-glow shadow-lg"
+                  className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg hover:scale-105 transform transition-transform duration-200 disabled:opacity-50 disabled:cursor-not-allowed animate-button-glow shadow-lg"
                 >
                   {isSubmitting ? 'Sending...' : founderContent.buttonText}
                 </button>
@@ -256,10 +256,10 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
         ) : (
           <div className="text-center">
             <div className="text-4xl mb-3">🎉</div>
-            <h2 className="text-2xl font-bold text-white mb-2">
+            <h2 className="text-heading text-2xl text-white mb-2">
               Message Sent!
             </h2>
-            <p className="text-white/80 text-sm">
+            <p className="text-body text-white/80">
               Thanks for your message! I'll get back to you soon. 
               Keep an eye on your notifications for my response.
             </p>

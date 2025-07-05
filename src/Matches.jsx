@@ -338,9 +338,9 @@ function Matches() {
           transition={{ duration: 0.5 }}
         >
           <div className="text-6xl mb-4">✨</div>
-          <h2 className="text-3xl font-semibold text-white mb-2">That's Everyone For Now!</h2>
-          <p className="text-lg text-purple-200 mb-8 max-w-md leading-relaxed">
-            You've seen all potential ravebaes for <span className="font-medium text-white">{eventName}</span>. Check back later for new people!
+          <h2 className="text-display text-3xl text-white mb-2">That's Everyone For Now!</h2>
+          <p className="text-body-large text-white/80 mb-8 max-w-md leading-relaxed">
+            You've seen all potential ravebaes for <span className="text-heading text-white">{eventName}</span>. Check back later for new people!
           </p>
           <motion.button
             className="w-full max-w-xs py-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
@@ -386,8 +386,8 @@ function Matches() {
       <div className="w-full max-w-lg md:max-w-[480px] flex flex-col items-center justify-center min-h-[70vh] relative" style={{ minHeight: 600 }}>
         {eventName && match && (
           <div className="mb-8 w-full flex flex-col md:flex-row items-center text-center md:text-left space-y-1 md:space-y-0">
-            <span className="text-sm md:text-xl font-medium text-gray-300">You both are going to&nbsp;</span>
-            <span className="text-lg md:text-2xl font-semibold text-white truncate max-w-[280px] md:max-w-[300px]">{eventName}</span>
+            <span className="text-body text-white/70">You both are going to&nbsp;</span>
+            <span className="text-heading text-xl text-white truncate max-w-[280px] md:max-w-[300px]">{eventName}</span>
           </div>
         )}
         <div className="relative w-full h-[600px] flex items-center justify-center">
@@ -499,7 +499,7 @@ function Matches() {
           >
             <motion.div 
               variants={itemVariants}
-              className="text-5xl md:text-7xl font-bold text-white text-center"
+              className="text-display text-5xl md:text-7xl font-bold text-white text-center"
               style={{
                 textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073'
               }}
@@ -520,7 +520,7 @@ function Matches() {
               </div>
             </motion.div>
 
-            <motion.p variants={itemVariants} className="text-lg md:text-xl font-semibold text-center text-white/90 mb-6 max-w-md">
+            <motion.p variants={itemVariants} className="text-body-large text-white/90 mb-6 max-w-md">
               {matchSlogan}
             </motion.p>
           
@@ -530,7 +530,7 @@ function Matches() {
                   onClick={() => {
                     handleStartChat();
                   }}
-                  className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
+                  className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
                 >
                   Start Chat
                 </button>
@@ -539,7 +539,7 @@ function Matches() {
                   href="https://discord.gg/R3VYAUzWwd" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
+                  className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
                 >
                   Join Discord
                 </a>
@@ -549,7 +549,7 @@ function Matches() {
                     // Show signup modal instead of alert for disabled chat
                     setShowAuthCTAModal(true);
                   }}
-                  className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-gray-400 to-gray-500 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 shadow-lg cursor-pointer"
+                  className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-gray-400 to-gray-500 text-white font-semibold text-lg hover:scale-105 transform transition-transform duration-200 shadow-lg cursor-pointer"
                   title="Chat feature coming soon..."
                 >
                   Start Chat
@@ -566,7 +566,7 @@ function Matches() {
             {/* Feedback text for Discord match */}
             {matchCount === 2 && (
               <motion.div variants={itemVariants} className="mt-4 text-center">
-                <p className="text-white/70 text-sm leading-relaxed max-w-xs mx-auto">
+                <p className="text-body text-white/70 leading-relaxed max-w-xs mx-auto">
                 Join Discord to give instant feedback,<br />
                 your opinion matters to us 
                 
@@ -577,7 +577,7 @@ function Matches() {
             {/* Social Media Icons - Only show for 3rd match onwards */}
             {matchCount > 2 && (
               <motion.div variants={itemVariants} className="mt-4 text-center">
-                <p className="text-white/70 text-sm mb-3">Follow us at</p>
+                <p className="text-body text-white/70 mb-3">Follow us at</p>
                 <div className="flex justify-center gap-4">
                   <a 
                     href="https://instagram.com/ravedar" 
@@ -619,7 +619,7 @@ function Matches() {
          </AnimatePresence>
 
         <div className="flex justify-between mt-4">
-          <span className="text-gray-300">Swipe left or right</span>
+          <span className="text-body text-white/60">Swipe left or right</span>
         </div>
       </div>
 
@@ -651,10 +651,10 @@ function Matches() {
             >
               <div className="text-center">
               
-                <h2 className="text-2xl font-bold text-white mb-4">
+                <h2 className="text-heading text-2xl text-white mb-4">
                   Chill... it's only the Demo
                 </h2>
-                <p className="text-gray-300 text-lg leading-relaxed mb-6">
+                <p className="text-body text-white/70 leading-relaxed mb-6">
                   Swipe more we have a surprise for you ;)
                 </p>
                 <motion.button
@@ -692,10 +692,10 @@ function Matches() {
             >
               <div className="text-center">
                 <div className="text-4xl mb-4">👍</div>
-                <h2 className="text-2xl font-bold text-white mb-4">
+                <h2 className="text-heading text-2xl text-white mb-4">
                   Thanks for the feedback!
                 </h2>
-                <p className="text-gray-300 text-lg leading-relaxed mb-6">
+                <p className="text-body text-white/70 leading-relaxed mb-6">
                   We're glad you like it! Your feedback helps us improve the experience for everyone.
                 </p>
                 <motion.button
@@ -733,10 +733,10 @@ function Matches() {
             >
               <div className="text-center">
                 <div className="text-4xl mb-4">📝</div>
-                <h2 className="text-2xl font-bold text-white mb-4">
+                <h2 className="text-heading text-2xl text-white mb-4">
                   We appreciate your honesty!
                 </h2>
-                <p className="text-gray-300 text-lg leading-relaxed mb-6">
+                <p className="text-body text-white/70 leading-relaxed mb-6">
                   Your feedback is valuable to us. Please join our Discord to give detailed feedback and help us improve!
                 </p>
                 <div className="space-y-3">
@@ -787,12 +787,12 @@ function Matches() {
               <div className="text-center">
                 
                 {/* Subtitle */}
-                <h3 className="text-lg sm:text-xl font-semibold text-purple-300 mb-3 sm:mb-4">
+                <h3 className="text-heading text-lg sm:text-xl text-purple-300 mb-3 sm:mb-4">
                   Ready for the next step?
                 </h3>
                 
                 {/* Description */}
-                <p className="text-gray-300 text-sm sm:text-lg leading-relaxed mb-6 sm:mb-8">
+                <p className="text-body text-sm sm:text-lg text-white/70 leading-relaxed mb-6 sm:mb-8">
                   Upload your photos and connect with real ravers at your events!
                 </p>
                 
@@ -872,7 +872,7 @@ function Matches() {
                 <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-700">
                   <motion.button
                     onClick={() => handleAuthCTAAction('continue_demo')}
-                    className="text-gray-400 hover:text-white font-medium text-xs sm:text-sm transition-colors duration-200"
+                    className="text-body text-white/60 hover:text-white font-medium text-xs sm:text-sm transition-colors duration-200"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -881,7 +881,7 @@ function Matches() {
                 </div>
                 
                 {/* Additional info */}
-                <p className="text-gray-400 text-xs mt-3 sm:mt-4 leading-relaxed">
+                <p className="text-caption text-white/40 mt-3 sm:mt-4 leading-relaxed">
                   You can always sign up later to unlock photo uploads and real matching!
                 </p>
               </div>
