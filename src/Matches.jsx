@@ -12,7 +12,6 @@ function Matches() {
   const [matches, setMatches] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showMatch, setShowMatch] = useState(false);
   const [matchOverlay, setMatchOverlay] = useState(false);
   const [loading, setLoading] = useState(true);
   const [eventName, setEventName] = useState("");
@@ -55,16 +54,6 @@ function Matches() {
     return () => unsubscribe();
   }, [x]);
 
-  // Debug showChatModal state
-  useEffect(() => {
-    console.log('showChatModal state changed to:', showChatModal);
-  }, [showChatModal]);
-
-  // Debug matchCount state
-  useEffect(() => {
-    console.log('matchCount changed to:', matchCount);
-  }, [matchCount]);
-
   // Check for auth CTA trigger
   useEffect(() => {
     if (!authCTATriggered) {
@@ -74,12 +63,6 @@ function Matches() {
       const matchCondition = matchCount >= 4;
       
       if (nearEndCondition || matchCondition) {
-        console.log('Triggering auth CTA modal:', {
-          reason: nearEndCondition ? 'near end of stack' : 'after 4 matches',
-          currentIndex,
-          matchCount,
-          totalCards
-        });
         setShowAuthCTAModal(true);
         setAuthCTATriggered(true);
       }
@@ -222,8 +205,8 @@ function Matches() {
       liked: direction === 'right',
     });
     if (direction === 'right') {
-      setShowMatch(true);
-      setTimeout(() => setShowMatch(false), 1500);
+      setMatchOverlay(true);
+      // Don't auto-close the match overlay - let user click "Keep Swiping"
     }
     
     // Increment total swipes
@@ -233,15 +216,12 @@ function Matches() {
 
   const handleKeepSwiping = () => {
     setMatchOverlay(false);
-    setShowMatch(false);
-    setCurrentIndex(i => i + 1);
+    // Don't increment currentIndex here since it's already incremented in onExitComplete
     setToggled(false);
   };
 
   const handleStartChat = () => {
-    console.log('handleStartChat called, setting showChatModal to true');
     setShowChatModal(true);
-    console.log('showChatModal should now be true');
   };
 
   const getCTAContent = (type) => {
@@ -305,25 +285,21 @@ function Matches() {
         return; // Don't move to next card yet
     }
     
-    // Move to next card
-    setCurrentIndex(i => i + 1);
+    // Don't increment currentIndex here since it's already incremented in onExitComplete
   };
 
   const handleAuthCTAAction = async (action) => {
     if (action === 'google_auth') {
       // TODO: Implement Google OAuth
-      console.log('Google auth clicked - implementing OAuth...');
       alert('Google OAuth coming soon! 🔐');
       setShowAuthCTAModal(false);
       setCurrentIndex(i => i + 1);
     } else if (action === 'facebook_auth') {
       // TODO: Implement Facebook OAuth
-      console.log('Facebook auth clicked - implementing OAuth...');
       alert('Facebook OAuth coming soon! 🔐');
       setShowAuthCTAModal(false);
       setCurrentIndex(i => i + 1);
     } else if (action === 'continue_demo') {
-      console.log('Continue demo clicked');
       setShowAuthCTAModal(false);
       setCurrentIndex(i => i + 1);
     } else if (action === 'signup') {
@@ -425,11 +401,6 @@ function Matches() {
           </div>
         )}
         <div className="relative w-full h-[600px] flex items-center justify-center">
-          {showMatch && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[60]">
-              <div className="bg-white p-8 rounded shadow text-2xl font-bold text-green-600">It's a match!</div>
-            </div>
-          )}
           {/* Next card: always present, never animates */}
           {matches[currentIndex + 1] && (
             <div
@@ -592,7 +563,6 @@ function Matches() {
               {matchCount === 1 ? (
                 <button
                   onClick={() => {
-                    console.log('Start Chat button clicked!');
                     handleStartChat();
                   }}
                   className="flex-1 text-center py-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 animate-button-glow shadow-lg"
@@ -690,12 +660,12 @@ function Matches() {
 
       <FounderMatchModal 
         isOpen={showFounderModal} 
-        onClose={() => { setShowFounderModal(false); setCurrentIndex(i => i + 1); setToggled(false); }} 
+        onClose={() => { setShowFounderModal(false); setToggled(false); }} 
         matchedUser={matchedUser} 
         currentUser={currentUser} 
       />      <ChatNotificationModal 
         isOpen={showChatModal} 
-        onClose={() => { setShowChatModal(false); setMatchOverlay(false); setShowMatch(false); setCurrentIndex(i => i + 1); setToggled(false); }} 
+        onClose={() => { setShowChatModal(false); setMatchOverlay(false); setCurrentIndex(i => i + 1); setToggled(false); }} 
       />
 
       {/* Too Fake Modal */}
@@ -756,17 +726,11 @@ function Matches() {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
             >
               <div className="text-center">
-                {/* Celebration emoji */}
-                <div className="text-6xl mb-4">🎉</div>
-                
-                {/* Title */}
-                <h2 className="text-3xl font-bold text-white mb-3">
-                  Congratz you've reached this stage!
-                </h2>
+               
                 
                 {/* Subtitle */}
                 <h3 className="text-xl font-semibold text-purple-300 mb-4">
-                  Are you ready for the next step?
+                  Ready for the next step?
                 </h3>
                 
                 {/* Description */}
