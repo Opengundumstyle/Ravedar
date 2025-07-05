@@ -672,65 +672,64 @@ function Matches() {
       <AnimatePresence>
         {showAuthCTAModal && (
           <motion.div
-            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-black/95 backdrop-blur-lg rounded-3xl p-8 w-full max-w-lg mx-4 shadow-2xl border border-white/30"
+              className="bg-black/95 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-6 sm:p-8 w-full max-w-sm sm:max-w-lg mx-2 sm:mx-4 shadow-2xl border border-white/30 max-h-[90vh] overflow-y-auto"
               initial={{ scale: 0.8, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.8, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
             >
               <div className="text-center">
-               
                 
                 {/* Subtitle */}
-                <h3 className="text-xl font-semibold text-purple-300 mb-4">
+                <h3 className="text-lg sm:text-xl font-semibold text-purple-300 mb-3 sm:mb-4">
                   Ready for the next step?
                 </h3>
                 
                 {/* Description */}
-                <p className="text-gray-300 text-lg leading-relaxed mb-8">
+                <p className="text-gray-300 text-sm sm:text-lg leading-relaxed mb-6 sm:mb-8">
                   Upload your photos and connect with real ravers at your events!
                 </p>
                 
                 {/* Main Sign Up Button */}
                 <motion.button
                   onClick={() => handleAuthCTAAction('signup')}
-                  className="w-full py-4 px-6 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold text-xl hover:scale-105 transform transition-transform duration-200 shadow-lg border border-pink-400/30 mb-6"
+                  className="w-full py-3 sm:py-4 px-6 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold text-lg sm:text-xl hover:scale-105 transform transition-transform duration-200 shadow-lg border border-pink-400/30 mb-4 sm:mb-6"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   style={{
                     boxShadow: '0 0 20px rgba(236, 72, 153, 0.3), 0 0 40px rgba(168, 85, 247, 0.2)'
                   }}
                 >
-                  <div className="flex items-center justify-center gap-3">
-                    <span className="text-2xl">✨</span>
+                  <div className="flex items-center justify-center gap-2 sm:gap-3">
+                    <span className="text-xl sm:text-2xl">✨</span>
                     <span>Sign Up</span>
-                    <span className="text-2xl">✨</span>
+                    <span className="text-xl sm:text-2xl">✨</span>
                   </div>
                 </motion.button>
                 
                 {/* Divider */}
-                <div className="flex items-center mb-6">
+                <div className="flex items-center mb-4 sm:mb-6">
                   <div className="flex-1 h-px bg-gray-600"></div>
-                  <span className="px-4 text-gray-400 text-sm font-medium">or continue with</span>
+                  <span className="px-3 sm:px-4 text-gray-400 text-xs sm:text-sm font-medium">or continue with</span>
                   <div className="flex-1 h-px bg-gray-600"></div>
                 </div>
                 
                 {/* Social Login Buttons */}
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   <motion.button
                     onClick={() => handleAuthCTAAction('google_auth')}
-                    className="w-full py-3 px-6 rounded-full bg-white text-gray-800 font-semibold text-lg hover:scale-105 transform transition-transform duration-200 shadow-lg border border-gray-200"
+                    className="w-full py-2.5 sm:py-3 px-4 sm:px-6 rounded-full bg-white text-gray-800 font-medium text-sm sm:text-base hover:scale-105 transform transition-transform duration-200 shadow-lg border border-gray-200"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <div className="flex items-center justify-center gap-3">
-                      <svg className="w-6 h-6" viewBox="0 0 24 24">
+                    <div className="flex items-center justify-center gap-2 sm:gap-3">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -742,12 +741,12 @@ function Matches() {
                   
                   <motion.button
                     onClick={() => handleAuthCTAAction('facebook_auth')}
-                    className="w-full py-3 px-6 rounded-full bg-blue-600 text-white font-semibold text-lg hover:scale-105 transform transition-transform duration-200 shadow-lg border border-blue-500"
+                    className="w-full py-2.5 sm:py-3 px-4 sm:px-6 rounded-full bg-blue-600 text-white font-medium text-sm sm:text-base hover:scale-105 transform transition-transform duration-200 shadow-lg border border-blue-500"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <div className="flex items-center justify-center gap-3">
-                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <div className="flex items-center justify-center gap-2 sm:gap-3">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                       </svg>
                       <span>Continue with Facebook</span>
@@ -756,10 +755,10 @@ function Matches() {
                 </div>
                 
                 {/* Continue Demo Option */}
-                <div className="mt-6 pt-4 border-t border-gray-700">
+                <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-700">
                   <motion.button
                     onClick={() => handleAuthCTAAction('continue_demo')}
-                    className="text-gray-400 hover:text-white font-medium text-sm transition-colors duration-200"
+                    className="text-gray-400 hover:text-white font-medium text-xs sm:text-sm transition-colors duration-200"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -768,7 +767,7 @@ function Matches() {
                 </div>
                 
                 {/* Additional info */}
-                <p className="text-gray-400 text-xs mt-4">
+                <p className="text-gray-400 text-xs mt-3 sm:mt-4 leading-relaxed">
                   You can always sign up later to unlock photo uploads and real matching!
                 </p>
               </div>
