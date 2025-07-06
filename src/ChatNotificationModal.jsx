@@ -164,9 +164,12 @@ const ChatNotificationModal = ({ isOpen, onClose }) => {
             <h2 className="text-heading text-xl sm:text-2xl text-white mb-2">
               Thanks for signing up!
             </h2>
-            <p className="text-body text-white/80">
-              We'll notify you when chat is ready. Keep an eye on your email!
+            <p className="text-body text-white/80 mb-4">
+              We'll notify you when chat is ready. Check your email for a confirmation message!
             </p>
+            <div className="bg-white/10 rounded-lg p-3 text-sm text-white/70">
+              <p>📧 Check your inbox (and spam folder) for a welcome email from Ravedar!</p>
+            </div>
           </div>
         )}
 
