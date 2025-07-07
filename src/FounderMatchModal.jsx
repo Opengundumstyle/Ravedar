@@ -186,12 +186,12 @@ const FounderMatchModal = ({ isOpen, onClose, matchedUser, currentUser }) => {
             variants={itemVariants}
             className="my-4 sm:my-6 flex items-center justify-center -space-x-4 sm:-space-x-8"
           >
-            <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-pink-500 shadow-lg" style={{ boxShadow: '0 0 20px #e60073' }}>
+            <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full overflow-hidden border-4 border-pink-500 shadow-lg" style={{ boxShadow: '0 0 20px #e60073' }}>
               {currentUser.photos && currentUser.photos.length > 0 ? (
                 <img src={currentUser.photos[0].image_url} alt="You" className="w-full h-full object-cover" />
               ) : <div className="w-full h-full bg-gray-700" />}
             </div>
-            <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-purple-500 shadow-lg" style={{ boxShadow: '0 0 20px #a855f7' }}>
+            <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full overflow-hidden border-4 border-purple-500 shadow-lg" style={{ boxShadow: '0 0 20px #a855f7' }}>
               {matchedUser.photos && matchedUser.photos.length > 0 ? (
                 <img src={matchedUser.photos[0].image_url} alt={matchedUser.name} className="w-full h-full object-cover" />
               ) : <div className="w-full h-full bg-gray-700" />}
