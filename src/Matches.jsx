@@ -393,7 +393,7 @@ function Matches() {
             <span className="text-heading text-lg sm:text-xl text-white truncate max-w-[280px] md:max-w-[300px]">{eventName}</span>
           </div>
         )}
-        <div className="relative w-full h-[500px] sm:h-[600px] flex items-center justify-center">
+        <div className="relative w-full h-[600px] flex items-center justify-center mb-8">
           {/* Next card: always present, never animates */}
           {matches[currentIndex + 1] && (
             <div
@@ -511,12 +511,12 @@ function Matches() {
             </motion.div>
 
             <motion.div variants={itemVariants} className="my-4 sm:my-6 flex items-center justify-center -space-x-4 sm:-space-x-8">
-              <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full overflow-hidden border-4 border-pink-500 shadow-lg" style={{ boxShadow: '0 0 20px #e60073' }}>
+              <div className="w-32 h-32 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full overflow-hidden border-4 border-pink-500 shadow-lg" style={{ boxShadow: '0 0 20px #e60073' }}>
                 {currentUser.photos && currentUser.photos.length > 0 ? (
                   <img src={currentUser.photos[0].image_url} alt="You" className="w-full h-full object-cover" />
                 ) : <div className="w-full h-full bg-gray-700" />}
               </div>
-              <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full overflow-hidden border-4 border-purple-500 shadow-lg" style={{ boxShadow: '0 0 20px #a855f7' }}>
+              <div className="w-32 h-32 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full overflow-hidden border-4 border-purple-500 shadow-lg" style={{ boxShadow: '0 0 20px #a855f7' }}>
                 {matchedUser.photos && matchedUser.photos.length > 0 ? (
                   <img src={matchedUser.photos[0].image_url} alt={matchedUser.name} className="w-full h-full object-cover" />
                 ) : <div className="w-full h-full bg-gray-700" />}
@@ -649,7 +649,7 @@ function Matches() {
          </AnimatePresence>
 
         {/* Swipe instruction text - moved outside card container */}
-        <div className="flex justify-center mt-6 mb-4 px-4">
+        <div className="flex justify-center mt-4 px-4">
           <span className="text-body text-white/80 text-sm sm:text-base font-medium bg-black/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">Swipe left or right</span>
         </div>
       </div>
