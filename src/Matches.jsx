@@ -115,7 +115,10 @@ function Matches() {
         // --- End real users query ---
 
         // Fetch demo (fake) profiles and founder/co-founder profiles
-        const { data: fakeProfiles } = await supabase.from('user_profiles').select('id, name, instagram, vibe_tags, about_me, is_real, role');
+        const { data: fakeProfiles } = await supabase
+          .from('user_profiles')
+          .select('id, name, instagram, vibe_tags, about_me, is_real, role')
+          .or('is_real.eq.false,role.eq.founder,role.eq.co-founder');
         // Shuffle fakeProfiles using Fisher-Yates
         function shuffle(array) {
           let m = array.length, t, i;
@@ -269,7 +272,8 @@ function Matches() {
         return; // Don't move to next card yet
     }
     
-    // Don't increment currentIndex here since it's already incremented in onExitComplete
+    // Move to next card after survey action (except for 'too fake' which returns early)
+    setCurrentIndex(i => i + 1);
   };
 
   const handleAuthCTAAction = async (action) => {

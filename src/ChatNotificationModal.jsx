@@ -73,11 +73,10 @@ const ChatNotificationModal = ({ isOpen, onClose }) => {
             <div className="text-center mb-4 sm:mb-6">
               <div className="text-3xl sm:text-4xl mb-3">💬</div>
               <h2 className="text-heading text-xl sm:text-2xl text-white mb-2">
-                Coming Soon
+                🚨 HONEST QUESTION: Do ravers really need an app to connect?
               </h2>
               <p className="text-body text-white/80 leading-relaxed">
-                Chat is launching soon 🚀 
-                Leave us your email to get early access and be among the first to experience real-time rave connections!
+                Or can you magically find your vibe in a crowd? We're about to build this feature, but we need YOUR truth. Drop your email + tell us what you think. First 50 responses get exclusive early access! ⚡
               </p>
             </div>
 
@@ -165,7 +164,7 @@ const ChatNotificationModal = ({ isOpen, onClose }) => {
               Thanks for signing up!
             </h2>
             <p className="text-body text-white/80 mb-4">
-              We'll notify you when chat is ready. Check your email for a confirmation message!
+              We'll launch real user matching once we reach 500 signups! You're in a great position - the first 100 active users get exclusive beta access AND a chance to win VIP festival passes. Help us build the future of rave connections!
             </p>
             <div className="bg-white/10 rounded-lg p-3 text-sm text-white/70">
               <p>📧 Check your inbox (and spam folder) for a welcome email from Ravedar!</p>
