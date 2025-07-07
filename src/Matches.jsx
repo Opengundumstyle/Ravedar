@@ -393,7 +393,7 @@ function Matches() {
             <span className="text-heading text-lg sm:text-xl text-white truncate max-w-[280px] md:max-w-[300px]">{eventName}</span>
           </div>
         )}
-        <div className="relative w-full h-[600px] flex items-center justify-center mb-8">
+        <div className="relative w-full h-[600px] flex items-center justify-center mb-4 sm:mb-8">
           {/* Next card: always present, never animates */}
           {matches[currentIndex + 1] && (
             <div
@@ -649,7 +649,7 @@ function Matches() {
          </AnimatePresence>
 
         {/* Swipe instruction text - moved outside card container */}
-        <div className="flex justify-center mt-4 px-4">
+        <div className="flex justify-center mt-2 sm:mt-4 px-4">
           <span className="text-body text-white/80 text-sm sm:text-base font-medium bg-black/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">Swipe left or right</span>
         </div>
       </div>
