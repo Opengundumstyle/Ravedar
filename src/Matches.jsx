@@ -772,7 +772,7 @@ function Matches() {
                 </p>
                 <div className="space-y-3">
                   <motion.a
-                    href="https://discord.gg/YOUR_NEW_LINK_HERE"
+                    href="https://discord.gg/R3VYAUzWwd"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block w-full py-3 px-6 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-lg hover:scale-105 transform transition-transform duration-200 shadow-lg"
