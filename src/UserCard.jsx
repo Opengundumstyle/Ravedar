@@ -117,24 +117,31 @@ function UserCard({ user, onSurveyAction }) {
   return (
     <div className="bg-black/20 backdrop-blur-lg rounded-2xl shadow-lg flex flex-col items-center w-[448px] h-[600px] mx-auto transition-all duration-300 p-1 cursor-pointer">
       <div className="bg-black/20 backdrop-blur-lg rounded-2xl flex flex-col items-center w-full h-full p-0 relative">
-        {/* Demo Badge */}
-        {user.is_real === false && (
-          <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full text-caption font-semibold shadow-lg border border-white/20 backdrop-blur-sm animate-pulse">
-            DEMO USER
+        {/* Cat Badge - Highest Priority */}
+        {user.role === 'cat' && (
+          <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-orange-400 to-amber-500 text-white px-3 py-1 rounded-full text-caption font-semibold shadow-lg border border-white/20 backdrop-blur-sm animate-pulse">
+            🐱 CAT
           </div>
         )}
         
-        {/* Founder Badge */}
-        {user.role === 'founder' && (
+        {/* Founder Badge - Second Priority */}
+        {user.role === 'founder' && user.role !== 'cat' && (
           <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full text-caption font-semibold shadow-lg border border-white/20 backdrop-blur-sm animate-pulse">
             FOUNDER
           </div>
         )}
         
-        {/* Co-Founder Badge */}
-        {user.role === 'co-founder' && (
+        {/* Co-Founder Badge - Third Priority */}
+        {user.role === 'co-founder' && user.role !== 'cat' && (
           <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-full text-caption font-semibold shadow-lg border border-white/20 backdrop-blur-sm animate-pulse">
             CO-FOUNDER
+          </div>
+        )}
+        
+        {/* Demo Badge - Lowest Priority */}
+        {user.is_real === false && user.role !== 'cat' && user.role !== 'founder' && user.role !== 'co-founder' && (
+          <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full text-caption font-semibold shadow-lg border border-white/20 backdrop-blur-sm animate-pulse">
+            DEMO USER
           </div>
         )}
         
