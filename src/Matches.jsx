@@ -179,9 +179,9 @@ function Matches() {
     const currentUserId = localStorage.getItem('user_profile_id');
     if (!match || !currentUserId) return;
     
-    // Handle survey cards differently
+    // Handle survey cards - let them go through normal swipe animation
     if (match.is_survey) {
-      handleSurveyAction('view'); // Show survey
+      // Survey cards don't need database interaction, just move to next
       setCurrentIndex(i => i + 1);
       return;
     }
@@ -272,8 +272,10 @@ function Matches() {
         return; // Don't move to next card yet
     }
     
-    // Move to next card after survey action (except for 'too fake' which returns early)
-    setCurrentIndex(i => i + 1);
+    // Instead of directly moving to next card, trigger swipe animation
+    // This will make the survey card animate out smoothly
+    setSwipeDirection('right');
+    lastSwipe.current = { direction: 'right', index: currentIndex };
   };
 
   const handleAuthCTAAction = async (action) => {
@@ -650,7 +652,21 @@ function Matches() {
 
         {/* Swipe instruction text - moved outside card container */}
         <div className="flex justify-center mt-2 sm:mt-4 px-4">
-          <span className="text-body text-white/80 text-sm sm:text-base font-medium bg-black/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">Swipe left or right</span>
+          <div className="relative">
+            {/* Main text with simple glow */}
+            <div className="text-body text-white text-sm sm:text-base font-bold tracking-wider uppercase relative z-10 px-2">
+              <span className="relative">
+                <span className="absolute inset-0 bg-pink-500 blur-sm opacity-50"></span>
+                <span className="relative text-white drop-shadow-lg">
+                  SWIPE LEFT OR RIGHT
+                </span>
+              </span>
+            </div>
+            
+            {/* Simple angular accent lines */}
+            <div className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-2 h-0.5 bg-pink-500"></div>
+            <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-2 h-0.5 bg-pink-500"></div>
+          </div>
         </div>
       </div>
 
