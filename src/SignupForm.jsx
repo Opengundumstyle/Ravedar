@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import RadarLoader from './RadarLoader';
+import { useAuth } from './AuthContext';
 
 const SignupForm = () => {
   const [step, setStep] = useState(1);
@@ -10,6 +11,7 @@ const SignupForm = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   
   // Form data
   const [formData, setFormData] = useState({
@@ -115,34 +117,275 @@ const SignupForm = () => {
     setError('');
 
     try {
-      // Simulate loading for better UX
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      console.log('Starting signup process...');
       
-      // Show temporary message
-      setSuccess('Sorry, something went wrong with signup... We are working hard on this! Come back later! 🚧');
+      // Validate passwords match
+      if (formData.password !== formData.confirmPassword) {
+        throw new Error('Passwords do not match');
+      }
+
+      // Validate password strength
+      if (formData.password.length < 6) {
+        throw new Error('Password must be at least 6 characters long');
+      }
+
+      console.log('Creating Supabase Auth user...');
       
-      // Reset form after showing message
+      // Step 1: Create Supabase Auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            name: formData.name,
+            instagram: formData.instagram,
+            about_me: formData.aboutMe,
+            vibe_tags: formData.vibeTags
+          },
+          emailRedirectTo: `${window.location.origin}/oauth/callback`
+        }
+      });
+
+      if (authError) {
+        console.error('Auth error:', authError);
+        throw authError;
+      }
+
+      if (!authData.user) {
+        throw new Error('Failed to create user account');
+      }
+
+      console.log('Auth user created:', authData.user.id);
+
+      // Check if email confirmation is required
+      if (authData.user.email_confirmed_at === null) {
+        console.log('Email confirmation required');
+        setSuccess('Account created! Please check your email and click the confirmation link to activate your account. You can then sign in.');
+        
+        setTimeout(() => {
+          setLoading(false);
+          setSuccess('');
+          navigate('/signin');
+        }, 5000);
+        return;
+      }
+
+      // Step 2: Create user session entry (required for foreign key constraint)
+      console.log('Creating user session...');
+      const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year expiry for authenticated users
+      
+      // First check if session already exists
+      const { data: existingSession, error: sessionCheckError } = await supabase
+        .from('user_sessions')
+        .select('id')
+        .eq('id', authData.user.id)
+        .single();
+
+      if (sessionCheckError && sessionCheckError.code !== 'PGRST116') {
+        // PGRST116 is "not found" error, which is expected for new users
+        console.error('Session check error:', sessionCheckError);
+        throw new Error('Failed to check user session. Please try again.');
+      }
+
+      if (!existingSession) {
+        // Create new session
+        const { error: sessionError } = await supabase
+          .from('user_sessions')
+          .insert({
+            id: authData.user.id,
+            expires_at: expiresAt
+          });
+
+        if (sessionError) {
+          console.error('Session creation error:', sessionError);
+          throw new Error(`Failed to create user session: ${sessionError.message}`);
+        } else {
+          console.log('User session created successfully');
+        }
+      } else {
+        console.log('User session already exists, updating expiry...');
+        // Update existing session expiry
+        const { error: sessionUpdateError } = await supabase
+          .from('user_sessions')
+          .update({ expires_at: expiresAt })
+          .eq('id', authData.user.id);
+
+        if (sessionUpdateError) {
+          console.error('Session update error:', sessionUpdateError);
+          // Don't throw error here, just log it
+        } else {
+          console.log('User session updated successfully');
+        }
+      }
+
+      // Step 3: Create user profile
+      console.log('Creating user profile...');
+      
+      // First check if profile already exists
+      const { data: existingProfile, error: checkError } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('id', authData.user.id)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        // PGRST116 is "not found" error, which is expected for new users
+        console.error('Profile check error:', checkError);
+        throw new Error('Failed to check user profile. Please try again.');
+      }
+
+      let profileData;
+      if (existingProfile) {
+        console.log('Profile already exists, updating...');
+        // Update existing profile
+        const { data: updateData, error: updateError } = await supabase
+          .from('user_profiles')
+          .update({
+            name: formData.name,
+            instagram: formData.instagram,
+            about_me: formData.aboutMe,
+            vibe_tags: formData.vibeTags,
+            is_real: true,
+            expires_at: expiresAt
+          })
+          .eq('id', authData.user.id)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error('Profile update error details:', {
+            code: updateError.code,
+            message: updateError.message,
+            details: updateError.details,
+            hint: updateError.hint
+          });
+          throw new Error(`Failed to update user profile: ${updateError.message}`);
+        }
+        profileData = updateData;
+      } else {
+        // Create new profile
+        console.log('Creating new profile with data:', {
+          id: authData.user.id,
+          name: formData.name,
+          instagram: formData.instagram,
+          about_me: formData.aboutMe,
+          vibe_tags: formData.vibeTags,
+          is_real: true,
+          expires_at: expiresAt
+        });
+        
+        const { data: createData, error: createError } = await supabase
+          .from('user_profiles')
+          .insert({
+            id: authData.user.id,
+            name: formData.name,
+            instagram: formData.instagram,
+            about_me: formData.aboutMe,
+            vibe_tags: formData.vibeTags,
+            is_real: true,
+            expires_at: expiresAt
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Profile creation error details:', {
+            code: createError.code,
+            message: createError.message,
+            details: createError.details,
+            hint: createError.hint
+          });
+          throw new Error(`Failed to create user profile: ${createError.message}`);
+        }
+        profileData = createData;
+      }
+
+      console.log('User profile created/updated successfully:', profileData);
+
+      // Step 4: Upload photos if any
+      if (photos.length > 0) {
+        console.log('Uploading photos...');
+        for (let i = 0; i < photos.length; i++) {
+          const photo = photos[i];
+          console.log(`Uploading photo ${i + 1}/${photos.length}:`, photo);
+          
+          const { error: photoError } = await supabase
+            .from('user_photos')
+            .insert({
+              user_id: authData.user.id,
+              image_url: photo.image_url,
+              position: i
+            });
+
+          if (photoError) {
+            console.error(`Photo ${i + 1} upload error details:`, {
+              code: photoError.code,
+              message: photoError.message,
+              details: photoError.details,
+              hint: photoError.hint
+            });
+            // Don't throw error for photo upload failures, just log them
+            // The account is still created successfully
+          } else {
+            console.log(`Photo ${i + 1} uploaded successfully`);
+          }
+        }
+        console.log('All photos processed');
+      }
+
+      // Step 5: Update localStorage with new user ID
+      console.log('Updating localStorage...');
+      localStorage.setItem('user_profile_id', authData.user.id);
+      
+      // Clear any old anonymous user data
+      localStorage.removeItem('user_section_id');
+      localStorage.removeItem('user_event_data');
+
+      // Step 6: Show success message and redirect
+      console.log('Signup completed successfully');
+      setSuccess('Account created successfully! Welcome to Ravedar! 🎉');
+      
       setTimeout(() => {
         setLoading(false);
         setSuccess('');
-        navigate('/matches');
-      }, 3000);
+        // Redirect to event selection (home page) so user can set up their event
+        console.log('Redirecting to home page...');
+        navigate('/');
+      }, 2000);
 
     } catch (error) {
       console.error('Signup error:', error);
-      setError('Sorry, something went wrong with signup... We are working hard on this! Come back later!');
+      setError(error.message || 'Failed to create account. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const nextStep = () => {
-    if (step === 1 && (!formData.email || !formData.password || !formData.confirmPassword)) {
-      setError('Please fill in all required fields');
-      return;
+    if (step === 1) {
+      if (!formData.email || !formData.password || !formData.confirmPassword) {
+        setError('Please fill in all required fields');
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match');
+        return;
+      }
+      if (formData.password.length < 6) {
+        setError('Password must be at least 6 characters long');
+        return;
+      }
+      if (!formData.email.includes('@')) {
+        setError('Please enter a valid email address');
+        return;
+      }
     }
     if (step === 2 && !formData.name) {
       setError('Please enter your name');
+      return;
+    }
+    if (step === 3 && formData.vibeTags.length === 0) {
+      setError('Please select at least one vibe tag');
       return;
     }
     setStep(prev => prev + 1);
@@ -153,6 +396,12 @@ const SignupForm = () => {
     setStep(prev => prev - 1);
     setError('');
   };
+
+  // Redirect if user is already authenticated
+  if (isAuthenticated && user) {
+    navigate('/matches');
+    return null;
+  }
 
   if (loading && step === 4) {
     return <RadarLoader eventName="Creating your profile..." />;
@@ -523,6 +772,15 @@ const SignupForm = () => {
           >
             ← Back to Home
           </button>
+          <div className="mt-2">
+            <span className="text-body-small text-white/50">Already have an account? </span>
+            <button
+              onClick={() => navigate('/signin')}
+              className="text-body-small text-pink-400 hover:text-pink-300 underline font-medium transition-colors duration-200"
+            >
+              Sign in here
+            </button>
+          </div>
         </motion.div>
       </div>
     </div>

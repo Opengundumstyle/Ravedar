@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import EventForm from './EventForm';
 import Matches from './Matches';
 import SignupForm from './SignupForm';
+import SignInForm from './SignInForm';
+import UserPanel from './UserPanel';
 import OAuthCallback from './OAuthCallback';
 import RadarLoader from './RadarLoader';
 import { AuthProvider } from './AuthContext';
@@ -75,6 +77,8 @@ function App() {
           <Route path="/" element={<EventForm />} />
           <Route path="/matches" element={<Matches />} />
           <Route path="/signup" element={<SignupForm />} />
+          <Route path="/signin" element={<SignInForm />} />
+          <Route path="/user-panel" element={<UserPanel />} />
           <Route path="/oauth/callback" element={<OAuthCallback />} />
         </Routes>
       </BrowserRouter>

@@ -90,7 +90,8 @@ function Matches() {
         // ... (the rest of your fetch logic from the original useEffect)
         const { data: myEvent } = await supabase.from('user_events').select('name, date, city').eq('user_id', currentUserId).single();
         if (!myEvent) {
-          setMatches([]);
+          // If user doesn't have an event set up, redirect to home to select an event
+          navigate('/');
           return;
         }
         setEventName(myEvent.name);
@@ -329,6 +330,25 @@ function Matches() {
     </motion.button>
   ), [navigate]);
 
+  // Memoize the User Panel button to prevent re-renders
+  const userPanelButton = useMemo(() => (
+    <motion.button
+      key="user-panel-button"
+      onClick={() => navigate("/user-panel")}
+      className="fixed top-4 right-4 z-[60] flex items-center gap-2 px-4 py-2 bg-black/80 backdrop-blur-md border border-white/30 rounded-full text-white hover:text-white hover:bg-black/90 shadow-xl transition-all duration-300 shadow-lg"
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+      <span className="text-sm font-medium">Profile</span>
+    </motion.button>
+  ), [navigate]);
+
   if (loading) {
     return <RadarLoader eventName={eventName} />;
   }
@@ -388,6 +408,7 @@ function Matches() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 py-4 px-4 sm:py-8 sm:px-2 overflow-hidden relative">
       {newSearchButton}
+      {userPanelButton}
       <div className="w-full max-w-lg md:max-w-[480px] flex flex-col items-center justify-center min-h-[80vh] sm:min-h-[70vh] relative" style={{ minHeight: 'calc(100vh - 2rem)' }}>
         {eventName && match && (
           <div className="mb-4 sm:mb-8 w-full flex flex-col md:flex-row items-center text-center md:text-left space-y-1 md:space-y-0 px-2">

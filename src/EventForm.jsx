@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ensureSectionId } from './ensureUserId';
+import { useAuth } from './AuthContext';
 
 const TICKETMASTER_API_KEY = import.meta.env.VITE_TICKETMASTER_API_KEY;
 
@@ -19,11 +20,36 @@ function EventForm() {
   const [happeningSoonCity, setHappeningSoonCity] = useState("");
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
   const [title, setTitle] = useState({ text: <>&nbsp;</>, weight: 'font-light' });
+  const [userProfile, setUserProfile] = useState(null);
+  const { user, isAuthenticated } = useAuth();
 
   // Ensure section ID is generated for workflow
   useEffect(() => {
     ensureSectionId();
   }, []);
+
+  // Load user profile if authenticated
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (isAuthenticated && user) {
+        try {
+          const { data: profile, error } = await supabase
+            .from('user_profiles')
+            .select('name')
+            .eq('id', user.id)
+            .single();
+
+          if (!error && profile) {
+            setUserProfile(profile);
+          }
+        } catch (error) {
+          console.error('Error loading user profile:', error);
+        }
+      }
+    };
+
+    loadUserProfile();
+  }, [isAuthenticated, user]);
 
   // Effect to cycle through titles
   useEffect(() => {
@@ -197,33 +223,140 @@ function EventForm() {
     }
     const eventDate = date === '' ? null : date;
 
-    // Clear any existing event for this user before inserting a new one
-    const { error: deleteError } = await supabase
-      .from('user_events')
-      .delete()
-      .eq('user_id', userId);
+    try {
+      console.log('Starting event submission...');
+      console.log('User ID:', userId);
+      console.log('Event data:', { name: eventName, date: eventDate, city });
 
-    if (deleteError) {
-      setError('Error clearing previous search. Please try again.');
-      return;
+      // First, check if user profile exists
+      const { data: userProfile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('id', userId)
+        .single();
+
+      if (profileError) {
+        console.error('Profile check error:', profileError);
+        if (profileError.code === 'PGRST116') {
+          // User doesn't have a profile, create one for demo purposes
+          console.log('Creating demo profile for user:', userId);
+          
+          // First create a user session
+          const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours expiry
+          
+          const { error: sessionError } = await supabase
+            .from('user_sessions')
+            .insert({
+              id: userId,
+              expires_at: expiresAt
+            });
+
+          if (sessionError && sessionError.code !== '23505') { // 23505 is unique constraint violation
+            console.error('Session creation error:', sessionError);
+            setError('Failed to create user session. Please try again.');
+            return;
+          }
+
+          // Create a demo profile
+          const { error: createProfileError } = await supabase
+            .from('user_profiles')
+            .insert({
+              id: userId,
+              name: 'Demo User',
+              instagram: null,
+              about_me: 'Demo user exploring Ravedar',
+              vibe_tags: ['House', 'Techno'],
+              is_real: false,
+              expires_at: expiresAt
+            });
+
+          if (createProfileError) {
+            console.error('Profile creation error:', createProfileError);
+            setError('Failed to create demo profile. Please try again.');
+            return;
+          }
+
+          console.log('Demo profile created successfully');
+          // Continue with the event creation
+        } else {
+          throw new Error(`Failed to check user profile: ${profileError.message}`);
+        }
+      }
+
+      if (!userProfile && !profileError) {
+        // This shouldn't happen, but just in case
+        setError('Please sign up first to search for events. You can continue as a guest or create an account.');
+        return;
+      }
+
+      console.log('User profile found:', userProfile);
+
+      // Check if user already has an event
+      const { data: existingEvent, error: checkError } = await supabase
+        .from('user_events')
+        .select('user_id')
+        .eq('user_id', userId)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Event check error:', checkError);
+        throw new Error(`Failed to check existing event: ${checkError.message}`);
+      }
+
+      console.log('Existing event check result:', existingEvent);
+
+      // Clear any existing event for this user before inserting a new one
+      if (existingEvent) {
+        console.log('Deleting existing event...');
+        const { error: deleteError } = await supabase
+          .from('user_events')
+          .delete()
+          .eq('user_id', userId);
+
+        if (deleteError) {
+          console.error('Delete error details:', {
+            code: deleteError.code,
+            message: deleteError.message,
+            details: deleteError.details,
+            hint: deleteError.hint
+          });
+          setError(`Error clearing previous search: ${deleteError.message}`);
+          return;
+        }
+        console.log('Existing event deleted successfully');
+      }
+
+      // Insert new event
+      console.log('Inserting new event...');
+      const { data: insertData, error: insertError } = await supabase
+        .from('user_events')
+        .insert({
+          user_id: userId,
+          name: eventName,
+          date: eventDate,
+          city
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('Insert error details:', {
+          code: insertError.code,
+          message: insertError.message,
+          details: insertError.details,
+          hint: insertError.hint
+        });
+        setError(`Error saving event: ${insertError.message}`);
+        return;
+      }
+
+      console.log('Event inserted successfully:', insertData);
+      navigate('/matches');
+
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      setError(`Unexpected error: ${error.message}`);
     }
-
-    // Insert new event
-    const { error: insertError } = await supabase
-      .from('user_events')
-      .insert({
-        user_id: userId,
-        name: eventName,
-        date: eventDate,
-        city
-      });
-
-    if (insertError) {
-      setError('Error saving event. Please try again.');
-      return;
-    }
-
-    navigate('/matches');
   };
 
   const formVariants = {
@@ -458,6 +591,46 @@ function EventForm() {
           >
             Find My Rave Match
           </motion.button>
+
+          {/* Sign In Link or Welcome Message */}
+          <motion.div
+            className="text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
+            {isAuthenticated && userProfile ? (
+              <div>
+                <p className="text-body-small text-white/70 mb-2">
+                  Welcome back, <span className="text-pink-400 font-medium">{userProfile.name}</span>! ✨
+                </p>
+                <motion.button
+                  type="button"
+                  onClick={() => navigate('/user-panel')}
+                  className="text-body-small text-pink-400 hover:text-pink-300 underline font-medium transition-colors duration-200"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Manage your profile
+                </motion.button>
+              </div>
+            ) : (
+              <div>
+                <p className="text-body-small text-white/50 mb-2">
+                  Got an account with us?
+                </p>
+                <motion.button
+                  type="button"
+                  onClick={() => navigate('/signin')}
+                  className="text-body-small text-pink-400 hover:text-pink-300 underline font-medium transition-colors duration-200"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Sign in to your profile
+                </motion.button>
+              </div>
+            )}
+          </motion.div>
         </motion.form>
 
         {/* Footer */}
