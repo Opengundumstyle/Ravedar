@@ -617,17 +617,17 @@ function EventForm() {
             ) : (
               <div>
                 <p className="text-body-small text-white/50 mb-2">
-                  Got an account with us?
+                  Got an account with us?{' '}
+                  <motion.button
+                    type="button"
+                    onClick={() => navigate('/signin')}
+                    className="text-pink-400 hover:text-pink-300 underline font-medium transition-colors duration-200"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Sign in to your profile
+                  </motion.button>
                 </p>
-                <motion.button
-                  type="button"
-                  onClick={() => navigate('/signin')}
-                  className="text-body-small text-pink-400 hover:text-pink-300 underline font-medium transition-colors duration-200"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  Sign in to your profile
-                </motion.button>
               </div>
             )}
           </motion.div>
