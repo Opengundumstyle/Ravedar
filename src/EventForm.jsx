@@ -616,7 +616,7 @@ function EventForm() {
               </div>
             ) : (
               <div>
-                <p className="text-body-small text-white/50 mb-2">
+                <p className="text-xs text-white/50 mb-2 whitespace-nowrap">
                   Got an account with us?{' '}
                   <motion.button
                     type="button"
