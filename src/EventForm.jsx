@@ -388,9 +388,9 @@ function EventForm() {
       
       <div className="relative z-10 w-full max-w-md mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-12">
           <motion.div
-            className="mb-6 h-24 flex flex-col items-center justify-center"
+            className="mb-8 h-20 flex flex-col items-center justify-center"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -404,7 +404,7 @@ function EventForm() {
                 exit={{ opacity: 0, y: 0, scale: 0.9 }}
                 transition={{ 
                   duration: 0.8,
-                  ease: [0.4, 0.0, 0.2, 1] // Custom easing for smoother motion
+                  ease: [0.4, 0.0, 0.2, 1]
                 }}
               >
                 <h1 className={`text-display text-center ${
@@ -420,7 +420,7 @@ function EventForm() {
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0, opacity: 0 }}
                     transition={{ 
-                      delay: 0.2, // Small delay to appear after "Ravedar"
+                      delay: 0.2,
                       duration: 0.6,
                       ease: [0.4, 0.0, 0.2, 1]
                     }}
@@ -431,28 +431,19 @@ function EventForm() {
               </motion.div>
             </AnimatePresence>
           </motion.div>
-          
-          {/* <motion.p 
-            className="text-body-large text-white/80 leading-relaxed"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            Find your perfect rave match at your next event
-          </motion.p> */}
         </div>
 
         {/* Form */}
         <motion.form
           onSubmit={handleSubmit}
-          className="space-y-6 w-full max-w-full"
+          className="space-y-8 w-full max-w-full"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
           {/* Event/DJ Input */}
-          <div className="space-y-2">
-            <label className="text-caption text-white/70 block">
+          <div className="space-y-3">
+            <label className="text-sm text-white/80 block font-medium">
               Event or DJ Name
             </label>
             <div className="relative">
@@ -463,7 +454,7 @@ function EventForm() {
                 onFocus={() => setEventInputFocused(true)}
                 onBlur={() => setTimeout(() => setEventInputFocused(false), 200)}
                 placeholder="e.g., EDC, Tomorrowland, Skrillex..."
-                className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
+                className="w-full px-4 py-4 bg-black/30 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
                 required
               />
               <AnimatePresence>
@@ -501,8 +492,8 @@ function EventForm() {
           </div>
 
           {/* City Input */}
-          <div className="space-y-2">
-            <label className="text-caption text-white/70 block">
+          <div className="space-y-3">
+            <label className="text-sm text-white/80 block font-medium">
               City
             </label>
             <div className="relative">
@@ -513,7 +504,7 @@ function EventForm() {
                 onFocus={() => setCityInputFocused(true)}
                 onBlur={() => setTimeout(() => setCityInputFocused(false), 200)}
                 placeholder="e.g., Las Vegas, Miami, Amsterdam..."
-                className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
+                className="w-full px-4 py-4 bg-black/30 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
                 required
               />
               <AnimatePresence>
@@ -554,8 +545,8 @@ function EventForm() {
           </div>
 
           {/* Date Input */}
-          <div className="space-y-2">
-            <label className="text-caption text-white/70 block">
+          <div className="space-y-3">
+            <label className="text-sm text-white/80 block font-medium">
               Date (Optional)
             </label>
             <div className="relative">
@@ -563,7 +554,7 @@ function EventForm() {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
+                className="w-full px-4 py-4 bg-black/30 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
               />
             </div>
           </div>
@@ -573,7 +564,7 @@ function EventForm() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="px-4 py-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-300 text-body-small"
+              className="px-4 py-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-300 text-sm"
             >
               {error}
             </motion.div>
@@ -582,7 +573,7 @@ function EventForm() {
           {/* Submit Button */}
           <motion.button
             type="submit"
-            className="w-full py-4 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg rounded-xl hover:scale-105 transform transition-all duration-200 shadow-lg hover:shadow-xl"
+            className="w-full py-4 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg rounded-xl hover:scale-105 transform transition-all duration-200 shadow-lg hover:shadow-xl mt-6"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             style={{
@@ -594,20 +585,20 @@ function EventForm() {
 
           {/* Sign In Link or Welcome Message */}
           <motion.div
-            className="text-center"
+            className="text-center mt-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.6 }}
           >
             {isAuthenticated && userProfile ? (
               <div>
-                <p className="text-body-small text-white/70 mb-2">
+                <p className="text-sm text-white/70 mb-2">
                   Welcome back, <span className="text-pink-400 font-medium">{userProfile.name}</span>! ✨
                 </p>
                 <motion.button
                   type="button"
                   onClick={() => navigate('/user-panel')}
-                  className="text-body-small text-pink-400 hover:text-pink-300 underline font-medium transition-colors duration-200"
+                  className="text-sm text-pink-400 hover:text-pink-300 underline font-medium transition-colors duration-200"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -635,17 +626,17 @@ function EventForm() {
 
         {/* Footer */}
         <motion.div
-          className="text-center mt-8"
+          className="text-center mt-12"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.8 }}
         >
-          <p className="text-body-small text-white/60 mb-2">
+          <p className="text-sm text-white/60 mb-6">
             Connect with fellow ravers who share your vibe
           </p>
           
           {/* Social Media Links */}
-          <div className="flex justify-center gap-4 mb-4">
+          <div className="flex justify-center gap-4 mb-6">
             <motion.a
               href="https://instagram.com/ravedar.app"
               target="_blank"
@@ -691,7 +682,7 @@ function EventForm() {
             </motion.div>
           </div>
           
-          <p className="text-body-small text-white/40">
+          <p className="text-xs text-white/40">
             © Ravedar
           </p>
         </motion.div>
