@@ -7,6 +7,7 @@ import RadarLoader from './RadarLoader';
 import DiscordCTA from './DiscordCTA';
 import ChatNotificationModal from './ChatNotificationModal';
 import FounderMatchModal from './FounderMatchModal';
+import { useAuth } from './AuthContext';
 
 function Matches() {
   const [matches, setMatches] = useState([]);
@@ -31,6 +32,7 @@ function Matches() {
   const [isHovered, setIsHovered] = useState(false);
   const [toggled, setToggled] = useState(false);
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   // Track swipe direction for exit animation
   const [swipeDirection, setSwipeDirection] = useState(null);
@@ -316,7 +318,7 @@ function Matches() {
     <motion.button
       key="new-search-button"
       onClick={() => navigate("/")}
-      className="fixed top-4 left-4 z-[60] flex items-center gap-2 px-4 py-2 bg-black/80 backdrop-blur-md border border-white/30 rounded-full text-white hover:text-white hover:bg-black/90 shadow-xl transition-all duration-300 shadow-lg"
+      className="fixed top-4 left-4 z-[60] flex items-center gap-2 px-4 py-2 bg-white rounded-full text-gray-800 hover:bg-gray-100 shadow-md transition-all duration-200"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       initial={{ opacity: 0, x: -20 }}
@@ -326,7 +328,7 @@ function Matches() {
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
       </svg>
-      <span className="text-sm font-medium">New Search</span>
+      <span className="text-sm font-medium">Back</span>
     </motion.button>
   ), [navigate]);
 
@@ -408,7 +410,7 @@ function Matches() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 py-4 px-4 sm:py-8 sm:px-2 overflow-hidden relative">
       {newSearchButton}
-      {userPanelButton}
+      {isAuthenticated && userPanelButton}
       <div className="w-full max-w-lg md:max-w-[480px] flex flex-col items-center justify-center min-h-[80vh] sm:min-h-[70vh] relative" style={{ minHeight: 'calc(100vh - 2rem)' }}>
         {eventName && match && (
           <div className="mb-4 sm:mb-8 w-full flex flex-col md:flex-row items-center text-center md:text-left space-y-1 md:space-y-0 px-2">

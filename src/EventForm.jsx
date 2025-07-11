@@ -21,7 +21,7 @@ function EventForm() {
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
   const [title, setTitle] = useState({ text: <>&nbsp;</>, weight: 'font-light' });
   const [userProfile, setUserProfile] = useState(null);
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
 
   // Ensure section ID is generated for workflow
   useEffect(() => {
@@ -31,25 +31,43 @@ function EventForm() {
   // Load user profile if authenticated
   useEffect(() => {
     const loadUserProfile = async () => {
+      console.log('loadUserProfile called:', { 
+        isAuthenticated, 
+        user: user?.id, 
+        authLoading,
+        userProfile 
+      });
+      
+      // Wait for authentication to be fully loaded
+      if (authLoading) {
+        console.log('Auth still loading, skipping profile load');
+        return;
+      }
+      
       if (isAuthenticated && user) {
         try {
           const { data: profile, error } = await supabase
             .from('user_profiles')
-            .select('name')
+            .select('name, is_real')
             .eq('id', user.id)
             .single();
 
           if (!error && profile) {
+            console.log('Setting userProfile for authenticated user:', profile);
             setUserProfile(profile);
           }
         } catch (error) {
           console.error('Error loading user profile:', error);
         }
+      } else {
+        // Clear userProfile state when user is not authenticated
+        console.log('Clearing userProfile for unauthenticated user');
+        setUserProfile(null);
       }
     };
 
     loadUserProfile();
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, authLoading]);
 
   // Effect to cycle through titles
   useEffect(() => {
@@ -277,6 +295,14 @@ function EventForm() {
           }
 
           console.log('Demo profile created successfully');
+          
+          // Update the userProfile state to reflect the newly created demo profile
+          setUserProfile({
+            id: userId,
+            name: 'Demo User',
+            is_real: false
+          });
+          
           // Continue with the event creation
         } else {
           throw new Error(`Failed to check user profile: ${profileError.message}`);
@@ -574,10 +600,18 @@ function EventForm() {
           <motion.button
             type="submit"
             className="w-full py-4 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg rounded-xl hover:scale-105 transform transition-all duration-200 shadow-lg hover:shadow-xl mt-6"
-            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            style={{
-              boxShadow: '0 0 20px rgba(236, 72, 153, 0.3), 0 0 40px rgba(168, 85, 247, 0.2)'
+            animate={{
+              boxShadow: [
+                '0 0 25px rgba(236, 72, 153, 0.6), 0 0 50px rgba(168, 85, 247, 0.4)',
+                '0 0 40px rgba(236, 72, 153, 0.8), 0 0 80px rgba(168, 85, 247, 0.6)',
+                '0 0 25px rgba(236, 72, 153, 0.6), 0 0 50px rgba(168, 85, 247, 0.4)'
+              ]
+            }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              ease: "easeInOut"
             }}
           >
             Find My Rave Match
@@ -590,7 +624,7 @@ function EventForm() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.6 }}
           >
-            {isAuthenticated && userProfile ? (
+            {isAuthenticated && userProfile && userProfile.is_real !== false ? (
               <div>
                 <p className="text-sm text-white/70 mb-2">
                   Welcome back, <span className="text-pink-400 font-medium">{userProfile.name}</span>! ✨
@@ -607,18 +641,14 @@ function EventForm() {
               </div>
             ) : (
               <div>
-                <p className="text-xs text-white/50 mb-2 whitespace-nowrap">
-                  Got an account with us?{' '}
-                  <motion.button
-                    type="button"
-                    onClick={() => navigate('/signin')}
-                    className="text-pink-400 hover:text-pink-300 underline font-medium transition-colors duration-200"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Sign in to your profile
-                  </motion.button>
-                </p>
+                <motion.button
+                  type="button"
+                  onClick={() => navigate('/signin')}
+                  className="text-xs text-white/50 hover:text-pink-400 underline font-medium transition-colors duration-200"
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Got an account with us?
+                </motion.button>
               </div>
             )}
           </motion.div>
