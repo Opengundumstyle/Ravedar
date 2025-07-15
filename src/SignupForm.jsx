@@ -416,7 +416,7 @@ const SignupForm = () => {
         {/* Back Button */}
         <motion.button
           onClick={() => navigate('/matches')}
-          className="absolute top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 bg-black/80 backdrop-blur-md border border-white/30 rounded-full text-white hover:text-white hover:bg-black/90 shadow-xl transition-all duration-300 shadow-lg"
+          className="absolute top-4 left-4 z-50 flex items-center gap-2 px-3 py-2 bg-black/80 backdrop-blur-md border border-white/30 rounded-full text-white hover:text-white hover:bg-black/90 shadow-xl transition-all duration-300 shadow-lg sm:px-4 sm:py-2"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           initial={{ opacity: 0, x: -20 }}
@@ -426,11 +426,11 @@ const SignupForm = () => {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          <span className="text-sm font-medium">Back to Matching</span>
+          <span className="text-sm font-medium hidden sm:inline">Back to Matching</span>
         </motion.button>
 
         {/* Header */}
-        <div className="text-center mb-8 mt-16">
+        <div className="text-center mb-8 mt-20 sm:mt-16">
           <motion.div
             className="mb-6"
             initial={{ opacity: 0, y: -20 }}

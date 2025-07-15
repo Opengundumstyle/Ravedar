@@ -318,7 +318,7 @@ function Matches() {
     <motion.button
       key="new-search-button"
       onClick={() => navigate("/")}
-      className="fixed top-4 left-4 z-[60] flex items-center gap-2 px-4 py-2 bg-white rounded-full text-gray-800 hover:bg-gray-100 shadow-md transition-all duration-200"
+      className="fixed top-4 left-4 z-[60] flex items-center gap-2 px-3 py-2 bg-white rounded-full text-gray-800 hover:bg-gray-100 shadow-md transition-all duration-200 sm:px-4 sm:py-2"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       initial={{ opacity: 0, x: -20 }}
@@ -328,7 +328,7 @@ function Matches() {
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
       </svg>
-      <span className="text-sm font-medium">Back</span>
+      <span className="text-sm font-medium hidden sm:inline">Back</span>
     </motion.button>
   ), [navigate]);
 
@@ -337,7 +337,7 @@ function Matches() {
     <motion.button
       key="user-panel-button"
       onClick={() => navigate("/user-panel")}
-      className="fixed top-4 right-4 z-[60] flex items-center gap-2 px-4 py-2 bg-black/80 backdrop-blur-md border border-white/30 rounded-full text-white hover:text-white hover:bg-black/90 shadow-xl transition-all duration-300 shadow-lg"
+      className="fixed top-4 right-4 z-[60] flex items-center gap-2 px-3 py-2 bg-black/80 backdrop-blur-md border border-white/30 rounded-full text-white hover:text-white hover:bg-black/90 shadow-xl transition-all duration-300 shadow-lg sm:px-4 sm:py-2"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       initial={{ opacity: 0, x: 20 }}
@@ -347,7 +347,7 @@ function Matches() {
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
       </svg>
-      <span className="text-sm font-medium">Profile</span>
+      <span className="text-sm font-medium hidden sm:inline">Profile</span>
     </motion.button>
   ), [navigate]);
 

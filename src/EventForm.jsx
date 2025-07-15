@@ -599,7 +599,7 @@ function EventForm() {
           {/* Submit Button */}
           <motion.button
             type="submit"
-            className="w-full py-4 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg rounded-xl hover:scale-105 transform transition-all duration-200 shadow-lg hover:shadow-xl mt-6"
+            className="w-full py-4 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg rounded-xl transform transition-all duration-200 shadow-lg hover:shadow-xl mt-6"
             whileTap={{ scale: 0.98 }}
             animate={{
               boxShadow: [
