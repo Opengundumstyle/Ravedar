@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../components/AuthContext';
 import GraffitiWall from '../components/GraffitiWall';
+import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 
 const SCENE_AUTO_ADVANCE_MS = 2800;
 const EXPLODE_TO_RAVE_MS = 750;
@@ -71,11 +73,20 @@ export default function SignInPage() {
 
   const handleGoogleSignIn = async () => {
     try {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      const isNative = Capacitor.isNativePlatform();
+      const redirectTo = isNative
+        ? 'ravematch://oauth/callback'
+        : `${window.location.origin}/oauth/callback`;
+
+      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: `${window.location.origin}/oauth/callback` },
+        options: { redirectTo, skipBrowserRedirect: isNative },
       });
       if (oauthError) throw oauthError;
+
+      if (isNative && data?.url) {
+        await Browser.open({ url: data.url });
+      }
     } catch (err) {
       console.error('Google sign in error:', err);
       setError(err.message || 'failed to sign in with google.');
@@ -90,8 +101,13 @@ export default function SignInPage() {
     setLoading(true);
     setError('');
     try {
+      const isNative = Capacitor.isNativePlatform();
+      const redirectTo = isNative
+        ? 'ravematch://oauth/callback'
+        : `${window.location.origin}/oauth/callback`;
+
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/oauth/callback`,
+        redirectTo,
       });
       if (resetError) throw resetError;
       setSuccess('▸ reset email sent. check your inbox.');
