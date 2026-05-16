@@ -1,19 +1,57 @@
 import './globals.css';
+import {
+  Rubik_Wet_Paint,
+  Audiowide,
+  Major_Mono_Display,
+  Space_Mono,
+  Permanent_Marker,
+} from 'next/font/google';
 import { AuthProvider } from './components/AuthContext';
+
+const graffiti = Rubik_Wet_Paint({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-graffiti',
+  display: 'swap',
+});
+const neon = Audiowide({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-neon',
+  display: 'swap',
+});
+const monoAccent = Major_Mono_Display({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-mono-accent',
+  display: 'swap',
+});
+const bodyMono = Space_Mono({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+  variable: '--font-body-mono',
+  display: 'swap',
+});
+const marker = Permanent_Marker({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-marker',
+  display: 'swap',
+});
 
 export const metadata = {
   title: 'Ravedar - Find Your Rave Match',
-  description: 'Connect with fellow ravers and find your perfect match for the next festival or rave.',
+  description:
+    'Connect with fellow ravers and find your perfect match for the next festival or rave.',
 };
 
 export default function RootLayout({ children }) {
+  const fontVars = `${graffiti.variable} ${neon.variable} ${monoAccent.variable} ${bodyMono.variable} ${marker.variable}`;
   return (
-    <html lang="en">
+    <html lang="en" className={fontVars}>
       <body>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
-} 
+}

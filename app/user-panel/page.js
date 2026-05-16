@@ -202,11 +202,6 @@ export default function UserPanelPage() {
     return <RadarLoader eventName="Loading your profile..." />;
   }
 
-  if (!isAuthenticated) {
-    router.push('/signin');
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col p-4 relative overflow-y-auto">
       {/* Background Animation */}

@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import RadarLoader from '../components/RadarLoader';
+import GraffitiWall from '../components/GraffitiWall';
 import { useAuth } from '../components/AuthContext';
 
 export default function SignupPage() {
@@ -14,8 +14,7 @@ export default function SignupPage() {
   const [success, setSuccess] = useState('');
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
-  
-  // Form data
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -23,117 +22,96 @@ export default function SignupPage() {
     name: '',
     instagram: '',
     aboutMe: '',
-    vibeTags: []
+    vibeTags: [],
   });
-  
-  // Photo upload
+
   const [photos, setPhotos] = useState([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
-  
-  // Available vibe tags
+
   const availableVibeTags = [
     'House', 'Techno', 'Trance', 'Dubstep', 'Drum & Bass', 'Hardstyle',
     'Progressive', 'Melodic', 'Bass', 'Trap', 'Future Bass', 'Psytrance',
     'Underground', 'Mainstage', 'Chill', 'Energy', 'PLUR', 'Festival',
-    'Club', 'Warehouse', 'Outdoor', 'Sunset', 'Sunrise', 'Late Night'
+    'Club', 'Warehouse', 'Outdoor', 'Sunset', 'Sunrise', 'Late Night',
   ];
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) router.push('/matches');
+  }, [isAuthenticated, user, router]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleVibeTagToggle = (tag) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       vibeTags: prev.vibeTags.includes(tag)
-        ? prev.vibeTags.filter(t => t !== tag)
-        : [...prev.vibeTags, tag].slice(0, 5) // Max 5 tags
+        ? prev.vibeTags.filter((t) => t !== tag)
+        : [...prev.vibeTags, tag].slice(0, 5),
     }));
   };
 
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (photos.length + files.length > 6) {
-      setError('Maximum 6 photos allowed');
+      setError('▸ max 6 photos.');
       return;
     }
-
     setUploading(true);
     setError('');
-
     try {
-      const uploadedPhotos = [];
-      
+      const uploaded = [];
       for (const file of files) {
-        // Validate file type and size
         if (!file.type.startsWith('image/')) {
-          throw new Error('Please upload only image files');
+          throw new Error('image files only.');
         }
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
-          throw new Error('File size must be less than 5MB');
+        if (file.size > 5 * 1024 * 1024) {
+          throw new Error('files must be under 5mb.');
         }
-
-        // Create unique filename
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `user-photos/${fileName}`;
-
-        // Upload to Supabase Storage
         const { error: uploadError } = await supabase.storage
           .from('user-photos')
           .upload(filePath, file);
-
         if (uploadError) throw uploadError;
-
-        // Get public URL
         const { data: { publicUrl } } = supabase.storage
           .from('user-photos')
           .getPublicUrl(filePath);
-
-        uploadedPhotos.push({
+        uploaded.push({
           image_url: publicUrl,
-          position: photos.length + uploadedPhotos.length
+          position: photos.length + uploaded.length,
         });
       }
-
-      setPhotos(prev => [...prev, ...uploadedPhotos]);
-    } catch (error) {
-      setError(error.message);
+      setPhotos((prev) => [...prev, ...uploaded]);
+    } catch (err) {
+      setError(err.message);
     } finally {
       setUploading(false);
     }
   };
 
   const removePhoto = (index) => {
-    setPhotos(prev => prev.filter((_, i) => i !== index));
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSignup = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      console.log('Starting signup process...');
-      
-      // Validate passwords match
       if (formData.password !== formData.confirmPassword) {
-        throw new Error('Passwords do not match');
+        throw new Error('passwords do not match.');
       }
-
-      // Validate password strength
       if (formData.password.length < 6) {
-        throw new Error('Password must be at least 6 characters long');
+        throw new Error('password must be at least 6 characters.');
       }
 
-      console.log('Creating Supabase Auth user...');
-      
-      // Step 1: Create Supabase Auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -142,105 +120,59 @@ export default function SignupPage() {
             name: formData.name,
             instagram: formData.instagram,
             about_me: formData.aboutMe,
-            vibe_tags: formData.vibeTags
+            vibe_tags: formData.vibeTags,
           },
-          emailRedirectTo: `${window.location.origin}/oauth/callback`
-        }
+          emailRedirectTo: `${window.location.origin}/oauth/callback`,
+        },
       });
+      if (authError) throw authError;
+      if (!authData.user) throw new Error('failed to create account.');
 
-      if (authError) {
-        console.error('Auth error:', authError);
-        throw authError;
-      }
-
-      if (!authData.user) {
-        throw new Error('Failed to create user account');
-      }
-
-      console.log('Auth user created:', authData.user.id);
-
-      // Check if email confirmation is required
+      // Email confirmation flow
       if (authData.user.email_confirmed_at === null) {
-        console.log('Email confirmation required');
-        setSuccess('Account created! Please check your email and click the confirmation link to activate your account. You can then sign in.');
-        
+        setSuccess('▸ account created. check your email to confirm.');
         setTimeout(() => {
           setLoading(false);
           setSuccess('');
           router.push('/signin');
-        }, 5000);
+        }, 4000);
         return;
       }
 
-      // Step 2: Create user session entry (required for foreign key constraint)
-      console.log('Creating user session...');
-      const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year expiry for authenticated users
-      
-      // First check if session already exists
+      const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
+      // Ensure user_sessions row
       const { data: existingSession, error: sessionCheckError } = await supabase
         .from('user_sessions')
         .select('id')
         .eq('id', authData.user.id)
         .single();
-
       if (sessionCheckError && sessionCheckError.code !== 'PGRST116') {
-        // PGRST116 is "not found" error, which is expected for new users
-        console.error('Session check error:', sessionCheckError);
-        throw new Error('Failed to check user session. Please try again.');
+        throw new Error('failed to check session.');
       }
-
       if (!existingSession) {
-        // Create new session
         const { error: sessionError } = await supabase
           .from('user_sessions')
-          .insert({
-            id: authData.user.id,
-            expires_at: expiresAt
-          });
-
-        if (sessionError) {
-          console.error('Session creation error:', sessionError);
-          throw new Error(`Failed to create user session: ${sessionError.message}`);
-        } else {
-          console.log('User session created successfully');
-        }
+          .insert({ id: authData.user.id, expires_at: expiresAt });
+        if (sessionError) throw new Error(`failed to create session: ${sessionError.message}`);
       } else {
-        console.log('User session already exists, updating expiry...');
-        // Update existing session expiry
-        const { error: sessionUpdateError } = await supabase
+        await supabase
           .from('user_sessions')
           .update({ expires_at: expiresAt })
           .eq('id', authData.user.id);
-
-        if (sessionUpdateError) {
-          console.error('Session update error:', sessionUpdateError);
-          // Don't throw error here, just log it
-        } else {
-          console.log('User session updated successfully');
-        }
       }
 
-      // Step 3: Create user profile
-      console.log('Creating user profile...');
-      
-      // First check if profile already exists
+      // Profile upsert
       const { data: existingProfile, error: checkError } = await supabase
         .from('user_profiles')
         .select('id')
         .eq('id', authData.user.id)
         .single();
-
       if (checkError && checkError.code !== 'PGRST116') {
-        // PGRST116 is "not found" error, which is expected for new users
-        console.error('Profile check error:', checkError);
-        throw new Error('Failed to check user profile. Please try again.');
+        throw new Error('failed to check profile.');
       }
-
-      let profileData;
       if (existingProfile) {
-        console.log('Profile already exists, updating...');
-        // Update existing profile
-        const { data: updateData, error: updateError } = await supabase
+        const { error: updateError } = await supabase
           .from('user_profiles')
           .update({
             name: formData.name,
@@ -248,35 +180,12 @@ export default function SignupPage() {
             about_me: formData.aboutMe,
             vibe_tags: formData.vibeTags,
             is_real: true,
-            expires_at: expiresAt
+            expires_at: expiresAt,
           })
-          .eq('id', authData.user.id)
-          .select()
-          .single();
-
-        if (updateError) {
-          console.error('Profile update error details:', {
-            code: updateError.code,
-            message: updateError.message,
-            details: updateError.details,
-            hint: updateError.hint
-          });
-          throw new Error(`Failed to update user profile: ${updateError.message}`);
-        }
-        profileData = updateData;
+          .eq('id', authData.user.id);
+        if (updateError) throw new Error(`failed to update profile: ${updateError.message}`);
       } else {
-        // Create new profile
-        console.log('Creating new profile with data:', {
-          id: authData.user.id,
-          name: formData.name,
-          instagram: formData.instagram,
-          about_me: formData.aboutMe,
-          vibe_tags: formData.vibeTags,
-          is_real: true,
-          expires_at: expiresAt
-        });
-        
-        const { data: createData, error: createError } = await supabase
+        const { error: createError } = await supabase
           .from('user_profiles')
           .insert({
             id: authData.user.id,
@@ -285,80 +194,35 @@ export default function SignupPage() {
             about_me: formData.aboutMe,
             vibe_tags: formData.vibeTags,
             is_real: true,
-            expires_at: expiresAt
-          })
-          .select()
-          .single();
-
-        if (createError) {
-          console.error('Profile creation error details:', {
-            code: createError.code,
-            message: createError.message,
-            details: createError.details,
-            hint: createError.hint
+            expires_at: expiresAt,
           });
-          throw new Error(`Failed to create user profile: ${createError.message}`);
-        }
-        profileData = createData;
+        if (createError) throw new Error(`failed to create profile: ${createError.message}`);
       }
 
-      console.log('User profile created/updated successfully:', profileData);
-
-      // Step 4: Upload photos if any
-      if (photos.length > 0) {
-        console.log('Uploading photos...');
-        for (let i = 0; i < photos.length; i++) {
-          const photo = photos[i];
-          console.log(`Uploading photo ${i + 1}/${photos.length}:`, photo);
-          
-          const { error: photoError } = await supabase
-            .from('user_photos')
-            .insert({
-              user_id: authData.user.id,
-              image_url: photo.image_url,
-              position: i
-            });
-
-          if (photoError) {
-            console.error(`Photo ${i + 1} upload error details:`, {
-              code: photoError.code,
-              message: photoError.message,
-              details: photoError.details,
-              hint: photoError.hint
-            });
-            // Don't throw error for photo upload failures, just log them
-            // The account is still created successfully
-          } else {
-            console.log(`Photo ${i + 1} uploaded successfully`);
-          }
-        }
-        console.log('All photos processed');
+      // Photo rows
+      for (let i = 0; i < photos.length; i++) {
+        await supabase
+          .from('user_photos')
+          .insert({
+            user_id: authData.user.id,
+            image_url: photos[i].image_url,
+            position: i,
+          });
       }
 
-      // Step 5: Update localStorage with new user ID
-      console.log('Updating localStorage...');
       localStorage.setItem('user_profile_id', authData.user.id);
-      
-      // Clear any old anonymous user data
       localStorage.removeItem('user_section_id');
       localStorage.removeItem('user_event_data');
 
-      // Step 6: Show success message and redirect
-      console.log('Signup completed successfully');
-      setSuccess('Account created successfully! Welcome to Ravedar! 🎉');
-      
+      setSuccess('▸ tagged in. welcome to ravedar.');
       setTimeout(() => {
         setLoading(false);
         setSuccess('');
-        // Redirect to event selection (home page) so user can set up their event
-        console.log('Redirecting to home page...');
         router.push('/');
-      }, 2000);
-
-    } catch (error) {
-      console.error('Signup error:', error);
-      setError(error.message || 'Failed to create account. Please try again.');
-    } finally {
+      }, 1800);
+    } catch (err) {
+      console.error('Signup error:', err);
+      setError(err.message || 'failed to create account.');
       setLoading(false);
     }
   };
@@ -366,425 +230,526 @@ export default function SignupPage() {
   const nextStep = () => {
     if (step === 1) {
       if (!formData.email || !formData.password || !formData.confirmPassword) {
-        setError('Please fill in all required fields');
+        setError('▸ all fields are required.');
         return;
       }
       if (formData.password !== formData.confirmPassword) {
-        setError('Passwords do not match');
+        setError('▸ passwords do not match.');
         return;
       }
       if (formData.password.length < 6) {
-        setError('Password must be at least 6 characters long');
+        setError('▸ password must be at least 6 characters.');
         return;
       }
       if (!formData.email.includes('@')) {
-        setError('Please enter a valid email address');
+        setError('▸ enter a valid email.');
         return;
       }
     }
     if (step === 2 && !formData.name) {
-      setError('Please enter your name');
+      setError('▸ what should we tag you?');
       return;
     }
     if (step === 3 && formData.vibeTags.length === 0) {
-      setError('Please select at least one vibe tag');
+      setError('▸ pick at least one vibe.');
       return;
     }
-    setStep(prev => prev + 1);
+    setStep((p) => p + 1);
     setError('');
   };
 
   const prevStep = () => {
-    setStep(prev => prev - 1);
+    setStep((p) => p - 1);
     setError('');
   };
 
-  // Redirect if user is already authenticated
-  if (isAuthenticated && user) {
-    router.push('/matches');
-    return null;
-  }
-
   if (loading && step === 4) {
-    return <RadarLoader eventName="Creating your profile..." />;
+    return <RadarLoader eventName="creating your profile..." />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col p-4 relative overflow-y-auto">
-      {/* Background Animation */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 via-purple-900/20 to-pink-900/20 animate-pulse"></div>
-      
-      <div className="relative z-10 w-full max-w-md mx-auto px-4 py-8">
-        {/* Back Button */}
-        <motion.button
-          onClick={() => router.push('/matches')}
-          className="absolute top-4 left-4 z-50 flex items-center gap-2 px-3 py-2 bg-black/80 backdrop-blur-md border border-white/30 rounded-full text-white hover:text-white hover:bg-black/90 shadow-xl transition-all duration-300 shadow-lg sm:px-4 sm:py-2"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          <span className="text-sm font-medium hidden sm:inline">Back to Matching</span>
-        </motion.button>
+    <div className="rd-screen scrollable">
+      <GraffitiWall ambientLaser />
 
-        {/* Header */}
-        <div className="text-center mb-8 mt-20 sm:mt-16">
-          <motion.div
-            className="mb-6"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-display text-3xl text-white mb-2">
-              Join Ravedar
-            </h1>
-            <p className="text-body text-white/70">
-              Connect with fellow ravers and find your perfect match
-            </p>
-          </motion.div>
-
-          {/* Progress Steps */}
-          <div className="flex justify-center mb-8">
-            {[1, 2, 3, 4].map((stepNumber) => (
-              <div key={stepNumber} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                  stepNumber <= step 
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white' 
-                    : 'bg-white/20 text-white/60'
-                }`}>
-                  {stepNumber}
-                </div>
-                {stepNumber < 4 && (
-                  <div className={`w-12 h-1 mx-2 ${
-                    stepNumber < step ? 'bg-gradient-to-r from-pink-500 to-purple-600' : 'bg-white/20'
-                  }`} />
-                )}
-              </div>
-            ))}
+      <div style={layout.container}>
+        {/* HEADER */}
+        <div style={layout.header}>
+          <div className="rd-status-pill" style={{ marginBottom: '1.2rem' }}>
+            <span className="rd-status-dot" />
+            RAVEDAR ▸ SIGN UP
+          </div>
+          <h1 className="rd-neon-title" style={layout.title}>TAG IN</h1>
+          <div className="font-mono-accent" style={layout.subtitle}>
+            join the wall · find your rave match
           </div>
         </div>
 
-        {/* Form */}
-        <motion.div
-          className="bg-black/40 backdrop-blur-sm border border-white/20 rounded-2xl p-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <AnimatePresence mode="wait">
-            {step === 1 && (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-4"
+        {/* STEP INDICATOR */}
+        <div style={stepRow.container}>
+          {[1, 2, 3, 4].map((n) => {
+            const isActive = n <= step;
+            return (
+              <div
+                key={n}
+                style={{
+                  ...stepRow.dot,
+                  background: isActive ? 'var(--rd-spray-pink)' : 'rgba(0,0,0,0.5)',
+                  borderColor: isActive ? 'var(--rd-spray-pink)' : 'rgba(255,255,255,0.18)',
+                  boxShadow: isActive ? '0 0 12px rgba(255,26,138,0.45)' : 'none',
+                  color: isActive ? '#000' : 'rgba(255,255,255,0.45)',
+                }}
               >
-                <h2 className="text-heading text-xl text-white mb-4">Create Your Account</h2>
-                
-                <div>
-                  <label className="text-caption text-white/70 block mb-2">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
-                    placeholder="your@email.com"
-                    required
-                  />
-                </div>
+                0{n}
+              </div>
+            );
+          })}
+        </div>
 
-                <div>
-                  <label className="text-caption text-white/70 block mb-2">Password</label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
-                    placeholder="Create a password"
-                    required
-                  />
-                </div>
+        {/* STEP CONTENT */}
+        <form onSubmit={(e) => e.preventDefault()}>
+          {step === 1 && (
+            <>
+              <div className="rd-field">
+                <label className="rd-field-label">
+                  <span className="rd-field-num">01</span>
+                  <span className="rd-field-arrow">▸</span>
+                  EMAIL
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="rd-input"
+                  placeholder="email@vibe.zone"
+                  autoComplete="email"
+                  required
+                />
+              </div>
 
-                <div>
-                  <label className="text-caption text-white/70 block mb-2">Confirm Password</label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
-                    placeholder="Confirm your password"
-                    required
-                  />
-                </div>
+              <div className="rd-field">
+                <label className="rd-field-label">
+                  <span className="rd-field-num">02</span>
+                  <span className="rd-field-arrow">▸</span>
+                  PASSWORD
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="rd-input"
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
 
-                <motion.button
-                  onClick={nextStep}
-                  className="w-full py-3 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg rounded-xl hover:scale-105 transform transition-all duration-200 shadow-lg"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  Continue
-                </motion.button>
-              </motion.div>
-            )}
+              <div className="rd-field">
+                <label className="rd-field-label">
+                  <span className="rd-field-num">03</span>
+                  <span className="rd-field-arrow">▸</span>
+                  CONFIRM
+                </label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  className="rd-input"
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
+            </>
+          )}
 
-            {step === 2 && (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-4"
-              >
-                <h2 className="text-heading text-xl text-white mb-4">Tell Us About Yourself</h2>
-                
-                <div>
-                  <label className="text-caption text-white/70 block mb-2">Name</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
-                    placeholder="Your name"
-                    required
-                  />
-                </div>
+          {step === 2 && (
+            <>
+              <div className="rd-field">
+                <label className="rd-field-label">
+                  <span className="rd-field-num">01</span>
+                  <span className="rd-field-arrow">▸</span>
+                  NAME
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="rd-input"
+                  placeholder="how should we tag you"
+                  required
+                />
+              </div>
 
-                <div>
-                  <label className="text-caption text-white/70 block mb-2">Instagram (Optional)</label>
-                  <input
-                    type="text"
-                    name="instagram"
-                    value={formData.instagram}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
-                    placeholder="@yourusername"
-                  />
-                </div>
+              <div className="rd-field">
+                <label className="rd-field-label">
+                  <span className="rd-field-num">02</span>
+                  <span className="rd-field-arrow">▸</span>
+                  INSTAGRAM <span className="rd-field-opt">(opt.)</span>
+                </label>
+                <input
+                  type="text"
+                  name="instagram"
+                  value={formData.instagram}
+                  onChange={handleInputChange}
+                  className="rd-input"
+                  placeholder="@yourhandle"
+                />
+              </div>
 
-                <div>
-                  <label className="text-caption text-white/70 block mb-2">About Me</label>
-                  <textarea
-                    name="aboutMe"
-                    value={formData.aboutMe}
-                    onChange={handleInputChange}
-                    rows="3"
-                    className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200 resize-none"
-                    placeholder="Tell us about your rave journey..."
-                  />
-                </div>
+              <div className="rd-field">
+                <label className="rd-field-label">
+                  <span className="rd-field-num">03</span>
+                  <span className="rd-field-arrow">▸</span>
+                  ABOUT <span className="rd-field-opt">(opt.)</span>
+                </label>
+                <textarea
+                  name="aboutMe"
+                  value={formData.aboutMe}
+                  onChange={handleInputChange}
+                  rows="3"
+                  className="rd-input"
+                  placeholder="your rave story ···"
+                  style={{ resize: 'none' }}
+                />
+              </div>
+            </>
+          )}
 
-                <div className="flex gap-3">
-                  <motion.button
-                    onClick={prevStep}
-                    className="flex-1 py-3 px-6 bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold text-lg rounded-xl hover:bg-white/30 transform transition-colors duration-200"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Back
-                  </motion.button>
-                  <motion.button
-                    onClick={nextStep}
-                    className="flex-1 py-3 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg rounded-xl hover:scale-105 transform transition-all duration-200 shadow-lg"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Continue
-                  </motion.button>
-                </div>
-              </motion.div>
-            )}
-
-            {step === 3 && (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-4"
-              >
-                <h2 className="text-heading text-xl text-white mb-4">Choose Your Vibe</h2>
-                <p className="text-body text-white/70 mb-4">Select up to 5 vibe tags that describe your music taste</p>
-                
-                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                  {availableVibeTags.map((tag) => (
-                    <motion.button
+          {step === 3 && (
+            <div className="rd-field">
+              <label className="rd-field-label">
+                <span className="rd-field-num">01</span>
+                <span className="rd-field-arrow">▸</span>
+                VIBE TAGS <span className="rd-field-opt">(max 5)</span>
+              </label>
+              <div style={vibeGrid.container}>
+                {availableVibeTags.map((tag) => {
+                  const active = formData.vibeTags.includes(tag);
+                  return (
+                    <button
                       key={tag}
                       type="button"
                       onClick={() => handleVibeTagToggle(tag)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        formData.vibeTags.includes(tag)
-                          ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white'
-                          : 'bg-white/10 text-white/70 hover:bg-white/20'
-                      }`}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      style={{
+                        ...vibeGrid.chip,
+                        ...(active ? vibeGrid.chipActive : null),
+                      }}
                     >
                       {tag}
-                    </motion.button>
+                    </button>
+                  );
+                })}
+              </div>
+              <div
+                className="font-mono-accent"
+                style={{
+                  fontSize: '0.62rem',
+                  letterSpacing: '0.28em',
+                  color: 'rgba(255,255,255,0.4)',
+                  marginTop: '0.8rem',
+                  textTransform: 'uppercase',
+                }}
+              >
+                ▸ {formData.vibeTags.length} / 5 selected
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className="rd-field">
+              <label className="rd-field-label">
+                <span className="rd-field-num">01</span>
+                <span className="rd-field-arrow">▸</span>
+                PHOTOS <span className="rd-field-opt">(max 6)</span>
+              </label>
+
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                style={photoDrop.container}
+              >
+                <div style={photoDrop.arrow}>▼</div>
+                <div
+                  className="font-mono-accent"
+                  style={{
+                    fontSize: '0.72rem',
+                    letterSpacing: '0.3em',
+                    color: 'rgba(255,255,255,0.75)',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  drop photos here
+                </div>
+                <div
+                  className="font-mono-accent"
+                  style={{
+                    fontSize: '0.6rem',
+                    letterSpacing: '0.3em',
+                    color: 'rgba(255,255,255,0.4)',
+                    marginTop: '0.4rem',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  jpg · png · up to 5mb each
+                </div>
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                style={{ display: 'none' }}
+              />
+
+              {photos.length > 0 && (
+                <div style={photoGrid.container}>
+                  {photos.map((photo, idx) => (
+                    <div key={idx} style={photoGrid.item}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={photo.image_url}
+                        alt={`photo-${idx}`}
+                        style={photoGrid.img}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(idx)}
+                        style={photoGrid.remove}
+                        aria-label="remove photo"
+                      >
+                        ×
+                      </button>
+                    </div>
                   ))}
                 </div>
+              )}
 
-                <div className="flex gap-3">
-                  <motion.button
-                    onClick={prevStep}
-                    className="flex-1 py-3 px-6 bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold text-lg rounded-xl hover:bg-white/30 transform transition-colors duration-200"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Back
-                  </motion.button>
-                  <motion.button
-                    onClick={nextStep}
-                    className="flex-1 py-3 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg rounded-xl hover:scale-105 transform transition-all duration-200 shadow-lg"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Continue
-                  </motion.button>
+              {uploading && (
+                <div className="rd-banner" style={{ marginTop: '0.8rem' }}>
+                  ▸ uploading ···
                 </div>
-              </motion.div>
-            )}
+              )}
+            </div>
+          )}
 
-            {step === 4 && (
-              <motion.div
-                key="step4"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-4"
+          {error && <div className="rd-banner rd-banner--error">{error}</div>}
+          {success && <div className="rd-banner rd-banner--success">{success}</div>}
+
+          {/* ACTION BUTTONS */}
+          <div style={btnRow.container}>
+            {step > 1 && (
+              <button
+                type="button"
+                onClick={prevStep}
+                className="rd-btn-ghost"
+                style={{ flex: 1 }}
               >
-                <h2 className="text-heading text-xl text-white mb-4">Add Your Photos</h2>
-                <p className="text-body text-white/70 mb-4">Upload up to 6 photos to show off your rave style</p>
-                
-                {/* Photo Upload Area */}
-                <div className="space-y-4">
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-white/30 rounded-xl p-6 text-center cursor-pointer hover:border-pink-500/50 transition-colors duration-200"
-                  >
-                    <div className="text-3xl mb-2">📸</div>
-                    <p className="text-white/70 mb-2">Click to upload photos</p>
-                    <p className="text-sm text-white/50">JPG, PNG up to 5MB each</p>
-                  </div>
-                  
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handlePhotoUpload}
-                    className="hidden"
-                  />
-
-                  {/* Photo Preview */}
-                  {photos.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2">
-                      {photos.map((photo, index) => (
-                        <div key={index} className="relative group">
-                          <img
-                            src={photo.image_url}
-                            alt={`Photo ${index + 1}`}
-                            className="w-full h-24 object-cover rounded-lg"
-                          />
-                          <button
-                            onClick={() => removePhoto(index)}
-                            className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {uploading && (
-                    <div className="text-center text-white/70">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-pink-500 mx-auto mb-2"></div>
-                      Uploading...
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-3">
-                  <motion.button
-                    onClick={prevStep}
-                    className="flex-1 py-3 px-6 bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold text-lg rounded-xl hover:bg-white/30 transform transition-colors duration-200"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Back
-                  </motion.button>
-                  <motion.button
-                    onClick={handleSignup}
-                    disabled={loading}
-                    className="flex-1 py-3 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg rounded-xl hover:scale-105 transform transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    whileHover={{ scale: loading ? 1 : 1.02 }}
-                    whileTap={{ scale: loading ? 1 : 0.98 }}
-                  >
-                    {loading ? 'Creating Account...' : 'Create Account'}
-                  </motion.button>
-                </div>
-              </motion.div>
+                ◄ BACK
+              </button>
             )}
-          </AnimatePresence>
+            {step < 4 ? (
+              <button
+                type="button"
+                onClick={nextStep}
+                className="rd-btn-neon"
+                style={{ flex: step > 1 ? 1.4 : 1 }}
+              >
+                CONTINUE
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSignup}
+                disabled={loading}
+                className="rd-btn-neon"
+                style={{ flex: step > 1 ? 1.4 : 1 }}
+              >
+                {loading ? 'TAGGING IN ···' : 'DROP IN'}
+              </button>
+            )}
+          </div>
 
-          {/* Error Message */}
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="mt-4 px-4 py-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-300 text-body-small"
+          {/* FOOTER LINKS */}
+          <div style={{ textAlign: 'center', marginTop: '1.8rem' }}>
+            <span
+              className="font-mono-accent"
+              style={{
+                fontSize: '0.7rem',
+                letterSpacing: '0.2em',
+                color: 'rgba(255,255,255,0.4)',
+              }}
             >
-              {error}
-            </motion.div>
-          )}
-
-          {/* Success Message */}
-          {success && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="mt-4 px-4 py-3 bg-green-500/20 border border-green-500/30 rounded-xl text-green-300 text-body-small"
-            >
-              {success}
-            </motion.div>
-          )}
-        </motion.div>
-
-        {/* Back to Home */}
-        <motion.div
-          className="text-center mt-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
-          <button
-            onClick={() => router.push('/')}
-            className="text-body text-white/60 hover:text-white transition-colors duration-200"
-          >
-            ← Back to Home
-          </button>
-          <div className="mt-2">
-            <span className="text-body-small text-white/50">Already have an account? </span>
+              got an account?{' '}
+            </span>
             <button
+              type="button"
               onClick={() => router.push('/signin')}
-              className="text-body-small text-pink-400 hover:text-pink-300 underline font-medium transition-colors duration-200"
+              className="rd-stencil-link"
+              style={{ background: 'none', border: 'none', padding: 0 }}
             >
-              Sign in here
+              <span className="rd-arrow">▸</span> SIGN IN
             </button>
           </div>
-        </motion.div>
+
+          <div style={{ textAlign: 'center', marginTop: '0.8rem' }}>
+            <button
+              type="button"
+              onClick={() => router.push('/')}
+              className="rd-stencil-link"
+              style={{ background: 'none', border: 'none', padding: 0 }}
+            >
+              ◄ BACK TO HOME
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
-} 
+}
+
+const layout = {
+  container: {
+    position: 'relative',
+    zIndex: 10,
+    maxWidth: '460px',
+    margin: '0 auto',
+    padding: '2.5rem 1.5rem 5rem',
+  },
+  header: {
+    textAlign: 'center',
+    marginBottom: '2rem',
+  },
+  title: {
+    fontSize: 'clamp(2.6rem, 10vw, 4.2rem)',
+    transform: 'rotate(-3deg)',
+    display: 'inline-block',
+    marginBottom: '0.8rem',
+    lineHeight: 1,
+  },
+  subtitle: {
+    fontSize: '0.7rem',
+    letterSpacing: '0.32em',
+    color: 'rgba(255,255,255,0.55)',
+    textTransform: 'uppercase',
+  },
+};
+
+const stepRow = {
+  container: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '0.45rem',
+    marginBottom: '2.2rem',
+  },
+  dot: {
+    width: '48px',
+    height: '26px',
+    borderRadius: '2px',
+    border: '1px solid',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontFamily: 'var(--font-mono-accent), monospace',
+    fontSize: '0.7rem',
+    letterSpacing: '0.2em',
+    transition: 'background 0.25s, box-shadow 0.25s, color 0.25s, border-color 0.25s',
+  },
+};
+
+const vibeGrid = {
+  container: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '0.5rem',
+  },
+  chip: {
+    background: 'rgba(0,0,0,0.45)',
+    border: '1px solid rgba(255,255,255,0.18)',
+    color: 'rgba(255,255,255,0.85)',
+    fontFamily: 'var(--font-mono-accent), monospace',
+    fontSize: '0.62rem',
+    letterSpacing: '0.18em',
+    padding: '0.6rem 0.4rem',
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+    transition: 'all 0.18s',
+    borderRadius: '2px',
+  },
+  chipActive: {
+    background: 'rgba(255, 26, 138, 0.16)',
+    borderColor: 'var(--rd-spray-pink)',
+    color: 'var(--rd-spray-pink)',
+    textShadow: '0 0 8px rgba(255,26,138,0.55)',
+    boxShadow: 'inset 0 0 14px rgba(255,26,138,0.25)',
+  },
+};
+
+const photoDrop = {
+  container: {
+    border: '1px dashed rgba(255,255,255,0.28)',
+    background: 'rgba(0,0,0,0.35)',
+    borderRadius: '2px',
+    padding: '1.8rem 1rem',
+    textAlign: 'center',
+    cursor: 'pointer',
+    transition: 'border-color 0.2s',
+  },
+  arrow: {
+    fontSize: '1.6rem',
+    color: 'var(--rd-spray-pink)',
+    marginBottom: '0.5rem',
+    textShadow: '0 0 12px rgba(255,26,138,0.6)',
+  },
+};
+
+const photoGrid = {
+  container: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '0.5rem',
+    marginTop: '0.9rem',
+  },
+  item: {
+    position: 'relative',
+    aspectRatio: '1 / 1',
+    overflow: 'hidden',
+    borderRadius: '2px',
+    border: '1px solid rgba(255,255,255,0.15)',
+  },
+  img: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    display: 'block',
+  },
+  remove: {
+    position: 'absolute',
+    top: '4px',
+    right: '4px',
+    width: '24px',
+    height: '24px',
+    borderRadius: '50%',
+    background: 'rgba(0,0,0,0.75)',
+    border: '1px solid var(--rd-spray-pink)',
+    color: 'var(--rd-spray-pink)',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    lineHeight: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+};
+
+const btnRow = {
+  container: {
+    display: 'flex',
+    gap: '0.7rem',
+    marginTop: '1.8rem',
+  },
+};

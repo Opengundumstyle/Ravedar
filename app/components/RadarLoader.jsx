@@ -1,74 +1,67 @@
+'use client';
+
 import React from 'react';
-import { motion } from 'framer-motion';
+import GraffitiWall from './GraffitiWall';
 
-export default function RadarLoader({ eventName = "Loading..." }) {
+export default function RadarLoader({ eventName = 'tonight' }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col items-center justify-center p-4">
-      <div className="text-center">
-        {/* Radar Animation */}
-        <div className="relative mb-8">
-          <motion.div
-            className="w-32 h-32 border-4 border-pink-500/30 rounded-full"
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.6, 0.3],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
+    <div className="rd-screen">
+      <GraffitiWall />
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 10,
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1.5rem',
+        }}
+      >
+        <div className="rd-scan-radar" style={{ marginBottom: '2rem' }}>
+          <div className="rd-ring" />
+          <div className="rd-ring rd-ring--r2" />
+          <div className="rd-ring rd-ring--r3" />
+          <div className="rd-ring rd-ring--r4" />
+          <div className="rd-scan-sweep" />
+          <div
+            className="rd-scan-blip"
+            style={{ top: '30%', left: '38%', animationDelay: '0.4s' }}
+          />
+          <div
+            className="rd-scan-blip"
+            style={{
+              top: '55%',
+              left: '65%',
+              animationDelay: '0.8s',
+              background: 'var(--rd-spray-yellow)',
+              boxShadow: '0 0 12px var(--rd-spray-yellow)',
             }}
           />
-          <motion.div
-            className="absolute top-1/2 left-1/2 w-24 h-24 border-4 border-purple-500/50 rounded-full transform -translate-x-1/2 -translate-y-1/2"
-            animate={{
-              scale: [1, 1.3, 1],
-              opacity: [0.5, 0.8, 0.5],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 0.5,
+          <div
+            className="rd-scan-blip"
+            style={{ top: '68%', left: '32%', animationDelay: '1.2s' }}
+          />
+          <div
+            className="rd-scan-blip"
+            style={{
+              top: '38%',
+              left: '70%',
+              animationDelay: '1.5s',
+              background: 'var(--rd-spray-green)',
+              boxShadow: '0 0 12px var(--rd-spray-green)',
             }}
           />
-          <motion.div
-            className="absolute top-1/2 left-1/2 w-16 h-16 border-4 border-indigo-500/70 rounded-full transform -translate-x-1/2 -translate-y-1/2"
-            animate={{
-              scale: [1, 1.4, 1],
-              opacity: [0.7, 1, 0.7],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 1,
-            }}
-          />
-          
-          {/* Center Dot */}
-          <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full transform -translate-x-1/2 -translate-y-1/2 animate-pulse" />
         </div>
-
-        {/* Loading Text */}
-        <motion.h2
-          className="text-display text-2xl text-white mb-2"
-          animate={{
-            opacity: [0.5, 1, 0.5],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          {eventName}
-        </motion.h2>
-        
-        <p className="text-body text-white/60">
-          Finding your perfect rave match...
-        </p>
+        <div className="rd-scan-status">▸ TUNING IN</div>
+        <div className="rd-scan-substatus">
+          locking on{' '}
+          <span style={{ color: 'var(--rd-spray-pink)' }}>
+            {eventName.toUpperCase()}
+          </span>
+        </div>
       </div>
     </div>
   );
-} 
+}

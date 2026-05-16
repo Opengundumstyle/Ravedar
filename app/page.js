@@ -1,10 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabaseClient';
 import { createUserEvent } from '../lib/api/matches';
+import { ensureUserId } from '../lib/ensureUserId';
+import GraffitiWall from './components/GraffitiWall';
+
+const HERO_PHRASES = [
+  { type: 'small', text: 'connect through experience with' },
+  { type: 'tag',   text: 'RAVEDAR' },
+  { type: 'small', text: 'find your rave match' },
+];
 
 export default function HomePage() {
   const [eventName, setEventName] = useState('');
@@ -13,39 +20,25 @@ export default function HomePage() {
   const [citySuggestions, setCitySuggestions] = useState([]);
   const [date, setDate] = useState('');
   const [error, setError] = useState('');
-  const router = useRouter();
   const [eventInputFocused, setEventInputFocused] = useState(false);
   const [cityInputFocused, setCityInputFocused] = useState(false);
-  const [happeningSoonCity, setHappeningSoonCity] = useState("");
+  const [happeningSoonCity, setHappeningSoonCity] = useState('');
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
-  const [title, setTitle] = useState({ text: <>&nbsp;</>, weight: 'font-light' });
 
-  // Effect to cycle through titles
+  const [phraseIdx, setPhraseIdx] = useState(0);
+  const [scanState, setScanState] = useState(null); // null | { status, sub }
+
+  const router = useRouter();
+
+  // ---------------- Hero cycling ----------------
   useEffect(() => {
-    const sequence = [
-      { text: "Connect through experience with", weight: 'font-light' },
-      { text: "Ravedar", weight: 'font-bold' },
-      { text: "Find Your Rave Match", weight: 'font-light' }
-    ];
-    let index = 0;
-    
-    const cycleTitles = () => {
-      if (index < sequence.length) {
-        setTitle(sequence[index]);
-        index++;
-        if (index < sequence.length) {
-          setTimeout(cycleTitles, 3000);
-        }
-      }
-    };
-    
-    setTitle(sequence[0]);
-    setTimeout(() => {
-      cycleTitles();
-    }, 1000);
+    const id = setInterval(() => {
+      setPhraseIdx((i) => (i + 1) % HERO_PHRASES.length);
+    }, 3000);
+    return () => clearInterval(id);
   }, []);
 
-  // Autocomplete for event/dj name
+  // ---------------- Event / DJ autocomplete (Supabase) ----------------
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (!eventName.trim()) {
@@ -64,36 +57,34 @@ export default function HomePage() {
         .select('id, name')
         .ilike('name', `%${searchName}%`)
         .limit(5);
-      
-      const eventNames = new Set();
-      const uniqueEventSuggestions = [];
-      (eventData || []).forEach(e => {
-        if (!eventNames.has(e.name)) {
-          eventNames.add(e.name);
-          uniqueEventSuggestions.push({ type: 'event', id: e.id, name: e.name });
+
+      const seen = new Set();
+      const uniqueEvents = [];
+      (eventData || []).forEach((e) => {
+        if (!seen.has(e.name)) {
+          seen.add(e.name);
+          uniqueEvents.push({ type: 'event', id: e.id, name: e.name });
         }
       });
-      const allSuggestions = [
-        ...uniqueEventSuggestions,
-        ...(artistData || []).map(a => ({ type: 'artist', id: a.id, name: a.name })),
-      ];
-      setEventSuggestions(allSuggestions);
+      setEventSuggestions([
+        ...uniqueEvents,
+        ...(artistData || []).map((a) => ({ type: 'artist', id: a.id, name: a.name })),
+      ]);
     };
     fetchSuggestions();
   }, [eventName]);
 
-  // City suggestions based on event/dj and city input
+  // ---------------- City autocomplete + happening-soon ----------------
   useEffect(() => {
     const fetchCitySuggestions = async () => {
       if (!eventName.trim()) {
         setCitySuggestions([]);
-        setHappeningSoonCity("");
+        setHappeningSoonCity('');
         return;
       }
-      let soonestCity = "";
-      let soonestDate = null;
+      let soonestCity = '';
       let allCities = [];
-      
+
       if (selectedSuggestion) {
         if (selectedSuggestion.type === 'event') {
           const { data: eventRows } = await supabase
@@ -101,19 +92,17 @@ export default function HomePage() {
             .select('city, date')
             .ilike('name', `%${selectedSuggestion.name}%`)
             .order('date', { ascending: true });
-          
           if (eventRows && eventRows.length > 0) {
             soonestCity = eventRows[0].city;
-            soonestDate = eventRows[0].date;
-            allCities = eventRows.map(e => e.city);
+            allCities = eventRows.map((e) => e.city);
           }
         } else if (selectedSuggestion.type === 'artist') {
-          const { data: artistEventCities } = await supabase
+          const { data: artistEventRows } = await supabase
             .from('event_artists')
             .select('event_id')
             .eq('artist_id', selectedSuggestion.id)
             .limit(100);
-          const eventIds = (artistEventCities || []).map(ea => ea.event_id);
+          const eventIds = (artistEventRows || []).map((ea) => ea.event_id);
           if (eventIds.length > 0) {
             const { data: eventsByArtist } = await supabase
               .from('events')
@@ -123,15 +112,12 @@ export default function HomePage() {
               .limit(1);
             if (eventsByArtist && eventsByArtist.length > 0) {
               soonestCity = eventsByArtist[0].city;
-              soonestDate = eventsByArtist[0].date;
             }
             const { data: allArtistCities } = await supabase
               .from('events')
               .select('city')
               .in('id', eventIds);
-            if (allArtistCities) {
-              allCities = allArtistCities.map(e => e.city);
-            }
+            if (allArtistCities) allCities = allArtistCities.map((e) => e.city);
           }
         }
       } else {
@@ -142,355 +128,439 @@ export default function HomePage() {
           .ilike('name', `%${searchName}%`)
           .order('date', { ascending: true })
           .limit(1);
-        if (eventCities && eventCities.length > 0) {
-          soonestCity = eventCities[0].city;
-          soonestDate = eventCities[0].date;
-        }
+        if (eventCities && eventCities.length > 0) soonestCity = eventCities[0].city;
         const { data: allEventCities } = await supabase
           .from('events')
           .select('city')
           .ilike('name', `%${searchName}%`);
-        if (allEventCities) {
-          allCities = allEventCities.map(e => e.city);
-        }
+        if (allEventCities) allCities = allEventCities.map((e) => e.city);
       }
-      
+
       allCities = [...new Set(allCities)];
-      let filteredCities = allCities;
+      let filtered = allCities;
       if (city.trim()) {
-        filteredCities = allCities.filter(c => c.toLowerCase().includes(city.trim().toLowerCase()));
+        filtered = allCities.filter((c) =>
+          c.toLowerCase().includes(city.trim().toLowerCase())
+        );
       }
       if (allCities.length > 1) {
-        filteredCities = filteredCities.filter(c => c !== soonestCity);
+        filtered = filtered.filter((c) => c !== soonestCity);
       }
-      setCitySuggestions(filteredCities);
+      setCitySuggestions(filtered);
       setHappeningSoonCity(soonestCity);
     };
     fetchCitySuggestions();
   }, [eventName, city, selectedSuggestion]);
 
+  // ---------------- Submit ----------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     if (!eventName.trim() || !city.trim()) {
-      setError('Both event/DJ and city are required.');
+      setError('▸ both event and city are required.');
       return;
     }
-    
-    const userId = localStorage.getItem('user_profile_id');
-    if (!userId) {
-      alert('User ID not found. Please refresh the page.');
-      return;
-    }
-    
-    const eventDate = date === '' ? null : date;
 
-    try {
-      console.log('Starting event submission...');
-      console.log('User ID:', userId);
-      console.log('Event data:', { name: eventName, date: eventDate, city });
+    setScanState({
+      status: `▸ scanning ${eventName}`,
+      sub: (
+        <>
+          in <span className="rd-accent">{city.toUpperCase()}</span> · locking on signal
+        </>
+      ),
+    });
 
-      // Use the modular API function
-      const eventData = await createUserEvent(userId, eventName, city, eventDate);
-      console.log('Event created successfully:', eventData);
-      
-      router.push('/matches');
+    // Short scripted scan beats while createUserEvent runs in parallel.
+    const navTimeout = setTimeout(async () => {
+      try {
+        const userId = await ensureUserId();
+        const eventDate = date === '' ? null : date;
+        await createUserEvent(userId, eventName, city, eventDate);
+        router.push('/matches');
+      } catch (err) {
+        console.error('createUserEvent failed:', err);
+        setScanState(null);
+        setError(`▸ ${err.message || 'unexpected error.'}`);
+      }
+    }, 2200);
 
-    } catch (error) {
-      console.error('Unexpected error:', error);
-      setError(`Unexpected error: ${error.message}`);
-    }
+    setTimeout(
+      () =>
+        setScanState({
+          status: '▸ triangulating ···',
+          sub: <>{Math.floor(Math.random() * 20) + 8} ravers within range</>,
+        }),
+      900
+    );
+    setTimeout(
+      () =>
+        setScanState({
+          status: '▸ match pool ready',
+          sub: <>dropping you in ···</>,
+        }),
+      1700
+    );
+
+    return () => clearTimeout(navTimeout);
   };
 
+  // ---------------- Selecting suggestions ----------------
+  const pickEvent = (s) => {
+    setEventName(s.name);
+    setSelectedSuggestion(s);
+    setEventSuggestions([]);
+  };
+  const pickCity = (name) => {
+    setCity(name);
+    setCitySuggestions([]);
+  };
+
+  const heroNode = useMemo(
+    () =>
+      HERO_PHRASES.map((p, i) => {
+        const active = i === phraseIdx ? ' is-active' : '';
+        if (p.type === 'tag') {
+          return (
+            <div
+              key={i}
+              className={`rd-hero-phrase${active}`}
+              style={hero.phrase}
+            >
+              <div className="rd-title-tag" style={hero.tag}>
+                {p.text}
+              </div>
+            </div>
+          );
+        }
+        return (
+          <div key={i} className={`rd-hero-phrase${active}`} style={hero.phrase}>
+            <div className="font-neon" style={hero.small}>
+              {p.text}
+            </div>
+          </div>
+        );
+      }),
+    [phraseIdx]
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Animation */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 via-purple-900/20 to-pink-900/20 animate-pulse"></div>
-      
-      <div className="relative z-10 w-full max-w-md mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <motion.div
-            className="mb-8 h-20 flex flex-col items-center justify-center"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={title.text}
-                className="flex items-center justify-center gap-2"
-                initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 0, scale: 0.9 }}
-                transition={{ 
-                  duration: 0.8,
-                  ease: [0.4, 0.0, 0.2, 1]
-                }}
-              >
-                <h1 className={`text-display text-center ${
-                  title.text === "✨" ? "text-yellow-400" : "text-gradient-primary"
-                }`}>
-                  {title.text}
-                </h1>
-                {title.weight === 'font-bold' && (
-                  <motion.div
-                    key="star"
-                    className="text-4xl text-yellow-400"
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0, opacity: 0 }}
-                    transition={{ 
-                      delay: 0.2,
-                      duration: 0.6,
-                      ease: [0.4, 0.0, 0.2, 1]
-                    }}
-                  >
-                    ✨
-                  </motion.div>
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </motion.div>
+    <div className="rd-screen scrollable">
+      <GraffitiWall radar />
+
+      <div style={layout.container}>
+        {/* HERO */}
+        <div style={layout.hero}>
+          <div className="rd-status-pill" style={{ marginBottom: '1.2rem' }}>
+            <span className="rd-status-dot" />
+            RAVEDAR ▸ ONLINE
+          </div>
+          <div style={layout.heroTagline}>{heroNode}</div>
         </div>
 
-        {/* Form */}
-        <motion.form
-          onSubmit={handleSubmit}
-          className="space-y-8 w-full max-w-full"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          {/* Event/DJ Input */}
-          <div className="space-y-3">
-            <label className="text-sm text-white/80 block font-medium">
-              Event or DJ Name
+        {/* FORM */}
+        <form onSubmit={handleSubmit}>
+          {/* EVENT / DJ */}
+          <div className="rd-field">
+            <label className="rd-field-label">
+              <span className="rd-field-num">01</span>
+              <span className="rd-field-arrow">▸</span>
+              EVENT or DJ
             </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={eventName}
-                onChange={(e) => setEventName(e.target.value)}
-                onFocus={() => setEventInputFocused(true)}
-                onBlur={() => setTimeout(() => setEventInputFocused(false), 200)}
-                placeholder="e.g., EDC, Tomorrowland, Skrillex..."
-                className="input-field"
-                required
-              />
-              <AnimatePresence>
-                {eventInputFocused && eventSuggestions.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute top-full left-0 right-0 mt-2 bg-black/90 backdrop-blur-md border border-white/20 rounded-xl overflow-hidden z-20 max-h-48 overflow-y-auto"
+            <input
+              type="text"
+              className="rd-input"
+              value={eventName}
+              onChange={(e) => {
+                setEventName(e.target.value);
+                setSelectedSuggestion(null);
+              }}
+              onFocus={() => setEventInputFocused(true)}
+              onBlur={() => setTimeout(() => setEventInputFocused(false), 180)}
+              placeholder="EDC · TOMORROWLAND · SKRILLEX ..."
+              autoComplete="off"
+              required
+            />
+            {eventInputFocused && eventSuggestions.length > 0 && (
+              <div className="rd-dropdown">
+                <div className="rd-dropdown-header">▸ results</div>
+                {eventSuggestions.map((s) => (
+                  <button
+                    type="button"
+                    key={`${s.type}-${s.id}`}
+                    className="rd-dropdown-item"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      pickEvent(s);
+                    }}
                   >
-                    {eventSuggestions.map((suggestion, index) => (
-                      <motion.button
-                        key={`${suggestion.type}-${suggestion.id}`}
-                        type="button"
-                        onClick={() => {
-                          setEventName(suggestion.name);
-                          setSelectedSuggestion(suggestion);
-                          setEventSuggestions([]);
-                        }}
-                        className="w-full px-4 py-3 text-left text-body hover:bg-white/10 transition-colors duration-150 flex items-center gap-3"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                      >
-                        <span className="text-xs bg-pink-500/20 text-pink-300 px-2 py-1 rounded-full">
-                          {suggestion.type}
-                        </span>
-                        <span className="text-white">{suggestion.name}</span>
-                      </motion.button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                    <span className={`rd-type-chip rd-type-chip--${s.type}`}>
+                      {s.type}
+                    </span>
+                    <span>{s.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* City Input */}
-          <div className="space-y-3">
-            <label className="text-sm text-white/80 block font-medium">
-              City
+          {/* CITY */}
+          <div className="rd-field">
+            <label className="rd-field-label">
+              <span className="rd-field-num">02</span>
+              <span className="rd-field-arrow">▸</span>
+              CITY
             </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                onFocus={() => setCityInputFocused(true)}
-                onBlur={() => setTimeout(() => setCityInputFocused(false), 200)}
-                placeholder="e.g., Las Vegas, Miami, Amsterdam..."
-                className="input-field"
-                required
-              />
-              <AnimatePresence>
-                {cityInputFocused && citySuggestions.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute top-full left-0 right-0 mt-2 bg-black/90 backdrop-blur-md border border-white/20 rounded-xl overflow-hidden z-20 max-h-48 overflow-y-auto"
+            {happeningSoonCity && (
+              <div className="rd-hot-sticker">
+                <span className="rd-arrow">▸</span>
+                {happeningSoonCity.toLowerCase()}
+              </div>
+            )}
+            <input
+              type="text"
+              className="rd-input"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              onFocus={() => setCityInputFocused(true)}
+              onBlur={() => setTimeout(() => setCityInputFocused(false), 180)}
+              placeholder="LAS VEGAS · MIAMI · AMSTERDAM ..."
+              autoComplete="off"
+              required
+            />
+            {cityInputFocused && (citySuggestions.length > 0 || happeningSoonCity) && (
+              <div className="rd-dropdown">
+                <div className="rd-dropdown-header">▸ cities</div>
+                {happeningSoonCity && (
+                  <button
+                    type="button"
+                    className="rd-dropdown-item"
+                    style={{
+                      background: 'rgba(255, 233, 0, 0.07)',
+                      borderLeftColor: 'var(--rd-spray-yellow)',
+                    }}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      pickCity(happeningSoonCity);
+                    }}
                   >
-                    {happeningSoonCity && (
-                      <div className="px-4 py-2 bg-pink-500/20 border-b border-white/10">
-                        <span className="text-xs text-pink-300 font-medium">
-                          Happening soon in: {happeningSoonCity}
-                        </span>
-                      </div>
-                    )}
-                    {citySuggestions.map((suggestion, index) => (
-                      <motion.button
-                        key={suggestion}
-                        type="button"
-                        onClick={() => {
-                          setCity(suggestion);
-                          setCitySuggestions([]);
-                        }}
-                        className="w-full px-4 py-3 text-left text-body hover:bg-white/10 transition-colors duration-150"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                      >
-                        {suggestion}
-                      </motion.button>
-                    ))}
-                  </motion.div>
+                    <span className="rd-type-chip rd-type-chip--city">hot</span>
+                    <span>{happeningSoonCity}</span>
+                  </button>
                 )}
-              </AnimatePresence>
-            </div>
+                {citySuggestions.map((c) => (
+                  <button
+                    type="button"
+                    key={c}
+                    className="rd-dropdown-item"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      pickCity(c);
+                    }}
+                  >
+                    <span className="rd-type-chip rd-type-chip--city">city</span>
+                    <span>{c}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Date Input */}
-          <div className="space-y-3">
-            <label className="text-sm text-white/80 block font-medium">
-              Date (Optional)
+          {/* DATE */}
+          <div className="rd-field">
+            <label className="rd-field-label">
+              <span className="rd-field-num">03</span>
+              <span className="rd-field-arrow">▸</span>
+              DATE <span className="rd-field-opt">(opt.)</span>
             </label>
-            <div className="relative">
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="input-field"
-              />
-            </div>
+            <input
+              type="date"
+              className="rd-input"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
           </div>
 
-          {/* Error Message */}
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="px-4 py-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-300 text-sm"
-            >
-              {error}
-            </motion.div>
-          )}
+          {error && <div className="rd-banner rd-banner--error">{error}</div>}
 
-          {/* Submit Button */}
-          <motion.button
-            type="submit"
-            className="w-full py-4 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg rounded-xl transform transition-all duration-200 shadow-lg hover:shadow-xl mt-6"
-            whileTap={{ scale: 0.98 }}
-            animate={{
-              boxShadow: [
-                '0 0 25px rgba(236, 72, 153, 0.6), 0 0 50px rgba(168, 85, 247, 0.4)',
-                '0 0 40px rgba(236, 72, 153, 0.8), 0 0 80px rgba(168, 85, 247, 0.6)',
-                '0 0 25px rgba(236, 72, 153, 0.6), 0 0 50px rgba(168, 85, 247, 0.4)'
-              ]
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: "easeInOut"
+          <div className="rd-btn-wrap rd-btn-wrap--pulse" style={{ marginTop: '2rem' }}>
+            <button type="submit" className="rd-btn-neon">
+              DEPLOY RADAR
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => router.push('/signin')}
+            className="rd-stencil-link"
+            style={{ display: 'block', margin: '1.2rem auto', background: 'none', border: 'none' }}
+          >
+            got an account? <span className="rd-arrow">▸</span> SIGN IN
+          </button>
+        </form>
+
+        {/* FOOTER */}
+        <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+          <div
+            className="font-mono-accent"
+            style={{
+              fontSize: '0.72rem',
+              letterSpacing: '0.32em',
+              color: 'rgba(255,255,255,0.45)',
+              marginBottom: '1.5rem',
+              textTransform: 'uppercase',
             }}
           >
-            Find My Rave Match
-          </motion.button>
-
-          {/* Sign In Link */}
-          <motion.div
-            className="text-center mt-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
-            <motion.button
-              type="button"
-              onClick={() => router.push('/signin')}
-              className="text-xs text-white/50 hover:text-pink-400 underline font-medium transition-colors duration-200"
-              whileTap={{ scale: 0.98 }}
-            >
-              Got an account with us?
-            </motion.button>
-          </motion.div>
-        </motion.form>
-
-        {/* Footer */}
-        <motion.div
-          className="text-center mt-12"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-        >
-          <p className="text-sm text-white/60 mb-6">
-            Connect with fellow ravers who share your vibe
-          </p>
-          
-          {/* Social Media Links */}
-          <div className="flex justify-center gap-4 mb-6">
-            <motion.a
+            connect with fellow ravers who share your vibe
+          </div>
+          <div className="rd-socials" style={{ marginBottom: '1.4rem' }}>
+            <a
+              className="rd-social"
               href="https://instagram.com/ravedar.app"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 flex items-center justify-center text-white transform transition-transform duration-200 shadow-lg"
-              whileTap={{ scale: 0.95 }}
+              aria-label="Instagram"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              <svg fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
               </svg>
-            </motion.a>
-            
-            <motion.a
+            </a>
+            <a
+              className="rd-social"
               href="https://discord.gg/R3VYAUzWwd"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white transform transition-transform duration-200 shadow-lg"
-              whileTap={{ scale: 0.95 }}
+              aria-label="Discord"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419-.019 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1568 2.4189Z"/>
+              <svg fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419-.019 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1568 2.4189Z" />
               </svg>
-            </motion.a>
-            
-            <motion.div
-              className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white/40 cursor-not-allowed"
-              title="Coming soon"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+            </a>
+            <span className="rd-social is-disabled" aria-label="TikTok coming soon">
+              <svg fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
               </svg>
-            </motion.div>
-            
-            <motion.div
-              className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white/40 cursor-not-allowed"
-              title="Coming soon"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </span>
+            <span className="rd-social is-disabled" aria-label="Facebook coming soon">
+              <svg fill="currentColor" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
               </svg>
-            </motion.div>
+            </span>
           </div>
-          
-          <p className="text-xs text-white/40">
-            © Ravedar
-          </p>
-        </motion.div>
+          <div
+            className="font-mono-accent"
+            style={{
+              fontSize: '0.6rem',
+              letterSpacing: '0.4em',
+              color: 'rgba(255,255,255,0.25)',
+            }}
+          >
+            © RAVEDAR · MMXXVI
+          </div>
+        </div>
       </div>
+
+      {/* SCAN OVERLAY */}
+      <div className={`rd-scan-overlay${scanState ? ' is-open' : ''}`}>
+        <div className="rd-scan-radar">
+          <div className="rd-ring" />
+          <div className="rd-ring rd-ring--r2" />
+          <div className="rd-ring rd-ring--r3" />
+          <div className="rd-ring rd-ring--r4" />
+          <div className="rd-scan-sweep" />
+          <div
+            className="rd-scan-blip"
+            style={{ top: '30%', left: '38%', animationDelay: '0.4s' }}
+          />
+          <div
+            className="rd-scan-blip"
+            style={{
+              top: '55%',
+              left: '65%',
+              animationDelay: '0.8s',
+              background: 'var(--rd-spray-yellow)',
+              boxShadow: '0 0 12px var(--rd-spray-yellow)',
+            }}
+          />
+          <div
+            className="rd-scan-blip"
+            style={{ top: '68%', left: '32%', animationDelay: '1.2s' }}
+          />
+          <div
+            className="rd-scan-blip"
+            style={{
+              top: '38%',
+              left: '70%',
+              animationDelay: '1.5s',
+              background: 'var(--rd-spray-green)',
+              boxShadow: '0 0 12px var(--rd-spray-green)',
+            }}
+          />
+        </div>
+        <div className="rd-scan-status">{scanState?.status}</div>
+        <div className="rd-scan-substatus">{scanState?.sub}</div>
+      </div>
+
+      {/* Hero phrase transition (scoped style) */}
+      <style>{`
+        .rd-hero-phrase {
+          position: absolute;
+          opacity: 0;
+          transform: translateY(8px);
+          transition: opacity 0.6s ease, transform 0.6s ease;
+          width: 100%;
+          text-align: center;
+        }
+        .rd-hero-phrase.is-active {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        .rd-accent { color: var(--rd-spray-pink); }
+      `}</style>
     </div>
   );
-} 
+}
+
+// inline style constants
+const layout = {
+  container: {
+    position: 'relative',
+    zIndex: 10,
+    maxWidth: '460px',
+    margin: '0 auto',
+    padding: '2.5rem 1.5rem 5rem',
+  },
+  hero: {
+    textAlign: 'center',
+    marginBottom: '2.5rem',
+    minHeight: '200px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  heroTagline: {
+    height: '5.5rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    width: '100%',
+  },
+};
+
+const hero = {
+  phrase: {},
+  small: {
+    fontSize: '0.92rem',
+    letterSpacing: '0.32em',
+    color: 'rgba(255, 255, 255, 0.75)',
+    textTransform: 'uppercase',
+    textShadow: '0 0 12px rgba(255, 255, 255, 0.18)',
+  },
+  tag: {
+    fontSize: 'clamp(3rem, 11vw, 4.8rem)',
+    transform: 'rotate(-3deg)',
+    display: 'inline-block',
+    lineHeight: 1,
+  },
+};
