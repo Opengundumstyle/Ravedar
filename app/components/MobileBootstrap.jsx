@@ -19,7 +19,8 @@ export default function MobileBootstrap() {
     const setup = async () => {
       subscription = await App.addListener('appUrlOpen', async ({ url }) => {
         try {
-          // url like: ravematch://oauth/callback#access_token=...&refresh_token=...
+          // Implicit/fragment flow only: ravematch://oauth/callback#access_token=...&refresh_token=...
+          // If Supabase auth is migrated to PKCE, this must parse `?code=` and call exchangeCodeForSession.
           const hashIndex = url.indexOf('#');
           if (hashIndex === -1) return;
           const params = new URLSearchParams(url.slice(hashIndex + 1));
@@ -28,6 +29,8 @@ export default function MobileBootstrap() {
           if (access_token && refresh_token) {
             await supabase.auth.setSession({ access_token, refresh_token });
           }
+        } catch (err) {
+          console.error('[MobileBootstrap] OAuth deep-link handling failed:', err);
         } finally {
           await Browser.close().catch(() => {});
         }
