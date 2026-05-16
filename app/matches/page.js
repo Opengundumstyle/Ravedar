@@ -212,7 +212,7 @@ export default function MatchesPage() {
     } catch (err) {
       console.error('createMatch failed before chat nav:', err);
     }
-    router.push(`/chat/${matchedUser.id}`);
+    router.push(`/chat/thread?user=${matchedUser.id}`);
   };
   const handleSurveyAction = (action) => {
     switch (action) {

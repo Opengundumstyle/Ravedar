@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useRef, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   getConversation,
   sendMessage,
@@ -28,10 +28,10 @@ function formatDayDivider(iso) {
     .toLowerCase();
 }
 
-export default function ChatThreadPage() {
+function ChatThreadInner() {
   const router = useRouter();
-  const params = useParams();
-  const otherUserId = params?.userId;
+  const searchParams = useSearchParams();
+  const otherUserId = searchParams.get('user');
 
   const [myId, setMyId] = useState(null);
   const [otherProfile, setOtherProfile] = useState(null);
@@ -578,3 +578,11 @@ const lockout = {
     maxWidth: '320px',
   },
 };
+
+export default function ChatThreadPage() {
+  return (
+    <Suspense fallback={null}>
+      <ChatThreadInner />
+    </Suspense>
+  );
+}

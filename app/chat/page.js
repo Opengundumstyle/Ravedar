@@ -143,7 +143,7 @@ export default function ChatInboxPage() {
               return (
                 <button
                   key={c.match_id}
-                  onClick={() => router.push(`/chat/${c.other_user_id}`)}
+                  onClick={() => router.push(`/chat/thread?user=${c.other_user_id}`)}
                   style={{
                     ...list.row,
                     ...(unread ? list.rowUnread : null),
