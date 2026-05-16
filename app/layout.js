@@ -7,6 +7,7 @@ import {
   Permanent_Marker,
 } from 'next/font/google';
 import { AuthProvider } from './components/AuthContext';
+import MobileBootstrap from './components/MobileBootstrap';
 
 const graffiti = Rubik_Wet_Paint({
   weight: '400',
@@ -50,6 +51,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={fontVars}>
       <body>
+        <MobileBootstrap />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
