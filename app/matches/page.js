@@ -353,7 +353,7 @@ export default function MatchesPage() {
   // Keyboard support
   useEffect(() => {
     const onKey = (e) => {
-      if (!currentCard || matchOverlay || showChatModal || showFounderModal) return;
+      if (!currentCard || matchOverlay || showChatModal || showFounderModal || showSignupGate) return;
       if (currentCard.is_survey) return;
       if (e.key === 'ArrowLeft') commitSwipe('left');
       else if (e.key === 'ArrowRight') commitSwipe('right');
@@ -361,7 +361,7 @@ export default function MatchesPage() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentCard, matchOverlay, showChatModal, showFounderModal, nextCard]);
+  }, [currentCard, matchOverlay, showChatModal, showFounderModal, showSignupGate, nextCard]);
 
   // ---------------- early returns ----------------
   if (loading) return <RadarLoader eventName={eventName} />;
