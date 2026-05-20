@@ -390,18 +390,40 @@ export default function MatchesPage() {
           }}
         >
           <div className="rd-empty">
-            <div className="rd-empty-title">that's the wall.</div>
-            <div className="rd-empty-sub">
-              you've tagged everyone in tonight's room for{' '}
-              <span style={{ color: 'var(--rd-spray-yellow)' }}>{eventName}</span>.
-              <br />
-              check back when the next event drops.
-            </div>
-            <div className="rd-btn-wrap">
-              <button className="rd-btn-neon" onClick={() => router.push('/')}>
-                ↻ FIND A NEW VIBE
-              </button>
-            </div>
+            <div className="rd-empty-title">that&apos;s the wall.</div>
+
+            {isAuthenticated ? (
+              <div className="rd-empty-sub">
+                you&apos;ve tagged everyone in tonight&apos;s room for{' '}
+                <span style={{ color: 'var(--rd-spray-yellow)' }}>{eventName}</span>.
+                <br />
+                check back when the next event drops.
+              </div>
+            ) : (
+              <div className="rd-empty-sub">
+                <span style={{ color: 'var(--rd-spray-yellow)' }}>{realCount}</span> real{' '}
+                {realCount === 1 ? 'raver' : 'ravers'} in this room. they can&apos;t see you yet.
+              </div>
+            )}
+
+            {isAuthenticated ? (
+              <div className="rd-btn-wrap">
+                <button className="rd-btn-neon" onClick={() => router.push('/')}>
+                  ↻ FIND A NEW VIBE
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="rd-btn-wrap" style={{ marginBottom: '0.7rem' }}>
+                  <button className="rd-btn-neon" onClick={() => router.push('/signup')}>
+                    TAG IN TO BE SEEN
+                  </button>
+                </div>
+                <button className="rd-btn-ghost" onClick={() => router.push('/')}>
+                  ↻ FIND A NEW VIBE
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
