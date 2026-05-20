@@ -658,6 +658,7 @@ body {
 }
 .rd-banner--error   { background: rgba(255, 26, 138, 0.1);  border-left: 3px solid var(--rd-spray-pink); color: var(--rd-spray-pink); }
 .rd-banner--success { background: rgba(102, 255, 0, 0.1);   border-left: 3px solid var(--rd-spray-green); color: var(--rd-spray-green); }
+.rd-banner--sparse  { background: rgba(255, 233, 0, 0.08);  border-left: 3px solid var(--rd-spray-yellow); color: var(--rd-spray-yellow); }
 
 /* ---------- Big graffiti title ---------- */
 .rd-title-tag {

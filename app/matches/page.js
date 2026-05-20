@@ -11,6 +11,7 @@ import GraffitiWall from '../components/GraffitiWall';
 import { useAuth } from '../components/AuthContext';
 import GhostChip from '../components/GhostChip';
 import SignupGateModal from '../components/SignupGateModal';
+import SparseRoomBanner from '../components/SparseRoomBanner';
 import { checkMutualMatch, getMatchesForUser } from '../../lib/api/matches';
 import { createMatch } from '../../lib/api/chat';
 
@@ -44,6 +45,8 @@ export default function MatchesPage() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [frozenBottomCard, setFrozenBottomCard] = useState(null);
   const [activationBanner, setActivationBanner] = useState(null); // null | { count: number }
+  const [realCount, setRealCount] = useState(0);
+  const [myEventInfo, setMyEventInfo] = useState(null); // { name, city, date }
 
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -102,6 +105,8 @@ export default function MatchesPage() {
         } catch (err) {
           console.error('Failed to load real co-attendees:', err);
         }
+        setRealCount(realCoAttendees.length);
+        setMyEventInfo({ name: myEvent.name, city: myEvent.city, date: myEvent.date });
         const shuffledReal = shuffle(realCoAttendees);
 
         const { data: fakeProfiles } = await supabase
@@ -453,6 +458,16 @@ export default function MatchesPage() {
             ×
           </button>
         </div>
+      )}
+
+      {/* Sparse-room banner: real count 1-3 */}
+      {myEventInfo && realCount >= 1 && realCount <= 3 && (
+        <SparseRoomBanner
+          realCount={realCount}
+          eventName={myEventInfo.name}
+          city={myEventInfo.city}
+          date={myEventInfo.date}
+        />
       )}
 
       {/* Card stack */}
