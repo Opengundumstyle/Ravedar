@@ -487,7 +487,7 @@ export default function MatchesPage() {
       )}
 
       {/* Sparse-room banner: real count 1-3 */}
-      {myEventInfo && realCount >= 1 && realCount <= 3 && !showTakeover && (
+      {myEventInfo && realCount >= 1 && realCount <= 3 && !showTakeover && !activationBanner && (
         <SparseRoomBanner
           realCount={realCount}
           eventName={myEventInfo.name}
