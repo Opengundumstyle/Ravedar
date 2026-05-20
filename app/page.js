@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '../lib/supabaseClient';
 import { createUserEvent } from '../lib/api/matches';
 import { ensureUserId } from '../lib/ensureUserId';
@@ -32,6 +32,25 @@ export default function HomePage() {
 
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
+
+  // ---------------- Pre-fill from query params ----------------
+  useEffect(() => {
+    if (!searchParams) return;
+    const e = searchParams.get('event');
+    const c = searchParams.get('city');
+    const d = searchParams.get('date');
+    if (!e && !c && !d) return; // nothing to seed
+
+    if (e) setEventName(e);
+    if (c) setCity(c);
+    if (d) setDate(d);
+
+    // Strip the params so refresh doesn't re-seed and overwrite user edits.
+    router.replace('/');
+    // Run once on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ---------------- Hero cycling ----------------
   useEffect(() => {
