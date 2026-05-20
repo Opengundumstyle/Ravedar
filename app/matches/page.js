@@ -174,6 +174,7 @@ export default function MatchesPage() {
         .eq('liked', true);
       if (likesError) {
         console.error('activation: fetch outgoing likes failed', likesError);
+        setActivationBanner({ count: 0 });
         return;
       }
       const targetIds = (outgoingLikes || []).map((r) => r.to_user_id);
@@ -391,7 +392,7 @@ export default function MatchesPage() {
       <TopBar router={router} isAuthenticated={isAuthenticated} />
 
       {/* Event banner */}
-      {eventName && currentCard && (
+      {eventName && currentCard && !activationBanner && (
         <div className="rd-event-banner">
           <span className="rd-arrow">▼</span>
           <span>BOTH AT</span>
@@ -406,7 +407,7 @@ export default function MatchesPage() {
           className="rd-banner rd-banner--success"
           style={{
             position: 'fixed',
-            top: '4.5rem',
+            top: 'calc(4.5rem + env(safe-area-inset-top, 0px))',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 40,
