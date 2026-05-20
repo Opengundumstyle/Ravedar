@@ -12,6 +12,7 @@ import { useAuth } from '../components/AuthContext';
 import GhostChip from '../components/GhostChip';
 import SignupGateModal from '../components/SignupGateModal';
 import SparseRoomBanner from '../components/SparseRoomBanner';
+import ShareEventLink from '../components/ShareEventLink';
 import { checkMutualMatch, getMatchesForUser } from '../../lib/api/matches';
 import { createMatch } from '../../lib/api/chat';
 
@@ -47,6 +48,7 @@ export default function MatchesPage() {
   const [activationBanner, setActivationBanner] = useState(null); // null | { count: number }
   const [realCount, setRealCount] = useState(0);
   const [myEventInfo, setMyEventInfo] = useState(null); // { name, city, date }
+  const [scanAnyway, setScanAnyway] = useState(false);
 
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -407,6 +409,8 @@ export default function MatchesPage() {
   }
 
   // ---------------- main render ----------------
+  const showTakeover = !loading && realCount === 0 && !scanAnyway && !!myEventInfo;
+
   return (
     <div className="rd-screen">
       <GraffitiWall ambientLaser />
@@ -414,7 +418,7 @@ export default function MatchesPage() {
       <TopBar router={router} isAuthenticated={isAuthenticated} />
 
       {/* Event banner */}
-      {eventName && currentCard && !activationBanner && (
+      {eventName && currentCard && !activationBanner && !showTakeover && (
         <div className="rd-event-banner">
           <span className="rd-arrow">▼</span>
           <span>BOTH AT</span>
@@ -461,7 +465,7 @@ export default function MatchesPage() {
       )}
 
       {/* Sparse-room banner: real count 1-3 */}
-      {myEventInfo && realCount >= 1 && realCount <= 3 && (
+      {myEventInfo && realCount >= 1 && realCount <= 3 && !showTakeover && (
         <SparseRoomBanner
           realCount={realCount}
           eventName={myEventInfo.name}
@@ -470,7 +474,65 @@ export default function MatchesPage() {
         />
       )}
 
+      {/* Empty-room takeover: 0 real co-attendees, user hasn't opted into the fake-padded deck */}
+      {showTakeover && (
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 10,
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '6rem 1.5rem 5rem',
+          }}
+        >
+          <div className="rd-empty" style={{ maxWidth: '420px', textAlign: 'center' }}>
+            <div className="rd-empty-title">this room is empty.</div>
+            <div className="rd-empty-sub">
+              no real ravers are scanning{' '}
+              <span style={{ color: 'var(--rd-spray-yellow)' }}>{myEventInfo.name}</span> yet.
+              be the first — drop the link to your crew.
+            </div>
+
+            <div style={{ marginTop: '1.6rem' }}>
+              <ShareEventLink
+                eventName={myEventInfo.name}
+                city={myEventInfo.city}
+                date={myEventInfo.date}
+              />
+            </div>
+
+            {!isAuthenticated && (
+              <div className="rd-btn-wrap" style={{ marginTop: '0.9rem' }}>
+                <button className="rd-btn-ghost" onClick={() => router.push('/signup')}>
+                  TAG IN TO BE SEEN
+                </button>
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="rd-stencil-link"
+              onClick={() => router.push('/')}
+              style={{ display: 'block', margin: '1rem auto 0.3rem', background: 'none', border: 'none' }}
+            >
+              ↻ FIND A NEW VIBE
+            </button>
+            <button
+              type="button"
+              className="rd-stencil-link"
+              onClick={() => setScanAnyway(true)}
+              style={{ display: 'block', margin: '0.4rem auto 0', background: 'none', border: 'none', opacity: 0.55, fontSize: '0.7rem' }}
+            >
+              scan the room anyway →
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Card stack */}
+      {!showTakeover && (
       <div
         style={{
           position: 'relative',
@@ -562,8 +624,10 @@ export default function MatchesPage() {
           )}
         </div>
       </div>
+      )}
 
       {/* Bottom hint */}
+      {!showTakeover && (
       <div className="rd-swipe-hint">
         <span className="rd-arrow">←</span>
         <span>SWIPE</span>
@@ -572,6 +636,7 @@ export default function MatchesPage() {
         <span>TAP KEYS</span>
         <span className="rd-arrow">→</span>
       </div>
+      )}
 
       {/* Match overlay */}
       {matchOverlay && matchedUser && (
