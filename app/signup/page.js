@@ -104,6 +104,11 @@ export default function SignupPage() {
     setLoading(true);
     setError('');
 
+    // Capture the anon profile id (if any) BEFORE signUp overwrites localStorage downstream.
+    const anonId = typeof window !== 'undefined'
+      ? localStorage.getItem('user_profile_id')
+      : null;
+
     try {
       if (formData.password !== formData.confirmPassword) {
         throw new Error('passwords do not match.');
@@ -128,8 +133,22 @@ export default function SignupPage() {
       if (authError) throw authError;
       if (!authData.user) throw new Error('failed to create account.');
 
+      // Reparent the anon's likes / user_events to the new real id, then drop the anon row.
+      // Runs before the email-confirmation branch so reparenting is durable in both paths.
+      if (anonId && anonId !== authData.user.id) {
+        const { error: claimError } = await supabase.rpc('claim_anon_profile', {
+          anon_id: anonId,
+          real_id: authData.user.id,
+        });
+        if (claimError) {
+          // Non-fatal — the new account still works; the anon's likes are just stranded.
+          console.error('claim_anon_profile failed:', claimError);
+        }
+      }
+
       // Email confirmation flow
       if (authData.user.email_confirmed_at === null) {
+        sessionStorage.setItem('just_signed_up', '1');
         setSuccess('▸ account created. check your email to confirm.');
         setTimeout(() => {
           setLoading(false);
@@ -211,6 +230,7 @@ export default function SignupPage() {
       }
 
       localStorage.setItem('user_profile_id', authData.user.id);
+      sessionStorage.setItem('just_signed_up', '1');
       localStorage.removeItem('user_section_id');
       localStorage.removeItem('user_event_data');
 
