@@ -39,6 +39,7 @@ export default function MatchesPage() {
   const [totalSwipes, setTotalSwipes] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [frozenBottomCard, setFrozenBottomCard] = useState(null);
+  const [activationBanner, setActivationBanner] = useState(null); // null | { count: number }
 
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -152,6 +153,60 @@ export default function MatchesPage() {
     };
     fetchAndBuffer();
   }, [router]);
+
+  // Post-signup activation: read+clear the just_signed_up flag, then
+  // count pending right-swipes against real users that now resolve to mutual matches.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const flag = sessionStorage.getItem('just_signed_up');
+    if (!flag) return;
+    sessionStorage.removeItem('just_signed_up');
+
+    (async () => {
+      const userId = localStorage.getItem('user_profile_id');
+      if (!userId) return;
+
+      // Step 1: my outgoing right-swipes
+      const { data: outgoingLikes, error: likesError } = await supabase
+        .from('likes')
+        .select('to_user_id')
+        .eq('from_user_id', userId)
+        .eq('liked', true);
+      if (likesError) {
+        console.error('activation: fetch outgoing likes failed', likesError);
+        return;
+      }
+      const targetIds = (outgoingLikes || []).map((r) => r.to_user_id);
+      if (targetIds.length === 0) {
+        setActivationBanner({ count: 0 });
+        return;
+      }
+
+      // Step 2: filter to real targets only (demo/fake never reciprocate)
+      const { data: realProfiles } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .in('id', targetIds)
+        .eq('is_real', true);
+      const realTargetIds = (realProfiles || []).map((p) => p.id);
+
+      // Step 3: check mutuality, create matches, count
+      let activatedCount = 0;
+      for (const targetId of realTargetIds) {
+        try {
+          const mutual = await checkMutualMatch(userId, targetId);
+          if (mutual) {
+            await createMatch(userId, targetId);
+            activatedCount += 1;
+          }
+        } catch (err) {
+          console.error('activation check failed for', targetId, err);
+        }
+      }
+
+      setActivationBanner({ count: activatedCount });
+    })();
+  }, []);
 
   // ---------------- swipe → like ----------------
   const handleSwipe = async (direction, match) => {
@@ -342,6 +397,43 @@ export default function MatchesPage() {
           <span>BOTH AT</span>
           <span className="rd-event-name">{eventName}</span>
           <span className="rd-arrow">▼</span>
+        </div>
+      )}
+
+      {/* Post-signup activation banner */}
+      {activationBanner && (
+        <div
+          className="rd-banner rd-banner--success"
+          style={{
+            position: 'fixed',
+            top: '4.5rem',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 40,
+            maxWidth: '460px',
+            width: 'calc(100% - 2.5rem)',
+            textAlign: 'center',
+            margin: 0,
+          }}
+        >
+          {activationBanner.count > 0
+            ? `▸ you're visible. ${activationBanner.count} pending ${activationBanner.count === 1 ? 'vibe' : 'vibes'} activated.`
+            : "▸ you're visible. tag back into the radar."}
+          <button
+            type="button"
+            onClick={() => setActivationBanner(null)}
+            style={{
+              marginLeft: '1rem',
+              background: 'none',
+              border: 'none',
+              color: 'inherit',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+            }}
+            aria-label="dismiss"
+          >
+            ×
+          </button>
         </div>
       )}
 
