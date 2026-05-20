@@ -322,6 +322,18 @@ body {
   box-shadow: 0 0 6px var(--rd-spray-pink);
   opacity: 0.7;
 }
+/* Ghost variant: dashed pink border, faint pink wash. Used when an anonymous
+   user is browsing and the chip is a "tag in" call-to-action. */
+.rd-nav-chip--ghost {
+  background: rgba(255, 26, 138, 0.08);
+  border: 1px dashed rgba(255, 26, 138, 0.55);
+  color: var(--rd-spray-pink);
+}
+.rd-nav-chip--ghost:hover {
+  background: rgba(255, 26, 138, 0.14);
+  border-color: var(--rd-spray-pink);
+  text-shadow: 0 0 10px var(--rd-spray-pink);
+}
 
 /* ---------- BPM tag ---------- */
 .rd-bpm-tag {

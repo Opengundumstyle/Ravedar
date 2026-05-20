@@ -9,6 +9,7 @@ import ChatNotificationModal from '../components/ChatNotificationModal';
 import FounderMatchModal from '../components/FounderMatchModal';
 import GraffitiWall from '../components/GraffitiWall';
 import { useAuth } from '../components/AuthContext';
+import GhostChip from '../components/GhostChip';
 import { checkMutualMatch, getMatchesForUser } from '../../lib/api/matches';
 import { createMatch } from '../../lib/api/chat';
 
@@ -638,7 +639,7 @@ function TopBar({ router, isAuthenticated }) {
           <span className="rd-bpm-dot" />
           128 BPM
         </div>
-        {isAuthenticated && (
+        {isAuthenticated ? (
           <>
             <button
               className="rd-nav-chip"
@@ -655,6 +656,8 @@ function TopBar({ router, isAuthenticated }) {
               PROFILE ⬡
             </button>
           </>
+        ) : (
+          <GhostChip />
         )}
       </div>
     </div>

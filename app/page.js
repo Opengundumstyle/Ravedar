@@ -6,6 +6,8 @@ import { supabase } from '../lib/supabaseClient';
 import { createUserEvent } from '../lib/api/matches';
 import { ensureUserId } from '../lib/ensureUserId';
 import GraffitiWall from './components/GraffitiWall';
+import { useAuth } from './components/AuthContext';
+import GhostChip from './components/GhostChip';
 
 const HERO_PHRASES = [
   { type: 'small', text: 'connect through experience with' },
@@ -29,6 +31,7 @@ export default function HomePage() {
   const [scanState, setScanState] = useState(null); // null | { status, sub }
 
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
   // ---------------- Hero cycling ----------------
   useEffect(() => {
@@ -250,9 +253,12 @@ export default function HomePage() {
       <div style={layout.container}>
         {/* HERO */}
         <div style={layout.hero}>
-          <div className="rd-status-pill" style={{ marginBottom: '1.2rem' }}>
-            <span className="rd-status-dot" />
-            RAVEDAR ▸ ONLINE
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', justifyContent: 'center', marginBottom: '1.2rem', flexWrap: 'wrap' }}>
+            <div className="rd-status-pill" style={{ margin: 0 }}>
+              <span className="rd-status-dot" />
+              RAVEDAR ▸ ONLINE
+            </div>
+            {!isAuthenticated && <GhostChip />}
           </div>
           <div style={layout.heroTagline}>{heroNode}</div>
         </div>
