@@ -10,6 +10,7 @@ import FounderMatchModal from '../components/FounderMatchModal';
 import GraffitiWall from '../components/GraffitiWall';
 import { useAuth } from '../components/AuthContext';
 import GhostChip from '../components/GhostChip';
+import SignupGateModal from '../components/SignupGateModal';
 import { checkMutualMatch, getMatchesForUser } from '../../lib/api/matches';
 import { createMatch } from '../../lib/api/chat';
 
@@ -33,6 +34,8 @@ export default function MatchesPage() {
   const [loading, setLoading] = useState(true);
   const [eventName, setEventName] = useState('');
   const [showFounderModal, setShowFounderModal] = useState(false);
+  const [showSignupGate, setShowSignupGate] = useState(false);
+  const [signupGateUser, setSignupGateUser] = useState(null);
   const [matchSlogan, setMatchSlogan] = useState('');
   const [showChatModal, setShowChatModal] = useState(false);
   const [matchedUser, setMatchedUser] = useState(null);
@@ -223,6 +226,19 @@ export default function MatchesPage() {
     });
 
     if (direction === 'right') {
+      // Anon swiping right on a real user (not founder/co-founder): gate.
+      if (
+        match.is_real &&
+        !isAuthenticated &&
+        match.role !== 'founder' &&
+        match.role !== 'co-founder'
+      ) {
+        setSignupGateUser(match);
+        setShowSignupGate(true);
+        setTotalSwipes((t) => t + 1);
+        return;
+      }
+
       if (match.role === 'founder' || match.role === 'co-founder') {
         setMatchedUser(match);
         setShowFounderModal(true);
@@ -602,6 +618,14 @@ export default function MatchesPage() {
         onClose={() => {
           setShowChatModal(false);
           setMatchOverlay(false);
+        }}
+      />
+      <SignupGateModal
+        isOpen={showSignupGate}
+        matchedUser={signupGateUser}
+        onKeepTagging={() => {
+          setShowSignupGate(false);
+          setSignupGateUser(null);
         }}
       />
     </div>
