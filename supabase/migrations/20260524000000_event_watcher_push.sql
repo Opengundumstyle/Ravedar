@@ -131,3 +131,75 @@ drop trigger if exists trg_subscribe_event_watcher on user_events;
 create trigger trg_subscribe_event_watcher
   after insert or update on user_events
   for each row execute function subscribe_event_watcher();
+
+-- ============================================================================
+-- Fan-out trigger: when a real user joins an event, increment the joiner
+-- counter of every OTHER watcher of that event. On threshold crossings
+-- (1, 2, 3, 8, 18), call the Edge Function via pg_net.
+-- ============================================================================
+create or replace function fanout_event_joiner()
+returns trigger language plpgsql as $$
+declare
+  v_joiner_is_real boolean;
+  v_webhook_url text;
+  v_webhook_secret text;
+  rec record;
+  v_new_count int;
+begin
+  v_webhook_url := current_setting('app.event_watcher_webhook_url', true);
+  v_webhook_secret := current_setting('app.event_watcher_webhook_secret', true);
+
+  -- Safety: if settings are missing, bail silently rather than break inserts.
+  if v_webhook_url is null or v_webhook_secret is null then
+    return NEW;
+  end if;
+
+  select is_real into v_joiner_is_real from user_profiles where id = NEW.user_id;
+  if not coalesce(v_joiner_is_real, false) then
+    return NEW;
+  end if;
+
+  if NEW.date is not null and NEW.date < current_date then
+    return NEW;
+  end if;
+
+  for rec in
+    select w.id, w.joiner_count
+      from event_watchers w
+      join user_profiles up on up.id = w.user_id
+     where w.event_name = NEW.name
+       and w.event_city = NEW.city
+       and w.event_date is not distinct from NEW.date
+       and w.unsubscribed_at is null
+       and w.user_id <> NEW.user_id
+       and up.is_real = true
+       and up.event_push_opt_out = false
+  loop
+    update event_watchers
+       set joiner_count = joiner_count + 1
+     where id = rec.id
+     returning joiner_count into v_new_count;
+
+    if v_new_count in (1, 2, 3, 8, 18) then
+      perform net.http_post(
+        url := v_webhook_url,
+        headers := jsonb_build_object(
+          'content-type', 'application/json',
+          'x-webhook-secret', v_webhook_secret
+        ),
+        body := jsonb_build_object(
+          'watcher_id', rec.id,
+          'joiner_count_at_call', v_new_count,
+          'trigger_type', 'immediate'
+        )
+      );
+    end if;
+  end loop;
+  return NEW;
+end;
+$$;
+
+drop trigger if exists trg_fanout_event_joiner on user_events;
+create trigger trg_fanout_event_joiner
+  after insert or update on user_events
+  for each row execute function fanout_event_joiner();
