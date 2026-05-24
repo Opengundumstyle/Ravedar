@@ -87,3 +87,47 @@ alter database postgres set app.event_watcher_webhook_url
   = 'https://CHANGE-ME.functions.supabase.co/send-event-watcher-push';
 alter database postgres set app.event_watcher_webhook_secret
   = 'CHANGE-ME';
+
+-- ============================================================================
+-- Subscribe trigger: when a real user scans into a sparse event (<4 real
+-- co-attendees), insert an event_watchers row for them.
+-- ============================================================================
+create or replace function subscribe_event_watcher()
+returns trigger language plpgsql as $$
+declare
+  v_real_count int;
+  v_is_real boolean;
+  v_opt_out boolean;
+begin
+  select is_real, event_push_opt_out into v_is_real, v_opt_out
+    from user_profiles where id = NEW.user_id;
+  if not coalesce(v_is_real, false) or coalesce(v_opt_out, false) then
+    return NEW;
+  end if;
+
+  if NEW.date is not null and NEW.date < current_date then
+    return NEW;
+  end if;
+
+  select count(*) into v_real_count
+    from user_events ue
+    join user_profiles up on up.id = ue.user_id
+   where ue.name = NEW.name
+     and ue.city = NEW.city
+     and ue.date is not distinct from NEW.date
+     and ue.user_id <> NEW.user_id
+     and up.is_real = true;
+
+  if v_real_count < 4 then
+    insert into event_watchers (user_id, event_name, event_city, event_date)
+    values (NEW.user_id, NEW.name, NEW.city, NEW.date)
+    on conflict (user_id, event_name, event_city, event_date) do nothing;
+  end if;
+  return NEW;
+end;
+$$;
+
+drop trigger if exists trg_subscribe_event_watcher on user_events;
+create trigger trg_subscribe_event_watcher
+  after insert or update on user_events
+  for each row execute function subscribe_event_watcher();
