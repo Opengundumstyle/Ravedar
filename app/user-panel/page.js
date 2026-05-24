@@ -1,75 +1,80 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import RadarLoader from '../components/RadarLoader';
+import GraffitiWall from '../components/GraffitiWall';
 import { useAuth } from '../components/AuthContext';
 
+const TABS = [
+  { key: 'profile', label: 'TAG' },
+  { key: 'photos', label: 'GALLERY' },
+  { key: 'settings', label: 'RIG' },
+];
+
+const AVAILABLE_VIBE_TAGS = [
+  'House', 'Techno', 'Trance', 'Dubstep', 'Drum & Bass', 'Hardstyle',
+  'Progressive', 'Melodic', 'Bass', 'Trap', 'Future Bass', 'Psytrance',
+  'Underground', 'Mainstage', 'Chill', 'Energy', 'PLUR', 'Festival',
+  'Club', 'Warehouse', 'Outdoor', 'Sunset', 'Sunrise', 'Late Night',
+];
+
 export default function UserPanelPage() {
+  const router = useRouter();
+  const { signOut } = useAuth();
+
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [eventPushOptOut, setEventPushOptOut] = useState(false);
+  const [pushToggleSaving, setPushToggleSaving] = useState(false);
+  const [photos, setPhotos] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [activeTab, setActiveTab] = useState('profile');
-  const [photos, setPhotos] = useState([]);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef(null);
-  const router = useRouter();
-  const { isAuthenticated, signOut } = useAuth();
 
-  // Available vibe tags
-  const availableVibeTags = [
-    'House', 'Techno', 'Trance', 'Dubstep', 'Drum & Bass', 'Hardstyle',
-    'Progressive', 'Melodic', 'Bass', 'Trap', 'Future Bass', 'Psytrance',
-    'Underground', 'Mainstage', 'Chill', 'Energy', 'PLUR', 'Festival',
-    'Club', 'Warehouse', 'Outdoor', 'Sunset', 'Sunrise', 'Late Night'
-  ];
+  const [activeTab, setActiveTab] = useState('profile');
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (!authUser) {
           router.push('/signin');
           return;
         }
+        setUser(authUser);
 
-        setUser(user);
-
-        // Fetch user profile
         const { data: profileData, error: profileError } = await supabase
           .from('user_profiles')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', authUser.id)
           .single();
-
         if (profileError && profileError.code !== 'PGRST116') {
           console.error('Profile fetch error:', profileError);
         } else if (profileData) {
           setProfile(profileData);
+          setEventPushOptOut(Boolean(profileData.event_push_opt_out));
         }
 
-        // Fetch user photos
         const { data: photosData, error: photosError } = await supabase
           .from('user_photos')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', authUser.id)
           .order('position');
-
         if (photosError) {
           console.error('Photos fetch error:', photosError);
         } else {
           setPhotos(photosData || []);
         }
-
-      } catch (error) {
-        console.error('User data fetch error:', error);
-        setError('Failed to load user data');
+      } catch (err) {
+        console.error('User data fetch error:', err);
+        setError('▸ failed to load your tag.');
       } finally {
         setLoading(false);
       }
@@ -81,23 +86,16 @@ export default function UserPanelPage() {
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (photos.length + files.length > 6) {
-      setError('Maximum 6 photos allowed');
+      setError('▸ max 6 photos.');
       return;
     }
-
     setUploading(true);
     setError('');
-
     try {
-      const uploadedPhotos = [];
-      
+      const uploaded = [];
       for (const file of files) {
-        if (!file.type.startsWith('image/')) {
-          throw new Error('Please upload only image files');
-        }
-        if (file.size > 5 * 1024 * 1024) {
-          throw new Error('File size must be less than 5MB');
-        }
+        if (!file.type.startsWith('image/')) throw new Error('image files only.');
+        if (file.size > 5 * 1024 * 1024) throw new Error('files must be under 5mb.');
 
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -106,43 +104,44 @@ export default function UserPanelPage() {
         const { error: uploadError } = await supabase.storage
           .from('user-photos')
           .upload(filePath, file);
-
         if (uploadError) throw uploadError;
 
         const { data: { publicUrl } } = supabase.storage
           .from('user-photos')
           .getPublicUrl(filePath);
 
-        uploadedPhotos.push({
-          image_url: publicUrl,
-          position: photos.length + uploadedPhotos.length
-        });
-      }
+        const position = photos.length + uploaded.length;
+        const { data: inserted, error: insertError } = await supabase
+          .from('user_photos')
+          .insert({ user_id: user.id, image_url: publicUrl, position })
+          .select()
+          .single();
+        if (insertError) throw insertError;
 
-      setPhotos(prev => [...prev, ...uploadedPhotos]);
-    } catch (error) {
-      setError(error.message);
+        uploaded.push(inserted);
+      }
+      setPhotos((prev) => [...prev, ...uploaded]);
+    } catch (err) {
+      setError(err.message);
     } finally {
       setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
   const removePhoto = async (index) => {
     try {
       const photoToRemove = photos[index];
-      
-      // Delete from database
-      const { error } = await supabase
-        .from('user_photos')
-        .delete()
-        .eq('id', photoToRemove.id);
-
-      if (error) throw error;
-
-      // Update local state
-      setPhotos(prev => prev.filter((_, i) => i !== index));
-    } catch (error) {
-      setError('Failed to remove photo');
+      if (photoToRemove?.id) {
+        const { error: delErr } = await supabase
+          .from('user_photos')
+          .delete()
+          .eq('id', photoToRemove.id);
+        if (delErr) throw delErr;
+      }
+      setPhotos((prev) => prev.filter((_, i) => i !== index));
+    } catch (err) {
+      setError('▸ failed to remove photo.');
     }
   };
 
@@ -150,321 +149,590 @@ export default function UserPanelPage() {
     e.preventDefault();
     setSaving(true);
     setError('');
-
+    setSuccess('');
     try {
       const formData = new FormData(e.target);
       const updateData = {
         name: formData.get('name'),
         instagram: formData.get('instagram'),
         about_me: formData.get('aboutMe'),
-        vibe_tags: profile.vibe_tags || []
+        vibe_tags: profile?.vibe_tags || [],
       };
-
-      const { error } = await supabase
+      const { error: updateErr } = await supabase
         .from('user_profiles')
         .update(updateData)
         .eq('id', user.id);
+      if (updateErr) throw updateErr;
 
-      if (error) throw error;
-
-      setProfile(prev => ({ ...prev, ...updateData }));
-      setSuccess('Profile updated successfully!');
-      
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (error) {
-      setError('Failed to update profile');
+      setProfile((prev) => ({ ...prev, ...updateData }));
+      setSuccess('▸ tag updated.');
+      setTimeout(() => setSuccess(''), 2500);
+    } catch (err) {
+      setError('▸ failed to update tag.');
     } finally {
       setSaving(false);
     }
   };
 
   const handleVibeTagToggle = (tag) => {
-    const newVibeTags = profile.vibe_tags.includes(tag)
-      ? profile.vibe_tags.filter(t => t !== tag)
-      : [...profile.vibe_tags, tag].slice(0, 5);
-
-    setProfile(prev => ({
-      ...prev,
-      vibe_tags: newVibeTags
-    }));
+    setProfile((prev) => {
+      const current = prev?.vibe_tags || [];
+      const next = current.includes(tag)
+        ? current.filter((t) => t !== tag)
+        : [...current, tag].slice(0, 5);
+      return { ...prev, vibe_tags: next };
+    });
   };
 
   const handleSignOut = async () => {
     try {
       await signOut();
       router.push('/');
-    } catch (error) {
-      console.error('Sign out error:', error);
+    } catch (err) {
+      console.error('Sign out error:', err);
     }
   };
 
-  if (loading) {
-    return <RadarLoader eventName="Loading your profile..." />;
-  }
+  const handleTogglePush = async () => {
+    if (!user) return;
+    const next = !eventPushOptOut;
+    setPushToggleSaving(true);
+    const prev = eventPushOptOut;
+    setEventPushOptOut(next);
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ event_push_opt_out: next })
+      .eq('id', user.id);
+    setPushToggleSaving(false);
+    if (error) {
+      setEventPushOptOut(prev);
+      console.error('toggle failed', error);
+    }
+  };
+
+  if (loading) return <RadarLoader eventName="loading your tag..." />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col p-4 relative overflow-y-auto">
-      {/* Background Animation */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 via-purple-900/20 to-pink-900/20 animate-pulse"></div>
-      
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-4 py-8">
-        {/* Back Button */}
-        <motion.button
+    <div className="rd-screen scrollable">
+      <GraffitiWall ambientLaser />
+
+      {/* TOP BAR */}
+      <div style={topBar.container}>
+        <button
+          className="rd-nav-chip"
           onClick={() => router.push('/matches')}
-          className="absolute top-4 left-4 z-50 flex items-center gap-2 px-3 py-2 bg-black/80 backdrop-blur-md border border-white/30 rounded-full text-white hover:text-white hover:bg-black/90 shadow-xl transition-all duration-300 shadow-lg sm:px-4 sm:py-2"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3 }}
+          style={{ pointerEvents: 'auto' }}
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          <span className="text-sm font-medium hidden sm:inline">Back to Matching</span>
-        </motion.button>
-
-        {/* Header */}
-        <div className="text-center mb-8 mt-20 sm:mt-16">
-          <motion.div
-            className="mb-6"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-display text-3xl text-white mb-2">
-              Your Profile
-            </h1>
-            <p className="text-body text-white/70">
-              Manage your account and preferences
-            </p>
-          </motion.div>
+          ◄ BACK
+        </button>
+        <div className="rd-bpm-tag" style={{ pointerEvents: 'auto' }}>
+          <span className="rd-bpm-dot" />
+          128 BPM
         </div>
+      </div>
 
-        {/* Tabs */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl p-1">
-            {['profile', 'photos', 'settings'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  activeTab === tab
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white'
-                    : 'text-white/70 hover:text-white'
-                }`}
-              >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
+      <div style={layout.container}>
+        {/* HEADER */}
+        <div style={layout.header}>
+          <div className="rd-status-pill" style={{ marginBottom: '1.2rem' }}>
+            <span className="rd-status-dot" />
+            RAVEDAR ▸ YOUR TAG
+          </div>
+          <h1 className="rd-neon-title" style={layout.title}>MY TAG</h1>
+          <div className="font-mono-accent" style={layout.subtitle}>
+            edit your tag · update your vibe
           </div>
         </div>
 
-        {/* Content */}
-        <motion.div
-          className="bg-black/40 backdrop-blur-sm border border-white/20 rounded-2xl p-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <AnimatePresence mode="wait">
-            {activeTab === 'profile' && (
-              <motion.div
-                key="profile"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-6"
+        {/* TABS */}
+        <div style={tabs.row}>
+          {TABS.map((t) => {
+            const active = activeTab === t.key;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => {
+                  setActiveTab(t.key);
+                  setError('');
+                  setSuccess('');
+                }}
+                style={{
+                  ...tabs.btn,
+                  ...(active ? tabs.btnActive : null),
+                }}
               >
-                <h2 className="text-heading text-xl text-white mb-4">Profile Information</h2>
-                
-                <form onSubmit={handleProfileUpdate} className="space-y-4">
-                  <div>
-                    <label className="text-caption text-white/70 block mb-2">Name</label>
-                    <input
-                      type="text"
-                      name="name"
-                      defaultValue={profile?.name || ''}
-                      className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
-                      placeholder="Your name"
-                      required
-                    />
-                  </div>
+                <span style={tabs.arrow}>▸</span> {t.label}
+              </button>
+            );
+          })}
+        </div>
 
-                  <div>
-                    <label className="text-caption text-white/70 block mb-2">Instagram (Optional)</label>
-                    <input
-                      type="text"
-                      name="instagram"
-                      defaultValue={profile?.instagram || ''}
-                      className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200"
-                      placeholder="@yourusername"
-                    />
-                  </div>
+        {/* CONTENT */}
+        {activeTab === 'profile' && (
+          <form onSubmit={handleProfileUpdate}>
+            <div className="rd-field">
+              <label className="rd-field-label">
+                <span className="rd-field-num">01</span>
+                <span className="rd-field-arrow">▸</span>
+                NAME
+              </label>
+              <input
+                type="text"
+                name="name"
+                defaultValue={profile?.name || ''}
+                className="rd-input"
+                placeholder="how should we tag you"
+                required
+              />
+            </div>
 
-                  <div>
-                    <label className="text-caption text-white/70 block mb-2">About Me</label>
-                    <textarea
-                      name="aboutMe"
-                      defaultValue={profile?.about_me || ''}
-                      rows="3"
-                      className="w-full px-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all duration-200 resize-none"
-                      placeholder="Tell us about your rave journey..."
-                    />
-                  </div>
+            <div className="rd-field">
+              <label className="rd-field-label">
+                <span className="rd-field-num">02</span>
+                <span className="rd-field-arrow">▸</span>
+                INSTAGRAM <span className="rd-field-opt">(opt.)</span>
+              </label>
+              <input
+                type="text"
+                name="instagram"
+                defaultValue={profile?.instagram || ''}
+                className="rd-input"
+                placeholder="@yourhandle"
+              />
+            </div>
 
-                  <div>
-                    <label className="text-caption text-white/70 block mb-2">Vibe Tags</label>
-                    <p className="text-body-small text-white/50 mb-3">Select up to 5 vibe tags that describe your music taste</p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                      {availableVibeTags.map((tag) => (
-                        <button
-                          key={tag}
-                          type="button"
-                          onClick={() => handleVibeTagToggle(tag)}
-                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                            profile?.vibe_tags?.includes(tag)
-                              ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white'
-                              : 'bg-white/10 text-white/70 hover:bg-white/20'
-                          }`}
-                        >
-                          {tag}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+            <div className="rd-field">
+              <label className="rd-field-label">
+                <span className="rd-field-num">03</span>
+                <span className="rd-field-arrow">▸</span>
+                ABOUT <span className="rd-field-opt">(opt.)</span>
+              </label>
+              <textarea
+                name="aboutMe"
+                defaultValue={profile?.about_me || ''}
+                rows="3"
+                className="rd-input"
+                placeholder="your rave story ···"
+                style={{ resize: 'none' }}
+              />
+            </div>
 
-                  <motion.button
-                    type="submit"
-                    disabled={saving}
-                    className="w-full py-3 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-lg rounded-xl hover:scale-105 transform transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    whileHover={{ scale: saving ? 1 : 1.02 }}
-                    whileTap={{ scale: saving ? 1 : 0.98 }}
-                  >
-                    {saving ? 'Saving...' : 'Save Changes'}
-                  </motion.button>
-                </form>
-              </motion.div>
-            )}
-
-            {activeTab === 'photos' && (
-              <motion.div
-                key="photos"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-6"
-              >
-                <h2 className="text-heading text-xl text-white mb-4">Your Photos</h2>
-                
-                <div className="space-y-4">
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-white/30 rounded-xl p-6 text-center cursor-pointer hover:border-pink-500/50 transition-colors duration-200"
-                  >
-                    <div className="text-3xl mb-2">📸</div>
-                    <p className="text-white/70 mb-2">Click to upload photos</p>
-                    <p className="text-sm text-white/50">JPG, PNG up to 5MB each (Max 6 photos)</p>
-                  </div>
-                  
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handlePhotoUpload}
-                    className="hidden"
-                  />
-
-                  {/* Photo Grid */}
-                  {photos.length > 0 && (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                      {photos.map((photo, index) => (
-                        <div key={photo.id || index} className="relative group">
-                          <img
-                            src={photo.image_url}
-                            alt={`Photo ${index + 1}`}
-                            className="w-full h-32 sm:h-40 object-cover rounded-lg"
-                          />
-                          <button
-                            onClick={() => removePhoto(index)}
-                            className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {uploading && (
-                    <div className="text-center text-white/70">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-pink-500 mx-auto mb-2"></div>
-                      Uploading...
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-
-            {activeTab === 'settings' && (
-              <motion.div
-                key="settings"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-6"
-              >
-                <h2 className="text-heading text-xl text-white mb-4">Account Settings</h2>
-                
-                <div className="space-y-4">
-                  <div className="bg-white/5 rounded-xl p-4">
-                    <h3 className="text-heading text-lg text-white mb-2">Account Information</h3>
-                    <p className="text-body text-white/70 mb-2">Email: {user?.email}</p>
-                    <p className="text-body text-white/70">Member since: {new Date(user?.created_at).toLocaleDateString()}</p>
-                  </div>
-
-                  <div className="bg-white/5 rounded-xl p-4">
-                    <h3 className="text-heading text-lg text-white mb-2">Danger Zone</h3>
-                    <p className="text-body text-white/70 mb-4">These actions cannot be undone.</p>
-                    
-                    <motion.button
-                      onClick={handleSignOut}
-                      className="px-6 py-3 bg-red-500/20 border border-red-500/30 text-red-300 rounded-xl hover:bg-red-500/30 transition-colors duration-200"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
+            <div className="rd-field">
+              <label className="rd-field-label">
+                <span className="rd-field-num">04</span>
+                <span className="rd-field-arrow">▸</span>
+                VIBE TAGS <span className="rd-field-opt">(max 5)</span>
+              </label>
+              <div style={vibeGrid.container}>
+                {AVAILABLE_VIBE_TAGS.map((tag) => {
+                  const active = profile?.vibe_tags?.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => handleVibeTagToggle(tag)}
+                      style={{
+                        ...vibeGrid.chip,
+                        ...(active ? vibeGrid.chipActive : null),
+                      }}
                     >
-                      Sign Out
-                    </motion.button>
-                  </div>
+                      {tag}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="font-mono-accent" style={vibeGrid.counter}>
+                ▸ {(profile?.vibe_tags?.length || 0)} / 5 selected
+              </div>
+            </div>
+
+            {error && <div className="rd-banner rd-banner--error">{error}</div>}
+            {success && <div className="rd-banner rd-banner--success">{success}</div>}
+
+            <div className="rd-btn-wrap" style={{ marginTop: '1.8rem' }}>
+              <button
+                type="submit"
+                disabled={saving}
+                className="rd-btn-neon"
+              >
+                {saving ? 'SAVING ···' : 'SAVE TAG'}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {activeTab === 'photos' && (
+          <div>
+            <div className="rd-field">
+              <label className="rd-field-label">
+                <span className="rd-field-num">01</span>
+                <span className="rd-field-arrow">▸</span>
+                PHOTOS <span className="rd-field-opt">(max 6)</span>
+              </label>
+
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                style={photoDrop.container}
+              >
+                <div style={photoDrop.arrow}>▼</div>
+                <div className="font-mono-accent" style={photoDrop.title}>
+                  drop photos here
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                <div className="font-mono-accent" style={photoDrop.subtitle}>
+                  jpg · png · up to 5mb each
+                </div>
+              </div>
 
-          {/* Error Message */}
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="mt-4 px-4 py-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-300 text-body-small"
-            >
-              {error}
-            </motion.div>
-          )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                style={{ display: 'none' }}
+              />
 
-          {/* Success Message */}
-          {success && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="mt-4 px-4 py-3 bg-green-500/20 border border-green-500/30 rounded-xl text-green-300 text-body-small"
-            >
-              {success}
-            </motion.div>
-          )}
-        </motion.div>
+              {photos.length > 0 && (
+                <div style={photoGrid.container}>
+                  {photos.map((photo, idx) => (
+                    <div key={photo.id || idx} style={photoGrid.item}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={photo.image_url}
+                        alt={`photo-${idx}`}
+                        style={photoGrid.img}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(idx)}
+                        style={photoGrid.remove}
+                        aria-label="remove photo"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {uploading && (
+                <div className="rd-banner" style={{ marginTop: '0.8rem' }}>
+                  ▸ uploading ···
+                </div>
+              )}
+            </div>
+
+            {error && <div className="rd-banner rd-banner--error">{error}</div>}
+            {success && <div className="rd-banner rd-banner--success">{success}</div>}
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div>
+            <div className="rd-field">
+              <label className="rd-field-label">
+                <span className="rd-field-num">01</span>
+                <span className="rd-field-arrow">▸</span>
+                ACCOUNT
+              </label>
+              <div style={settings.card}>
+                <div style={settings.row}>
+                  <span className="font-mono-accent" style={settings.label}>EMAIL</span>
+                  <span style={settings.value}>{user?.email || '—'}</span>
+                </div>
+                <div style={settings.row}>
+                  <span className="font-mono-accent" style={settings.label}>JOINED</span>
+                  <span style={settings.value}>
+                    {user?.created_at
+                      ? new Date(user.created_at).toLocaleDateString()
+                      : '—'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="rd-field">
+              <label className="rd-field-label">
+                <span className="rd-field-num">02</span>
+                <span className="rd-field-arrow">▸</span>
+                NOTIFICATIONS
+              </label>
+              <div style={settings.card}>
+                <div style={{ ...settings.row, borderBottom: 'none', alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1, paddingRight: '1rem' }}>
+                    <div className="font-mono-accent" style={settings.label}>EVENT PUSHES</div>
+                    <div style={{ ...settings.value, fontSize: '0.72rem', marginTop: '0.25rem', opacity: 0.7 }}>
+                      ping me when new ravers join an event i'm scanning
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleTogglePush}
+                    disabled={pushToggleSaving}
+                    aria-pressed={!eventPushOptOut}
+                    style={{
+                      width: '44px',
+                      height: '24px',
+                      borderRadius: '12px',
+                      border: '1px solid var(--rd-spray-pink)',
+                      background: eventPushOptOut ? 'transparent' : 'var(--rd-spray-pink)',
+                      position: 'relative',
+                      cursor: pushToggleSaving ? 'wait' : 'pointer',
+                      transition: 'background 160ms ease',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <span style={{
+                      position: 'absolute',
+                      top: '2px',
+                      left: eventPushOptOut ? '2px' : '22px',
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '50%',
+                      background: '#fff',
+                      transition: 'left 160ms ease',
+                    }} />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="rd-field">
+              <label className="rd-field-label">
+                <span className="rd-field-num">03</span>
+                <span className="rd-field-arrow">▸</span>
+                DANGER ZONE
+              </label>
+              <div className="font-mono-accent" style={settings.dangerNote}>
+                ▸ peace out · sign out of ravedar
+              </div>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="rd-btn-ghost"
+                style={{ width: '100%' }}
+              >
+                SIGN OUT
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
-} 
+}
+
+const topBar = {
+  container: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 50,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '1.1rem 1.25rem',
+    pointerEvents: 'none',
+  },
+};
+
+const layout = {
+  container: {
+    position: 'relative',
+    zIndex: 10,
+    maxWidth: '460px',
+    margin: '0 auto',
+    padding: '5rem 1.5rem 5rem',
+  },
+  header: {
+    textAlign: 'center',
+    marginBottom: '2rem',
+  },
+  title: {
+    fontSize: 'clamp(2.6rem, 10vw, 4.2rem)',
+    transform: 'rotate(-3deg)',
+    display: 'inline-block',
+    marginBottom: '0.8rem',
+    lineHeight: 1,
+  },
+  subtitle: {
+    fontSize: '0.7rem',
+    letterSpacing: '0.32em',
+    color: 'rgba(255,255,255,0.55)',
+    textTransform: 'uppercase',
+  },
+};
+
+const tabs = {
+  row: {
+    display: 'flex',
+    gap: '0.45rem',
+    justifyContent: 'center',
+    marginBottom: '2rem',
+  },
+  btn: {
+    flex: 1,
+    background: 'rgba(0,0,0,0.5)',
+    border: '1px solid rgba(255,255,255,0.18)',
+    color: 'rgba(255,255,255,0.55)',
+    fontFamily: 'var(--font-mono-accent), monospace',
+    fontSize: '0.68rem',
+    letterSpacing: '0.22em',
+    textTransform: 'uppercase',
+    padding: '0.65rem 0.5rem',
+    borderRadius: '2px',
+    cursor: 'pointer',
+    transition: 'all 0.18s',
+  },
+  btnActive: {
+    background: 'rgba(255, 26, 138, 0.14)',
+    borderColor: 'var(--rd-spray-pink)',
+    color: 'var(--rd-spray-pink)',
+    boxShadow: '0 0 12px rgba(255,26,138,0.35), inset 0 0 14px rgba(255,26,138,0.18)',
+  },
+  arrow: {
+    color: 'var(--rd-spray-cyan)',
+    marginRight: '0.25rem',
+  },
+};
+
+const vibeGrid = {
+  container: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '0.5rem',
+  },
+  chip: {
+    background: 'rgba(0,0,0,0.45)',
+    border: '1px solid rgba(255,255,255,0.18)',
+    color: 'rgba(255,255,255,0.85)',
+    fontFamily: 'var(--font-mono-accent), monospace',
+    fontSize: '0.62rem',
+    letterSpacing: '0.18em',
+    padding: '0.6rem 0.4rem',
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+    transition: 'all 0.18s',
+    borderRadius: '2px',
+  },
+  chipActive: {
+    background: 'rgba(255, 26, 138, 0.16)',
+    borderColor: 'var(--rd-spray-pink)',
+    color: 'var(--rd-spray-pink)',
+    textShadow: '0 0 8px rgba(255,26,138,0.55)',
+    boxShadow: 'inset 0 0 14px rgba(255,26,138,0.25)',
+  },
+  counter: {
+    fontSize: '0.62rem',
+    letterSpacing: '0.28em',
+    color: 'rgba(255,255,255,0.4)',
+    marginTop: '0.8rem',
+    textTransform: 'uppercase',
+  },
+};
+
+const photoDrop = {
+  container: {
+    border: '1px dashed rgba(255,255,255,0.28)',
+    background: 'rgba(0,0,0,0.35)',
+    borderRadius: '2px',
+    padding: '1.8rem 1rem',
+    textAlign: 'center',
+    cursor: 'pointer',
+    transition: 'border-color 0.2s',
+  },
+  arrow: {
+    fontSize: '1.6rem',
+    color: 'var(--rd-spray-pink)',
+    marginBottom: '0.5rem',
+    textShadow: '0 0 12px rgba(255,26,138,0.6)',
+  },
+  title: {
+    fontSize: '0.72rem',
+    letterSpacing: '0.3em',
+    color: 'rgba(255,255,255,0.75)',
+    textTransform: 'uppercase',
+  },
+  subtitle: {
+    fontSize: '0.6rem',
+    letterSpacing: '0.3em',
+    color: 'rgba(255,255,255,0.4)',
+    marginTop: '0.4rem',
+    textTransform: 'uppercase',
+  },
+};
+
+const photoGrid = {
+  container: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '0.5rem',
+    marginTop: '0.9rem',
+  },
+  item: {
+    position: 'relative',
+    aspectRatio: '1 / 1',
+    overflow: 'hidden',
+    borderRadius: '2px',
+    border: '1px solid rgba(255,255,255,0.15)',
+  },
+  img: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    display: 'block',
+  },
+  remove: {
+    position: 'absolute',
+    top: '4px',
+    right: '4px',
+    width: '24px',
+    height: '24px',
+    borderRadius: '50%',
+    background: 'rgba(0,0,0,0.75)',
+    border: '1px solid var(--rd-spray-pink)',
+    color: 'var(--rd-spray-pink)',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    lineHeight: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+};
+
+const settings = {
+  card: {
+    background: 'rgba(0,0,0,0.45)',
+    border: '1px solid rgba(255,255,255,0.12)',
+    borderRadius: '2px',
+    padding: '1rem 1rem',
+  },
+  row: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '0.45rem 0',
+    borderBottom: '1px dashed rgba(255,255,255,0.08)',
+  },
+  label: {
+    fontSize: '0.62rem',
+    letterSpacing: '0.3em',
+    color: 'rgba(255,255,255,0.4)',
+    textTransform: 'uppercase',
+  },
+  value: {
+    fontFamily: 'var(--font-body-mono), monospace',
+    fontSize: '0.78rem',
+    color: 'rgba(255,255,255,0.9)',
+  },
+  dangerNote: {
+    fontSize: '0.62rem',
+    letterSpacing: '0.28em',
+    color: 'rgba(255,255,255,0.45)',
+    marginBottom: '0.9rem',
+    textTransform: 'uppercase',
+  },
+};
