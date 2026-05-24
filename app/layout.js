@@ -8,6 +8,7 @@ import {
 } from 'next/font/google';
 import { AuthProvider } from './components/AuthContext';
 import MobileBootstrap from './components/MobileBootstrap';
+import PushNotificationBootstrap from './components/PushNotificationBootstrap';
 
 const graffiti = Rubik_Wet_Paint({
   weight: '400',
@@ -69,6 +70,7 @@ export default function RootLayout({ children }) {
     <html lang="en" className={fontVars}>
       <body>
         <MobileBootstrap />
+        <PushNotificationBootstrap />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
