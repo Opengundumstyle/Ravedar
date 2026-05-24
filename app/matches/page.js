@@ -12,6 +12,7 @@ import { useAuth } from '../components/AuthContext';
 import GhostChip from '../components/GhostChip';
 import SignupGateModal from '../components/SignupGateModal';
 import SparseRoomBanner from '../components/SparseRoomBanner';
+import ReportModal from '../components/ReportModal';
 import ShareEventLink from '../components/ShareEventLink';
 import { checkMutualMatch, getMatchesForUser } from '../../lib/api/matches';
 import { createMatch } from '../../lib/api/chat';
@@ -49,6 +50,8 @@ export default function MatchesPage() {
   const [realCount, setRealCount] = useState(0);
   const [myEventInfo, setMyEventInfo] = useState(null); // { name, city, date }
   const [scanAnyway, setScanAnyway] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null);
+  const [blockedSetVersion, setBlockedSetVersion] = useState(0);
 
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -163,7 +166,7 @@ export default function MatchesPage() {
       setLoading(false);
     };
     fetchAndBuffer();
-  }, [router]);
+  }, [router, blockedSetVersion]);
 
   // Post-signup activation: read+clear the just_signed_up flag, then
   // count pending right-swipes against real users that now resolve to mutual matches.
@@ -589,6 +592,7 @@ export default function MatchesPage() {
               <UserCard
                 user={bottomCard}
                 onSurveyAction={handleSurveyAction}
+                onReport={(u) => setReportTarget(u)}
                 disableAnimation={true}
               />
             </div>
@@ -641,7 +645,7 @@ export default function MatchesPage() {
                 </div>
               )}
 
-              <UserCard user={currentCard} onSurveyAction={handleSurveyAction} />
+              <UserCard user={currentCard} onSurveyAction={handleSurveyAction} onReport={(u) => setReportTarget(u)} />
             </div>
           )}
         </div>
@@ -730,6 +734,22 @@ export default function MatchesPage() {
           setSignupGateUser(null);
         }}
       />
+
+      {reportTarget && (
+        <ReportModal
+          currentUserId={currentUser?.id || (typeof window !== 'undefined' ? localStorage.getItem('user_profile_id') : null)}
+          reportedUserId={reportTarget.id}
+          reportedUserName={reportTarget.name}
+          context="card"
+          onClose={() => setReportTarget(null)}
+          onDone={({ blocked }) => {
+            setReportTarget(null);
+            if (blocked) {
+              setBlockedSetVersion((v) => v + 1);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

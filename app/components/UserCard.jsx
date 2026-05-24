@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
+import OverflowMenu from './OverflowMenu';
 
 const DEFAULT_PHOTO =
   'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=750&fit=crop&crop=center';
 
-export default function UserCard({ user, onSurveyAction, disableAnimation = false }) {
+export default function UserCard({ user, onSurveyAction, onReport, disableAnimation = false }) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [showFullAbout, setShowFullAbout] = useState(false);
 
@@ -98,6 +99,17 @@ export default function UserCard({ user, onSurveyAction, disableAnimation = fals
     <div className="rd-flyer">
       <div className="rd-tape rd-tape--left" />
       <div className="rd-tape rd-tape--right" />
+
+      {onReport && (
+        <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 4 }}>
+          <OverflowMenu
+            ariaLabel="card actions"
+            items={[
+              { key: 'report', label: 'report', danger: true, onSelect: () => onReport(user) },
+            ]}
+          />
+        </div>
+      )}
 
       {/* Photo */}
       <div className="rd-photo-frame">
