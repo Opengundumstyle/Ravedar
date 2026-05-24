@@ -65,3 +65,25 @@ create policy event_watchers_all on event_watchers for all using (true) with che
 
 drop policy if exists push_log_all on push_log;
 create policy push_log_all on push_log for all using (true) with check (true);
+
+-- ============================================================================
+-- Webhook target for triggers; set per-environment.
+-- Operator: before running this migration in a new env, edit these two
+-- statements to point at the right Edge Function URL and to use the
+-- secret stored in `supabase secrets set EVENT_WATCHER_PUSH_SECRET=...`.
+-- ============================================================================
+do $$
+begin
+  -- Session-local defaults so the trigger can read them in the same session
+  -- the migration is applied in.
+  perform set_config('app.event_watcher_webhook_url',
+    'https://CHANGE-ME.functions.supabase.co/send-event-watcher-push', false);
+  perform set_config('app.event_watcher_webhook_secret',
+    'CHANGE-ME', false);
+end$$;
+
+-- Persist for future sessions.
+alter database postgres set app.event_watcher_webhook_url
+  = 'https://CHANGE-ME.functions.supabase.co/send-event-watcher-push';
+alter database postgres set app.event_watcher_webhook_secret
+  = 'CHANGE-ME';
