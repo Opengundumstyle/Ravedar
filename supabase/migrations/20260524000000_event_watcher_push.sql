@@ -1,0 +1,67 @@
+-- ============================================================================
+-- Event-watcher push notifications.
+-- See docs/superpowers/specs/2026-05-24-event-watcher-push-design.md
+-- ============================================================================
+
+-- Device tokens registered by the Capacitor app on open.
+create table if not exists device_tokens (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references user_profiles(id) on delete cascade,
+  token text not null,
+  platform text not null check (platform in ('ios','android')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (token)
+);
+create index if not exists idx_device_tokens_user on device_tokens(user_id);
+
+-- One row per (user watching event). Identity matches getMatchesForUser's
+-- (name, city, date) triple.
+create table if not exists event_watchers (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references user_profiles(id) on delete cascade,
+  event_name text not null,
+  event_city text not null,
+  event_date date,
+  subscribed_at timestamptz not null default now(),
+  joiner_count int not null default 0,
+  last_notified_count int not null default 0,
+  last_notified_at timestamptz,
+  unsubscribed_at timestamptz,
+  unique (user_id, event_name, event_city, event_date)
+);
+create index if not exists idx_event_watchers_event
+  on event_watchers(event_name, event_city, event_date)
+  where unsubscribed_at is null;
+
+-- Append-only audit log.
+create table if not exists push_log (
+  id uuid primary key default gen_random_uuid(),
+  watcher_id uuid references event_watchers(id) on delete set null,
+  user_id uuid references user_profiles(id) on delete cascade,
+  trigger_type text not null check (trigger_type in ('immediate','digest')),
+  delta int not null,
+  status text not null check (status in ('sent','failed','skipped_no_token','skipped_stale')),
+  error text,
+  created_at timestamptz not null default now()
+);
+create index if not exists idx_push_log_user_created
+  on push_log(user_id, created_at desc);
+
+-- Per-user opt-out flag.
+alter table user_profiles
+  add column if not exists event_push_opt_out boolean not null default false;
+
+-- RLS: follow project convention (permissive; auth at app layer).
+alter table device_tokens enable row level security;
+alter table event_watchers enable row level security;
+alter table push_log enable row level security;
+
+drop policy if exists device_tokens_all on device_tokens;
+create policy device_tokens_all on device_tokens for all using (true) with check (true);
+
+drop policy if exists event_watchers_all on event_watchers;
+create policy event_watchers_all on event_watchers for all using (true) with check (true);
+
+drop policy if exists push_log_all on push_log;
+create policy push_log_all on push_log for all using (true) with check (true);
