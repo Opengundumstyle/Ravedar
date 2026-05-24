@@ -28,7 +28,7 @@ create table if not exists event_watchers (
   last_notified_count int not null default 0,
   last_notified_at timestamptz,
   unsubscribed_at timestamptz,
-  unique (user_id, event_name, event_city, event_date)
+  unique nulls not distinct (user_id, event_name, event_city, event_date)
 );
 create index if not exists idx_event_watchers_event
   on event_watchers(event_name, event_city, event_date)
