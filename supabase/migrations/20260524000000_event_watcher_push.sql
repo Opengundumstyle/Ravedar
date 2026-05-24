@@ -203,3 +203,57 @@ drop trigger if exists trg_fanout_event_joiner on user_events;
 create trigger trg_fanout_event_joiner
   after insert or update on user_events
   for each row execute function fanout_event_joiner();
+
+-- ============================================================================
+-- Daily digest: for watchers in the >18 zone, send at most one summary push
+-- per day if there were new joiners since last_notified_at.
+-- ============================================================================
+create or replace function enqueue_digest_notifications()
+returns void language plpgsql as $$
+declare
+  v_webhook_url text := current_setting('app.event_watcher_webhook_url', true);
+  v_webhook_secret text := current_setting('app.event_watcher_webhook_secret', true);
+  rec record;
+begin
+  if v_webhook_url is null or v_webhook_secret is null then
+    return;
+  end if;
+
+  for rec in
+    select id, joiner_count
+      from event_watchers
+     where unsubscribed_at is null
+       and joiner_count > 18
+       and joiner_count > last_notified_count
+       and (event_date is null or event_date >= current_date)
+       and (last_notified_at is null or last_notified_at < now() - interval '20 hours')
+  loop
+    perform net.http_post(
+      url := v_webhook_url,
+      headers := jsonb_build_object(
+        'content-type', 'application/json',
+        'x-webhook-secret', v_webhook_secret
+      ),
+      body := jsonb_build_object(
+        'watcher_id', rec.id,
+        'joiner_count_at_call', rec.joiner_count,
+        'trigger_type', 'digest'
+      )
+    );
+  end loop;
+end;
+$$;
+
+-- Daily digest at 18:00 UTC.
+select cron.schedule(
+  'event-watcher-digest',
+  '0 18 * * *',
+  $$select enqueue_digest_notifications();$$
+);
+
+-- Daily cleanup of expired watchers at 03:00 UTC.
+select cron.schedule(
+  'event-watcher-cleanup',
+  '0 3 * * *',
+  $$delete from event_watchers where event_date is not null and event_date < current_date;$$
+);
