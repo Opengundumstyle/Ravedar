@@ -516,6 +516,14 @@ export default function UserPanelPage() {
                 SIGN OUT
               </button>
             </div>
+
+            <button
+              className="rd-stencil-link"
+              onClick={() => router.push('/settings')}
+              style={{ marginTop: '1.2rem', display: 'block' }}
+            >
+              <span className="rd-arrow">▸</span> settings
+            </button>
           </div>
         )}
       </div>
