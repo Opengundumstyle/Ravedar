@@ -11,6 +11,9 @@ import {
 } from '../../../lib/api/chat';
 import { supabase } from '../../../lib/supabaseClient';
 import GraffitiWall from '../../components/GraffitiWall';
+import OverflowMenu from '../../components/OverflowMenu';
+import ReportModal from '../../components/ReportModal';
+import EndConnectionModal from '../../components/EndConnectionModal';
 
 function formatTime(iso) {
   return new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -41,6 +44,10 @@ function ChatThreadInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [notMatched, setNotMatched] = useState(false);
+  const [matchId, setMatchId] = useState(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [endConnectionMode, setEndConnectionMode] = useState(null);
+  const [evicted, setEvicted] = useState(false);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -65,6 +72,7 @@ function ChatThreadInner() {
           setLoading(false);
           return;
         }
+        setMatchId(match.id);
         const [profile, convo] = await Promise.all([
           getProfileForChat(otherUserId),
           getConversation(uid, otherUserId),
@@ -100,6 +108,14 @@ function ChatThreadInner() {
             (payload) => {
               const m = payload.new;
               setMessages((prev) => prev.map((p) => (p.id === m.id ? { ...p, ...m } : p)));
+            }
+          )
+          .on(
+            'postgres_changes',
+            { event: 'DELETE', schema: 'public', table: 'matches', filter: `id=eq.${match.id}` },
+            () => {
+              setEvicted(true);
+              setTimeout(() => router.push('/chat'), 1500);
             }
           )
           .subscribe();
@@ -222,9 +238,19 @@ function ChatThreadInner() {
           </div>
         </div>
 
-        <div className="rd-bpm-tag" style={{ pointerEvents: 'auto' }}>
-          <span className="rd-bpm-dot" />
-          LIVE
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', pointerEvents: 'auto' }}>
+          <div className="rd-bpm-tag">
+            <span className="rd-bpm-dot" />
+            LIVE
+          </div>
+          <OverflowMenu
+            ariaLabel="chat actions"
+            items={[
+              { key: 'report',  label: 'report',  danger: true,  onSelect: () => setReportOpen(true) },
+              { key: 'unmatch', label: 'unmatch', danger: false, onSelect: () => setEndConnectionMode('unmatch') },
+              { key: 'block',   label: 'block',   danger: true,  onSelect: () => setEndConnectionMode('block') },
+            ]}
+          />
         </div>
       </header>
 
@@ -327,6 +353,41 @@ function ChatThreadInner() {
           </button>
         </div>
       </form>
+
+      {evicted && (
+        <div style={{ position: 'absolute', top: 80, left: 0, right: 0, zIndex: 50, padding: '0 1rem' }}>
+          <div className="rd-banner">▸ this conversation ended.</div>
+        </div>
+      )}
+
+      {reportOpen && (
+        <ReportModal
+          currentUserId={myId}
+          reportedUserId={otherUserId}
+          reportedUserName={otherProfile?.name}
+          context="chat"
+          matchId={matchId}
+          onClose={() => setReportOpen(false)}
+          onDone={({ blocked }) => {
+            setReportOpen(false);
+            if (blocked) router.push('/chat');
+          }}
+        />
+      )}
+
+      {endConnectionMode && (
+        <EndConnectionModal
+          mode={endConnectionMode}
+          currentUserId={myId}
+          otherUserId={otherUserId}
+          otherUserName={otherProfile?.name}
+          onClose={() => setEndConnectionMode(null)}
+          onDone={() => {
+            setEndConnectionMode(null);
+            router.push('/chat');
+          }}
+        />
+      )}
     </div>
   );
 }
