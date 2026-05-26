@@ -17,7 +17,7 @@ import ShareEventLink from '../components/ShareEventLink';
 import { checkMutualMatch, getMatchesForUser, getActiveRooms } from '../../lib/api/matches';
 import { createMatch } from '../../lib/api/chat';
 import RoomSwitcher from '../components/RoomSwitcher';
-import { getDailyDrop, answerCard } from '../../lib/api/cards';
+import { getDailyDrop, answerCard, getRaverDNA } from '../../lib/api/cards';
 
 const SLOGANS = [
   '{name} is down to vibe with you at {event}.',
@@ -64,6 +64,7 @@ export default function MatchesPage() {
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(0);
+  const [dna, setDna] = useState(null); // { answeredCount, target, topGenres }
 
   const currentCard = matches[currentIndex];
   const nextCard = matches[currentIndex + 1];
@@ -206,6 +207,10 @@ export default function MatchesPage() {
         }
 
         if (!cancelled) setMatches(combined);
+        try {
+          const userDna = await getRaverDNA(userId);
+          if (!cancelled) setDna(userDna);
+        } catch { /* non-fatal */ }
       })();
 
       const buffer = new Promise((r) => setTimeout(r, 2500));
@@ -549,6 +554,16 @@ export default function MatchesPage() {
           <span>BOTH AT</span>
           <span className="rd-event-name">{eventName}</span>
           <span className="rd-arrow">▼</span>
+        </div>
+      )}
+
+      {dna && dna.answeredCount > 0 && (
+        <div
+          className="rd-bpm-tag"
+          style={{ position: 'fixed', top: 'calc(1.2rem + env(safe-area-inset-top, 0px))', right: '5.5rem', zIndex: 50 }}
+        >
+          <span className="rd-bpm-dot" />
+          raver dna · {dna.answeredCount} / {dna.target}
         </div>
       )}
 

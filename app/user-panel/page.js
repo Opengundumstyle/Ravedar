@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import RadarLoader from '../components/RadarLoader';
 import GraffitiWall from '../components/GraffitiWall';
 import { useAuth } from '../components/AuthContext';
+import { getRaverDNA } from '../../lib/api/cards';
 
 const TABS = [
   { key: 'profile', label: 'TAG' },
@@ -38,6 +39,7 @@ export default function UserPanelPage() {
   const [success, setSuccess] = useState('');
 
   const [activeTab, setActiveTab] = useState('profile');
+  const [dna, setDna] = useState(null);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -82,6 +84,12 @@ export default function UserPanelPage() {
 
     fetchUserData();
   }, [router]);
+
+  useEffect(() => {
+    const userId = typeof window !== 'undefined' ? localStorage.getItem('user_profile_id') : null;
+    if (!userId) return;
+    getRaverDNA(userId).then(setDna).catch(() => {});
+  }, []);
 
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -347,6 +355,26 @@ export default function UserPanelPage() {
               </div>
             </div>
 
+            {dna && (
+              <div className="rd-field" style={{ marginTop: '1.5rem' }}>
+                <div className="rd-field-label">
+                  <span className="rd-field-arrow">▸</span> raver dna
+                  <span className="rd-field-opt">{dna.answeredCount} / {dna.target}</span>
+                </div>
+                {dna.topGenres.length > 0 ? (
+                  <div className="rd-vibe-tags" style={{ marginTop: '0.5rem' }}>
+                    {dna.topGenres.slice(0, 5).map((g) => (
+                      <span key={g} className="rd-vibe-tag">{g}</span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="rd-about" style={{ opacity: 0.6 }}>
+                    tap through daily drops in the radar to build your dna.
+                  </p>
+                )}
+              </div>
+            )}
+
             {error && <div className="rd-banner rd-banner--error">{error}</div>}
             {success && <div className="rd-banner rd-banner--success">{success}</div>}
 
@@ -585,7 +613,7 @@ const tabs = {
     background: 'rgba(0,0,0,0.5)',
     border: '1px solid rgba(255,255,255,0.18)',
     color: 'rgba(255,255,255,0.55)',
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
     fontSize: '0.68rem',
     letterSpacing: '0.22em',
     textTransform: 'uppercase',
@@ -616,7 +644,7 @@ const vibeGrid = {
     background: 'rgba(0,0,0,0.45)',
     border: '1px solid rgba(255,255,255,0.18)',
     color: 'rgba(255,255,255,0.85)',
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
     fontSize: '0.62rem',
     letterSpacing: '0.18em',
     padding: '0.6rem 0.4rem',
@@ -732,7 +760,7 @@ const settings = {
     textTransform: 'uppercase',
   },
   value: {
-    fontFamily: 'var(--font-body-mono), monospace',
+    fontFamily: 'var(--font-body-mono), sans-serif',
     fontSize: '0.78rem',
     color: 'rgba(255,255,255,0.9)',
   },
