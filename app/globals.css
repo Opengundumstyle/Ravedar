@@ -1619,3 +1619,42 @@ body {
   line-height: 1.6;
   margin: 0 auto 2rem;
 }
+
+/* Room switcher: horizontal scroll of scanned-event chips on /matches.
+   Sits below the top bar; tune `top` during mobile verification if it
+   overlaps the top-bar nav or the event banner. */
+.rd-room-switcher {
+  position: fixed;
+  top: 3.7rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 45;
+  display: flex;
+  gap: 0.5rem;
+  max-width: 460px;
+  width: calc(100% - 1.5rem);
+  padding: 0.3rem 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.rd-room-switcher::-webkit-scrollbar { display: none; }
+
+.rd-room-chip {
+  flex: 0 0 auto;
+  font-family: var(--font-mono-accent), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.45);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.rd-room-chip--active {
+  border-color: var(--rd-spray-pink);
+  color: var(--rd-spray-pink);
+  text-shadow: 0 0 8px rgba(255, 26, 138, 0.6);
+}
