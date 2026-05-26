@@ -262,6 +262,7 @@ export default function MatchesPage() {
   const handleSelectRoom = (roomId) => {
     if (roomId === currentRoomId) return;
     localStorage.setItem('current_room_id', roomId);
+    setMatches([]);
     setCurrentIndex(0);
     setScanAnyway(false);
     setCurrentRoomId(roomId); // triggers effect B refetch for the new room
@@ -425,6 +426,11 @@ export default function MatchesPage() {
       <div className="rd-screen">
         <GraffitiWall ambientLaser />
         <TopBar router={router} isAuthenticated={isAuthenticated} />
+        <RoomSwitcher
+          rooms={rooms}
+          currentRoomId={currentRoomId}
+          onSelect={handleSelectRoom}
+        />
         <div
           style={{
             position: 'relative',
