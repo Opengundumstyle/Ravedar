@@ -434,18 +434,15 @@ export default function MatchesPage() {
     else setSwipeOffset(0);
   };
   const commitSwipe = (direction) => {
-    const isCard = currentCard?.is_card;
+    if (currentCard?.is_card) return; // content cards are tap-only; never swipe-commit
     setFrozenBottomCard(nextCard);
     setIsAnimating(true);
     setSwipeOffset(direction === 'right' ? 500 : -500);
     setTimeout(() => {
       handleSwipe(direction, currentCard);
       setTimeout(() => {
-        if (!isCard) {
-          // content cards advance on reveal dismiss, not here
-          setCurrentIndex((i) => i + 1);
-          setSwipeOffset(0);
-        }
+        setCurrentIndex((i) => i + 1);
+        setSwipeOffset(0);
         setIsAnimating(false);
         setFrozenBottomCard(null);
       }, 100);
@@ -717,7 +714,7 @@ export default function MatchesPage() {
                   ? 'none'
                   : 'transform 0.3s ease-out, opacity 0.3s ease-out',
                 opacity: Math.abs(swipeOffset) > 200 ? 0 : 1,
-                cursor: currentCard.is_survey
+                cursor: currentCard.is_survey || currentCard.is_card
                   ? 'default'
                   : isDragging
                   ? 'grabbing'
