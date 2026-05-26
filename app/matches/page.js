@@ -14,8 +14,9 @@ import SignupGateModal from '../components/SignupGateModal';
 import SparseRoomBanner from '../components/SparseRoomBanner';
 import ReportModal from '../components/ReportModal';
 import ShareEventLink from '../components/ShareEventLink';
-import { checkMutualMatch, getMatchesForUser } from '../../lib/api/matches';
+import { checkMutualMatch, getMatchesForUser, getActiveRooms } from '../../lib/api/matches';
 import { createMatch } from '../../lib/api/chat';
+import RoomSwitcher from '../components/RoomSwitcher';
 
 const SLOGANS = [
   '{name} is down to vibe with you at {event}.',
@@ -53,6 +54,9 @@ export default function MatchesPage() {
   const [reportTarget, setReportTarget] = useState(null);
   const [blockedSetVersion, setBlockedSetVersion] = useState(0);
 
+  const [rooms, setRooms] = useState([]);
+  const [currentRoomId, setCurrentRoomId] = useState(null);
+
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(0);
@@ -61,32 +65,59 @@ export default function MatchesPage() {
   const nextCard = matches[currentIndex + 1];
   const bottomCard = isAnimating ? frozenBottomCard : nextCard;
 
-  // ---------------- data fetch ----------------
+  // ---------------- effect A: load active rooms, pick current ----------------
   useEffect(() => {
+    (async () => {
+      const userId = localStorage.getItem('user_profile_id');
+      if (!userId) {
+        router.push('/');
+        return;
+      }
+
+      const { data: currentUserProfile } = await supabase
+        .from('user_profiles')
+        .select('id, name, photos:user_photos(image_url, position)')
+        .eq('id', userId)
+        .single();
+      setCurrentUser(currentUserProfile);
+
+      let activeRooms = [];
+      try {
+        activeRooms = await getActiveRooms(userId);
+      } catch (err) {
+        console.error('Failed to load active rooms:', err);
+      }
+      if (!activeRooms || activeRooms.length === 0) {
+        router.push('/');
+        return;
+      }
+      setRooms(activeRooms);
+
+      const stored = localStorage.getItem('current_room_id');
+      const pick = activeRooms.find((r) => r.id === stored) || activeRooms[0];
+      setCurrentRoomId(pick.id);
+      localStorage.setItem('current_room_id', pick.id);
+    })();
+  }, [router]);
+
+  // ---------------- effect B: build the deck for the current room ----------------
+  useEffect(() => {
+    if (!currentRoomId) return;
+    const room = rooms.find((r) => r.id === currentRoomId);
+    if (!room) return;
+
+    let cancelled = false;
     const fetchAndBuffer = async () => {
+      setLoading(true);
       const fetchPromise = (async () => {
         const userId = localStorage.getItem('user_profile_id');
         if (!userId) {
           router.push('/');
           return;
         }
-        const { data: currentUserProfile } = await supabase
-          .from('user_profiles')
-          .select('id, name, photos:user_photos(image_url, position)')
-          .eq('id', userId)
-          .single();
-        setCurrentUser(currentUserProfile);
 
-        const { data: myEvent } = await supabase
-          .from('user_events')
-          .select('name, date, city')
-          .eq('user_id', userId)
-          .single();
-        if (!myEvent) {
-          router.push('/');
-          return;
-        }
-        setEventName(myEvent.name);
+        setEventName(room.name);
+        setMyEventInfo({ name: room.name, city: room.city, date: room.date });
 
         const shuffle = (arr) => {
           const a = [...arr];
@@ -103,15 +134,14 @@ export default function MatchesPage() {
         try {
           realCoAttendees = await getMatchesForUser(
             userId,
-            myEvent.name,
-            myEvent.city,
-            myEvent.date
+            room.name,
+            room.city,
+            room.date
           );
         } catch (err) {
           console.error('Failed to load real co-attendees:', err);
         }
         setRealCount(realCoAttendees.length);
-        setMyEventInfo({ name: myEvent.name, city: myEvent.city, date: myEvent.date });
         const shuffledReal = shuffle(realCoAttendees);
 
         const { data: fakeProfiles } = await supabase
@@ -158,15 +188,18 @@ export default function MatchesPage() {
         if (combined.length >= 15) combined.splice(15, 0, surveyCard);
         else combined.push(surveyCard);
 
-        setMatches(combined);
+        if (!cancelled) setMatches(combined);
       })();
 
       const buffer = new Promise((r) => setTimeout(r, 2500));
       await Promise.all([fetchPromise, buffer]);
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     };
     fetchAndBuffer();
-  }, [router, blockedSetVersion]);
+    return () => {
+      cancelled = true;
+    };
+  }, [currentRoomId, rooms, blockedSetVersion, router]);
 
   // Post-signup activation: read+clear the just_signed_up flag, then
   // count pending right-swipes against real users that now resolve to mutual matches.
@@ -222,6 +255,13 @@ export default function MatchesPage() {
       setActivationBanner({ count: activatedCount });
     })();
   }, []);
+
+  const handleSelectRoom = (roomId) => {
+    if (roomId === currentRoomId) return;
+    localStorage.setItem('current_room_id', roomId);
+    setCurrentIndex(0);
+    setCurrentRoomId(roomId); // triggers effect B refetch for the new room
+  };
 
   // ---------------- swipe → like ----------------
   const handleSwipe = async (direction, match) => {
@@ -441,6 +481,12 @@ export default function MatchesPage() {
       <GraffitiWall ambientLaser />
 
       <TopBar router={router} isAuthenticated={isAuthenticated} />
+
+      <RoomSwitcher
+        rooms={rooms}
+        currentRoomId={currentRoomId}
+        onSelect={handleSelectRoom}
+      />
 
       {/* Event banner */}
       {eventName && currentCard && !activationBanner && !showTakeover && (
