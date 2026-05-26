@@ -6,7 +6,7 @@ import OverflowMenu from './OverflowMenu';
 const DEFAULT_PHOTO =
   'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=750&fit=crop&crop=center';
 
-export default function UserCard({ user, onSurveyAction, onReport, disableAnimation = false }) {
+export default function UserCard({ user, onSurveyAction, onCardAnswer, onReport, disableAnimation = false }) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [showFullAbout, setShowFullAbout] = useState(false);
 
@@ -70,6 +70,85 @@ export default function UserCard({ user, onSurveyAction, onReport, disableAnimat
               </button>
             ))}
           </div>
+        </div>
+
+        <FlyerDripEdge />
+      </div>
+    );
+  }
+
+  // ---------------- DAILY DROP CARD ----------------
+  if (user.is_card) {
+    const reveal = user.reveal; // { pct, cohort, label } once answered, else null
+    const cohortWord =
+      reveal?.cohort === 'event' ? 'ravers here'
+      : reveal?.cohort === 'city' ? `ravers in ${user.city || 'your city'}`
+      : 'ravers on ravedar';
+
+    return (
+      <div className="rd-flyer">
+        <div className="rd-tape rd-tape--left" />
+        <div className="rd-tape rd-tape--right" />
+
+        <div
+          style={{
+            position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', height: '100%',
+            padding: '2.5rem 1.4rem', textAlign: 'center',
+          }}
+        >
+          <div
+            style={{
+              fontFamily: 'var(--font-mono-accent), monospace', textTransform: 'uppercase',
+              letterSpacing: '0.3em', fontSize: '0.7rem', color: 'var(--rd-spray-cyan)',
+              marginBottom: '1.5rem',
+            }}
+          >
+            ▸ daily drop
+          </div>
+
+          {reveal ? (
+            <>
+              <div
+                style={{
+                  fontFamily: 'var(--font-graffiti), cursive',
+                  fontSize: 'clamp(3rem, 14vw, 4.5rem)', lineHeight: 1,
+                  color: 'var(--rd-spray-cyan)', transform: 'rotate(-3deg)', marginBottom: '0.8rem',
+                }}
+              >
+                {reveal.pct}%
+              </div>
+              <p className="rd-about" style={{ fontSize: '1rem', maxWidth: '300px' }}>
+                you + {reveal.pct}% of {cohortWord} picked{' '}
+                <span style={{ color: 'var(--rd-spray-yellow)' }}>{reveal.label}</span>
+              </p>
+            </>
+          ) : (
+            <>
+              <h3
+                className="rd-flyer-name"
+                style={{ fontSize: 'clamp(1.7rem, 6vw, 2.4rem)', transform: 'rotate(-1.5deg)', marginBottom: '1.6rem' }}
+              >
+                {user.question}
+              </h3>
+              <div style={{ width: '100%', maxWidth: '280px', display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
+                <button
+                  onClick={() => onCardAnswer && onCardAnswer('a')}
+                  disabled={disableAnimation}
+                  style={cardOptStyle('a')}
+                >
+                  ◂ {String(user.option_a).toUpperCase()}
+                </button>
+                <button
+                  onClick={() => onCardAnswer && onCardAnswer('b')}
+                  disabled={disableAnimation}
+                  style={cardOptStyle('b')}
+                >
+                  {String(user.option_b).toUpperCase()} ▸
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
         <FlyerDripEdge />
@@ -229,6 +308,23 @@ function FlyerDripEdge() {
       </svg>
     </div>
   );
+}
+
+function cardOptStyle(side) {
+  return {
+    fontFamily: 'var(--font-neon), sans-serif',
+    fontSize: '0.95rem',
+    letterSpacing: '0.18em',
+    padding: '0.95rem 1rem',
+    cursor: 'pointer',
+    border: '2px solid #1a1a1a',
+    borderRadius: 2,
+    textTransform: 'uppercase',
+    transition: 'all 0.18s',
+    boxShadow: '3px 3px 0 rgba(0,0,0,0.7)',
+    background: side === 'a' ? 'var(--rd-spray-cyan)' : 'var(--rd-spray-pink)',
+    color: side === 'a' ? '#1a1a1a' : '#fff',
+  };
 }
 
 function surveyBtnStyle(action) {
