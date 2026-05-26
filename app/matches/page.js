@@ -17,6 +17,7 @@ import ShareEventLink from '../components/ShareEventLink';
 import { checkMutualMatch, getMatchesForUser, getActiveRooms } from '../../lib/api/matches';
 import { createMatch } from '../../lib/api/chat';
 import RoomSwitcher from '../components/RoomSwitcher';
+import { getDailyDrop, answerCard } from '../../lib/api/cards';
 
 const SLOGANS = [
   '{name} is down to vibe with you at {event}.',
@@ -53,6 +54,9 @@ export default function MatchesPage() {
   const [scanAnyway, setScanAnyway] = useState(false);
   const [reportTarget, setReportTarget] = useState(null);
   const [blockedSetVersion, setBlockedSetVersion] = useState(0);
+
+  const [revealedCardId, setRevealedCardId] = useState(null); // id of card currently showing its reveal
+  const [revealData, setRevealData] = useState(null);         // { pct, cohort, label }
 
   const [rooms, setRooms] = useState([]);
   const [currentRoomId, setCurrentRoomId] = useState(null);
@@ -188,6 +192,19 @@ export default function MatchesPage() {
         if (combined.length >= 15) combined.splice(15, 0, surveyCard);
         else combined.push(surveyCard);
 
+        // Daily drop: weave unanswered content cards into the early deck so a
+        // sparse room still has something to tap through. Tag the city so the
+        // reveal can label the cohort.
+        const dropCards = (await getDailyDrop(userId, { city: room.city }))
+          .map((c) => ({ ...c, city: room.city }));
+        let insertAt = 2;
+        for (const card of dropCards) {
+          if (cancelled) break;
+          if (insertAt <= combined.length) combined.splice(insertAt, 0, card);
+          else combined.push(card);
+          insertAt += 4; // space them out among real/demo cards
+        }
+
         if (!cancelled) setMatches(combined);
       })();
 
@@ -273,6 +290,10 @@ export default function MatchesPage() {
     const userId = localStorage.getItem('user_profile_id');
     if (!match || !userId) return;
     if (match.is_survey) return;
+    if (match.is_card) {
+      await handleCardAnswer(direction === 'right' ? 'b' : 'a');
+      return;
+    }
 
     await supabase.from('likes').insert({
       from_user_id: userId,
@@ -358,6 +379,28 @@ export default function MatchesPage() {
     commitSwipe('right');
   };
 
+  const handleCardAnswer = async (choice) => {
+    const card = currentCard;
+    if (!card || !card.is_card || revealedCardId === card.id) return;
+    const userId = localStorage.getItem('user_profile_id');
+    if (!userId) return;
+
+    const stats = await answerCard(userId, card, choice, {
+      eventName: myEventInfo?.name || null,
+      city: myEventInfo?.city || null,
+    });
+    // Show the reveal in-card; advancing happens on dismiss.
+    setRevealData(stats || { pct: 50, cohort: 'global', label: choice === 'a' ? card.option_a : card.option_b });
+    setRevealedCardId(card.id);
+  };
+
+  const handleRevealDismiss = () => {
+    setRevealedCardId(null);
+    setRevealData(null);
+    setCurrentIndex((i) => i + 1);
+    setSwipeOffset(0);
+  };
+
   const swipeLabel = useMemo(() => {
     if (swipeOffset > 40) return 'vibe';
     if (swipeOffset < -40) return 'pass';
@@ -366,7 +409,7 @@ export default function MatchesPage() {
 
   // ---------------- drag handlers ----------------
   const handleMouseDown = (e) => {
-    if (currentCard?.is_survey) return;
+    if (currentCard?.is_survey || currentCard?.is_card) return;
     setIsDragging(true);
     setDragStartX(e.clientX - swipeOffset);
   };
@@ -375,7 +418,7 @@ export default function MatchesPage() {
     setSwipeOffset(e.clientX - dragStartX);
   };
   const handleTouchStart = (e) => {
-    if (currentCard?.is_survey) return;
+    if (currentCard?.is_survey || currentCard?.is_card) return;
     setIsDragging(true);
     setDragStartX(e.touches[0].clientX - swipeOffset);
   };
@@ -391,14 +434,18 @@ export default function MatchesPage() {
     else setSwipeOffset(0);
   };
   const commitSwipe = (direction) => {
+    const isCard = currentCard?.is_card;
     setFrozenBottomCard(nextCard);
     setIsAnimating(true);
     setSwipeOffset(direction === 'right' ? 500 : -500);
     setTimeout(() => {
       handleSwipe(direction, currentCard);
       setTimeout(() => {
-        setCurrentIndex((i) => i + 1);
-        setSwipeOffset(0);
+        if (!isCard) {
+          // content cards advance on reveal dismiss, not here
+          setCurrentIndex((i) => i + 1);
+          setSwipeOffset(0);
+        }
         setIsAnimating(false);
         setFrozenBottomCard(null);
       }, 100);
@@ -701,7 +748,23 @@ export default function MatchesPage() {
                 </div>
               )}
 
-              <UserCard user={currentCard} onSurveyAction={handleSurveyAction} onReport={(u) => setReportTarget(u)} />
+              <UserCard
+                user={
+                  currentCard.is_card && revealedCardId === currentCard.id
+                    ? { ...currentCard, reveal: revealData }
+                    : currentCard
+                }
+                onSurveyAction={handleSurveyAction}
+                onCardAnswer={handleCardAnswer}
+                onReport={(u) => setReportTarget(u)}
+              />
+            </div>
+          )}
+          {currentCard?.is_card && revealedCardId === currentCard.id && (
+            <div className="rd-btn-wrap" style={{ position: 'absolute', bottom: '-3.5rem', left: 0, right: 0, zIndex: 3 }}>
+              <button className="rd-btn-neon" onClick={handleRevealDismiss}>
+                KEEP SCANNING ▸
+              </button>
             </div>
           )}
         </div>
