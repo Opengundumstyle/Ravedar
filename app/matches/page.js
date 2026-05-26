@@ -199,7 +199,10 @@ export default function MatchesPage() {
     return () => {
       cancelled = true;
     };
-  }, [currentRoomId, rooms, blockedSetVersion, router]);
+    // rooms intentionally omitted: the deck rebuilds on currentRoomId change;
+    // the room object is resolved from rooms via closure at run time.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentRoomId, blockedSetVersion, router]);
 
   // Post-signup activation: read+clear the just_signed_up flag, then
   // count pending right-swipes against real users that now resolve to mutual matches.
@@ -260,6 +263,7 @@ export default function MatchesPage() {
     if (roomId === currentRoomId) return;
     localStorage.setItem('current_room_id', roomId);
     setCurrentIndex(0);
+    setScanAnyway(false);
     setCurrentRoomId(roomId); // triggers effect B refetch for the new room
   };
 
