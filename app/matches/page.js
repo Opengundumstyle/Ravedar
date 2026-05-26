@@ -456,7 +456,7 @@ export default function MatchesPage() {
   useEffect(() => {
     const onKey = (e) => {
       if (!currentCard || matchOverlay || showChatModal || showFounderModal || showSignupGate) return;
-      if (currentCard.is_survey) return;
+      if (currentCard.is_survey || currentCard.is_card) return;
       if (e.key === 'ArrowLeft') commitSwipe('left');
       else if (e.key === 'ArrowRight') commitSwipe('right');
     };
