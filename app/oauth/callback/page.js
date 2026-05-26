@@ -29,6 +29,7 @@ export default function OAuthCallbackPage() {
           // Clear any old anonymous user data
           localStorage.removeItem('user_section_id');
           localStorage.removeItem('user_event_data');
+          localStorage.removeItem('current_room_id');
 
           // Check if user has a profile
           const { data: profile } = await supabase

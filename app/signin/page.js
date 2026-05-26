@@ -61,6 +61,7 @@ export default function SignInPage() {
         localStorage.setItem('user_profile_id', data.user.id);
         localStorage.removeItem('user_section_id');
         localStorage.removeItem('user_event_data');
+        localStorage.removeItem('current_room_id');
         setSuccess('▸ signed in. dropping you in ···');
         setTimeout(() => router.push('/matches'), 1100);
       }

@@ -233,6 +233,7 @@ export default function SignupPage() {
       sessionStorage.setItem('just_signed_up', '1');
       localStorage.removeItem('user_section_id');
       localStorage.removeItem('user_event_data');
+      localStorage.removeItem('current_room_id');
 
       setSuccess('▸ tagged in. welcome to ravedar.');
       setTimeout(() => {

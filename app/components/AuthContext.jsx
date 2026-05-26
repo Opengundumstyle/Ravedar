@@ -41,6 +41,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('user_profile_id');
       localStorage.removeItem('user_section_id');
       localStorage.removeItem('user_event_data');
+      localStorage.removeItem('current_room_id');
     } catch (error) {
       console.error('Sign out error:', error);
     }
