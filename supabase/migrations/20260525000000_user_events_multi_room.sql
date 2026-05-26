@@ -4,7 +4,7 @@
 -- the same event dedupes instead of creating duplicate rooms.
 
 -- 1. Drop the user_id primary key (Postgres default name is <table>_pkey).
-alter table public.user_events drop constraint user_events_pkey;
+alter table public.user_events drop constraint if exists user_events_pkey;
 
 -- 2. Surrogate primary key.
 alter table public.user_events
