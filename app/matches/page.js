@@ -57,6 +57,7 @@ export default function MatchesPage() {
 
   const [revealedCardId, setRevealedCardId] = useState(null); // id of card currently showing its reveal
   const [revealData, setRevealData] = useState(null);         // { pct, cohort, label }
+  const answeringRef = useRef(false);                         // guards against a double-tap firing two answers
 
   const [rooms, setRooms] = useState([]);
   const [currentRoomId, setCurrentRoomId] = useState(null);
@@ -287,6 +288,9 @@ export default function MatchesPage() {
     setMatches([]);
     setCurrentIndex(0);
     setScanAnyway(false);
+    setRevealedCardId(null);
+    setRevealData(null);
+    answeringRef.current = false;
     setCurrentRoomId(roomId); // triggers effect B refetch for the new room
   };
 
@@ -386,9 +390,13 @@ export default function MatchesPage() {
 
   const handleCardAnswer = async (choice) => {
     const card = currentCard;
-    if (!card || !card.is_card || revealedCardId === card.id) return;
+    if (!card || !card.is_card || revealedCardId === card.id || answeringRef.current) return;
+    answeringRef.current = true;
     const userId = localStorage.getItem('user_profile_id');
-    if (!userId) return;
+    if (!userId) {
+      answeringRef.current = false;
+      return;
+    }
 
     const stats = await answerCard(userId, card, choice, {
       eventName: myEventInfo?.name || null,
@@ -397,6 +405,7 @@ export default function MatchesPage() {
     // Show the reveal in-card; advancing happens on dismiss.
     setRevealData(stats || { pct: 50, cohort: 'global', label: choice === 'a' ? card.option_a : card.option_b });
     setRevealedCardId(card.id);
+    answeringRef.current = false;
   };
 
   const handleRevealDismiss = () => {
