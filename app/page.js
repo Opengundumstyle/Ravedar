@@ -197,7 +197,8 @@ export default function HomePage() {
       try {
         const userId = await ensureUserId();
         const eventDate = date === '' ? null : date;
-        await createUserEvent(userId, eventName, city, eventDate);
+        const room = await createUserEvent(userId, eventName, city, eventDate);
+        if (room?.id) localStorage.setItem('current_room_id', room.id);
         router.push('/matches');
       } catch (err) {
         console.error('createUserEvent failed:', err);
