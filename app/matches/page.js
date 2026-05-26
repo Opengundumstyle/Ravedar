@@ -560,7 +560,7 @@ export default function MatchesPage() {
       {dna && dna.answeredCount > 0 && (
         <div
           className="rd-bpm-tag"
-          style={{ position: 'fixed', top: 'calc(1.2rem + env(safe-area-inset-top, 0px))', right: '5.5rem', zIndex: 50 }}
+          style={{ position: 'fixed', bottom: 'calc(4.2rem + env(safe-area-inset-bottom, 0px))', left: '1.25rem', zIndex: 40 }}
         >
           <span className="rd-bpm-dot" />
           raver dna · {dna.answeredCount} / {dna.target}
