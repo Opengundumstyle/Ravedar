@@ -90,11 +90,15 @@ body {
   background-clip: text;
 }
 
-/* Scrollbar */
+/* Scrollbar — desktop only; hide on touch devices so it doesn't slice content on iOS/Android */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
+@media (hover: none) and (pointer: coarse) {
+  ::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  * { scrollbar-width: none; }
+}
 
 /* Focus (legacy non-rd) */
 *:focus { outline: 2px solid var(--color-primary); outline-offset: 2px; }
@@ -133,21 +137,22 @@ body {
 /* ---------- Font utilities ---------- */
 .font-graffiti     { font-family: var(--font-graffiti), cursive; }
 .font-neon         { font-family: var(--font-neon), sans-serif; letter-spacing: 0.05em; }
-.font-mono-accent  { font-family: var(--font-mono-accent), monospace; }
-.font-body-mono    { font-family: var(--font-body-mono), monospace; }
+.font-mono-accent  { font-family: var(--font-mono-accent), sans-serif; }
+.font-body-mono    { font-family: var(--font-body-mono), sans-serif; }
 .font-marker       { font-family: var(--font-marker), cursive; }
 
 /* ---------- Screen wrapper ---------- */
 .rd-screen {
   position: relative;
-  min-height: 100vh;
+  min-height: 100vh;          /* fallback */
+  min-height: 100dvh;         /* iOS Safari address-bar–aware */
   overflow: hidden;
   isolation: isolate;
-  font-family: var(--font-body-mono), monospace;
+  font-family: var(--font-body-mono), sans-serif;
   color: #fff;
   background: #000;
 }
-.rd-screen.scrollable { overflow-x: hidden; overflow-y: auto; }
+.rd-screen.scrollable { overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
 /* ---------- Concrete wall ---------- */
 .rd-wall {
@@ -344,7 +349,7 @@ body {
   backdrop-filter: blur(6px);
   border: 1px solid rgba(102, 255, 0, 0.4);
   padding: 0.55rem 0.8rem;
-  font-family: var(--font-mono-accent), monospace;
+  font-family: var(--font-mono-accent), sans-serif;
   color: var(--rd-spray-green);
   font-size: 0.72rem;
   letter-spacing: 0.22em;
@@ -380,7 +385,7 @@ body {
   text-transform: uppercase;
   margin-bottom: 0.55rem;
 }
-.rd-field-num    { color: var(--rd-spray-pink); font-family: var(--font-mono-accent), monospace; font-size: 0.85rem; letter-spacing: 0; }
+.rd-field-num    { color: var(--rd-spray-pink); font-family: var(--font-mono-accent), sans-serif; font-size: 0.85rem; letter-spacing: 0; }
 .rd-field-arrow  { color: var(--rd-spray-cyan); }
 .rd-field-opt    { color: rgba(255, 255, 255, 0.35); letter-spacing: 0.1em; }
 
@@ -405,7 +410,7 @@ body {
   border: 1.5px solid rgba(255, 0, 128, 0.55);
   color: #fff;
   padding: 1rem 1.1rem;
-  font-family: var(--font-body-mono), monospace;
+  font-family: var(--font-body-mono), sans-serif;
   font-size: 0.95rem;
   letter-spacing: 0.05em;
   outline: none;
@@ -451,7 +456,7 @@ body {
 .rd-dropdown-header {
   padding: 0.5rem 0.85rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  font-family: var(--font-mono-accent), monospace;
+  font-family: var(--font-mono-accent), sans-serif;
   font-size: 0.65rem;
   letter-spacing: 0.32em;
   color: rgba(255, 255, 255, 0.45);
@@ -463,7 +468,7 @@ body {
   padding: 0.7rem 0.85rem;
   cursor: pointer;
   color: #fff;
-  font-family: var(--font-body-mono), monospace;
+  font-family: var(--font-body-mono), sans-serif;
   font-size: 0.85rem;
   transition: background 0.15s;
   border-left: 2px solid transparent;
@@ -473,6 +478,8 @@ body {
   border-bottom: 0;
   width: 100%;
   text-align: left;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(255, 26, 138, 0.25);
 }
 .rd-dropdown-item:hover {
   background: rgba(255, 26, 138, 0.08);
@@ -612,7 +619,7 @@ body {
 /* ---------- Stencil link ---------- */
 .rd-stencil-link {
   display: inline-block;
-  font-family: var(--font-mono-accent), monospace;
+  font-family: var(--font-mono-accent), sans-serif;
   font-size: 0.7rem;
   letter-spacing: 0.3em;
   color: rgba(255, 255, 255, 0.45);
@@ -628,7 +635,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  font-family: var(--font-mono-accent), monospace;
+  font-family: var(--font-mono-accent), sans-serif;
   font-size: 0.7rem;
   letter-spacing: 0.5em;
   color: var(--rd-spray-cyan);
@@ -651,7 +658,7 @@ body {
 .rd-banner {
   margin-top: 1rem;
   padding: 0.7rem 1rem;
-  font-family: var(--font-body-mono), monospace;
+  font-family: var(--font-body-mono), sans-serif;
   font-size: 0.8rem;
   letter-spacing: 0.05em;
   border-radius: 2px;
@@ -673,7 +680,7 @@ body {
 }
 
 .rd-title-sub {
-  font-family: var(--font-mono-accent), monospace;
+  font-family: var(--font-mono-accent), sans-serif;
   color: var(--rd-spray-cyan);
   text-shadow:
     2px 2px 0 rgba(0, 0, 0, 0.55),
@@ -748,7 +755,7 @@ body {
   text-transform: uppercase;
 }
 .rd-scan-substatus {
-  font-family: var(--font-mono-accent), monospace;
+  font-family: var(--font-mono-accent), sans-serif;
   font-size: 0.78rem;
   letter-spacing: 0.4em;
   color: rgba(255, 255, 255, 0.55);
@@ -869,7 +876,7 @@ body {
   }
 }
 .rd-tag-sub {
-  font-family: var(--font-mono-accent), monospace;
+  font-family: var(--font-mono-accent), sans-serif;
   font-size: clamp(1.1rem, 2.5vw, 2rem);
   color: var(--rd-spray-cyan);
   letter-spacing: 0.5em;
@@ -931,7 +938,7 @@ body {
   bottom: 7%;
   left: 50%;
   transform: translateX(-50%);
-  font-family: var(--font-body-mono), monospace;
+  font-family: var(--font-body-mono), sans-serif;
   font-size: 0.8rem;
   color: var(--rd-spray-yellow);
   letter-spacing: 0.55em;
@@ -1149,7 +1156,7 @@ body {
 
 .rd-event-banner {
   position: fixed;
-  top: 4.5rem;
+  top: calc(4.5rem + env(safe-area-inset-top, 0px));
   left: 50%;
   transform: translateX(-50%) rotate(-1.5deg);
   z-index: 5;
@@ -1339,7 +1346,7 @@ body {
   padding-bottom: 1px;
 }
 .rd-about {
-  font-family: var(--font-body-mono), monospace;
+  font-family: var(--font-body-mono), sans-serif;
   font-size: 0.85rem;
   color: #2a2520;
   line-height: 1.5;
@@ -1353,7 +1360,7 @@ body {
   background: none;
   border: none;
   color: var(--rd-spray-pink);
-  font-family: var(--font-body-mono), monospace;
+  font-family: var(--font-body-mono), sans-serif;
   font-size: 0.8rem;
   cursor: pointer;
   padding: 0;
@@ -1437,11 +1444,11 @@ body {
 /* Bottom swipe hint */
 .rd-swipe-hint {
   position: fixed;
-  bottom: 1.5rem;
+  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   z-index: 40;
-  font-family: var(--font-mono-accent), monospace;
+  font-family: var(--font-mono-accent), sans-serif;
   color: rgba(255, 255, 255, 0.55);
   font-size: 0.72rem;
   letter-spacing: 0.4em;
@@ -1611,7 +1618,7 @@ body {
   line-height: 1;
 }
 .rd-empty-sub {
-  font-family: var(--font-body-mono), monospace;
+  font-family: var(--font-body-mono), sans-serif;
   color: rgba(255, 255, 255, 0.65);
   font-size: 0.85rem;
   letter-spacing: 0.18em;
@@ -1657,4 +1664,77 @@ body {
   border-color: var(--rd-spray-pink);
   color: var(--rd-spray-pink);
   text-shadow: 0 0 8px rgba(255, 26, 138, 0.6);
+}
+
+/* Locked-room progress block (see LockedRoomTakeover in app/matches/page.js).
+   The fill animates from its previous width to the new width, so a freshly
+   incremented count visibly nudges forward. */
+.rd-progress-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 4px;
+}
+
+.rd-progress-row__label {
+  font-family: var(--font-mono-accent);
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.rd-progress-row__label strong {
+  color: var(--rd-spray-yellow);
+  font-weight: 500;
+}
+
+.rd-progress-bar {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.rd-progress-bar__fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--rd-spray-pink), var(--rd-spray-yellow));
+  transition: width 600ms ease;
+  /* width is set inline via style={{ width: `${pct}%` }} */
+}
+
+.rd-progress-row__sub {
+  font-family: var(--font-body-mono);
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Autocomplete LIVE chip — neon-green border + uppercase label. Sits inline
+   on dropdown rows for events that exist in live_rooms with is_live=true. */
+.rd-type-chip--live {
+  border: 1px solid var(--rd-spray-green);
+  color: var(--rd-spray-green);
+  background: rgba(102, 255, 0, 0.08);
+  padding: 0.1rem 0.4rem;
+  font-family: var(--font-mono-accent);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-left: 0.5rem;
+}
+
+/* RoomSwitcher locked-chip glyph — small inline lock to the right of the
+   room name. Visible only when the chip's room is pending. */
+.rd-room-chip__lock {
+  margin-left: 0.35rem;
+  font-size: 0.72em;
+  opacity: 0.7;
 }
