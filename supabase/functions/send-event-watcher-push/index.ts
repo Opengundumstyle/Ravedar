@@ -200,6 +200,19 @@ async function handleRoomOpened(admin: ReturnType<typeof createClient>, body: Ro
     .select("user_id, platform, token")
     .in("user_id", userIds);
 
+  // Log voters with no device token for debuggability (mirrors handleEventJoin's
+  // skipped_no_token branch so push_log is a complete audit for room_opened too).
+  const tokenUserIds = new Set((tokens ?? []).map((t) => t.user_id));
+  const noTokenUserIds = userIds.filter((id) => !tokenUserIds.has(id));
+  for (const uid of noTokenUserIds) {
+    await admin.from("push_log").insert({
+      user_id: uid,
+      trigger_type: "room_opened",
+      delta: 0,
+      status: "skipped_no_token",
+    });
+  }
+
   const title = "your room just opened.";
   const bodyText = `🔓 ${body.name} — tap to scan in.`;
 
