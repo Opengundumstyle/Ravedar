@@ -14,7 +14,7 @@ import SignupGateModal from '../components/SignupGateModal';
 import SparseRoomBanner from '../components/SparseRoomBanner';
 import ReportModal from '../components/ReportModal';
 import ShareEventLink from '../components/ShareEventLink';
-import { checkMutualMatch, getMatchesForUser, getActiveRooms } from '../../lib/api/matches';
+import { checkMutualMatch, getMatchesForUser, getActiveRooms, getRoomStatus } from '../../lib/api/matches';
 import { createMatch } from '../../lib/api/chat';
 import RoomSwitcher from '../components/RoomSwitcher';
 import { getDailyDrop, answerCard, getRaverDNA } from '../../lib/api/cards';
@@ -50,6 +50,7 @@ export default function MatchesPage() {
   const [frozenBottomCard, setFrozenBottomCard] = useState(null);
   const [activationBanner, setActivationBanner] = useState(null); // null | { count: number }
   const [realCount, setRealCount] = useState(0);
+  const [lockedState, setLockedState] = useState(null); // { votes, threshold } when pending
   const [myEventInfo, setMyEventInfo] = useState(null); // { name, city, date }
   const [scanAnyway, setScanAnyway] = useState(false);
   const [reportTarget, setReportTarget] = useState(null);
@@ -115,6 +116,7 @@ export default function MatchesPage() {
     let cancelled = false;
     const fetchAndBuffer = async () => {
       setLoading(true);
+      setLockedState(null); // reset on room switch
       const fetchPromise = (async () => {
         const userId = localStorage.getItem('user_profile_id');
         if (!userId) {
@@ -124,6 +126,16 @@ export default function MatchesPage() {
 
         setEventName(room.name);
         setMyEventInfo({ name: room.name, city: room.city, date: room.date });
+
+        // Room status: skip the deck fetch entirely when the room is pending.
+        const status = await getRoomStatus(room.name, room.city, room.date);
+        if (cancelled) return;
+        if (status.status === 'pending') {
+          setLockedState({ votes: status.votes, threshold: status.threshold });
+          setMatches([]); // ensure the deck cascade doesn't render stale cards
+          setRealCount(0);
+          return;
+        }
 
         const shuffle = (arr) => {
           const a = [...arr];
@@ -479,7 +491,7 @@ export default function MatchesPage() {
   // ---------------- early returns ----------------
   if (loading) return <RadarLoader eventName={eventName} />;
 
-  if (currentIndex >= matches.length) {
+  if (!lockedState && currentIndex >= matches.length) {
     return (
       <div className="rd-screen">
         <GraffitiWall ambientLaser />
@@ -542,7 +554,8 @@ export default function MatchesPage() {
   }
 
   // ---------------- main render ----------------
-  const showTakeover = !loading && realCount === 0 && !scanAnyway && !!myEventInfo;
+  const showLocked = !loading && !!lockedState && !!myEventInfo;
+  const showTakeover = !loading && !showLocked && realCount === 0 && !scanAnyway && !!myEventInfo;
 
   return (
     <div className="rd-screen">
@@ -557,7 +570,7 @@ export default function MatchesPage() {
       />
 
       {/* Event banner */}
-      {eventName && currentCard && !activationBanner && !showTakeover && (
+      {eventName && currentCard && !activationBanner && !showTakeover && !showLocked && (
         <div className="rd-event-banner">
           <span className="rd-arrow">▼</span>
           <span>BOTH AT</span>
@@ -614,13 +627,75 @@ export default function MatchesPage() {
       )}
 
       {/* Sparse-room banner: real count 1-3 */}
-      {myEventInfo && realCount >= 1 && realCount <= 3 && !showTakeover && !activationBanner && (
+      {myEventInfo && !showLocked && realCount >= 1 && realCount <= 3 && !showTakeover && !activationBanner && (
         <SparseRoomBanner
           realCount={realCount}
           eventName={myEventInfo.name}
           city={myEventInfo.city}
           date={myEventInfo.date}
         />
+      )}
+
+      {/* Locked-room takeover: room hasn't reached its activation threshold yet */}
+      {showLocked && (
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 10,
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '6rem 1.5rem 5rem',
+          }}
+        >
+          <div className="rd-empty" style={{ maxWidth: '420px', textAlign: 'center' }}>
+            <div className="rd-empty-title" style={{ transform: 'rotate(-3deg)' }}>
+              this room isn&rsquo;t open.
+            </div>
+            <div className="rd-empty-sub" style={{ marginTop: '0.5rem' }}>
+              ▸ {String(myEventInfo.name).toLowerCase()} · {String(myEventInfo.city).toLowerCase()}
+              {myEventInfo.date ? ` · ${myEventInfo.date}` : ' · tba'}
+            </div>
+
+            <div className="rd-progress-row" style={{ marginTop: '1.5rem' }}>
+              <div className="rd-progress-row__label">
+                <strong>{lockedState.votes}</strong> / {lockedState.threshold} ravers
+              </div>
+              <div className="rd-progress-bar">
+                <div
+                  className="rd-progress-bar__fill"
+                  style={{
+                    width: `${Math.min(100, (lockedState.votes / Math.max(1, lockedState.threshold)) * 100)}%`,
+                  }}
+                />
+              </div>
+              <div className="rd-progress-row__sub">
+                drop the link · open this room
+              </div>
+            </div>
+
+            <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <ShareEventLink
+                eventName={myEventInfo.name}
+                city={myEventInfo.city}
+                date={myEventInfo.date}
+                variant="primary"
+              />
+              <button
+                type="button"
+                className="rd-btn-ghost"
+                onClick={() => router.push('/')}
+              >
+                ↻ find a new vibe
+              </button>
+            </div>
+
+            <div className="rd-stencil-link" style={{ marginTop: '1.25rem', opacity: 0.55 }}>
+              ▸ we&rsquo;ll ping you when it opens.
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Empty-room takeover: 0 real co-attendees, user hasn't opted into the fake-padded deck */}
@@ -681,7 +756,7 @@ export default function MatchesPage() {
       )}
 
       {/* Card stack */}
-      {!showTakeover && (
+      {!showTakeover && !showLocked && (
       <div
         style={{
           position: 'relative',
@@ -793,7 +868,7 @@ export default function MatchesPage() {
       )}
 
       {/* Bottom hint */}
-      {!showTakeover && (
+      {!showTakeover && !showLocked && (
       <div className="rd-swipe-hint">
         <span className="rd-arrow">←</span>
         <span>SWIPE</span>
