@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '../lib/supabaseClient';
-import { createUserEvent } from '../lib/api/matches';
+import { createUserEvent, listLiveRooms, roomKeyMatches } from '../lib/api/matches';
 import { ensureUserId } from '../lib/ensureUserId';
 import GraffitiWall from './components/GraffitiWall';
 import { useAuth } from './components/AuthContext';
@@ -29,6 +29,7 @@ export default function HomePage() {
 
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [scanState, setScanState] = useState(null); // null | { status, sub }
+  const [liveRoomKeys, setLiveRoomKeys] = useState([]); // [{name, city, date}, ...]
 
   const router = useRouter();
   const { isAuthenticated } = useAuth();
@@ -60,6 +61,18 @@ export default function HomePage() {
     return () => clearInterval(id);
   }, []);
 
+  // ---------------- Live rooms (one-shot, for autocomplete LIVE chip) ----------------
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const rows = await listLiveRooms();
+      if (!cancelled) setLiveRoomKeys(rows);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // ---------------- Event / DJ autocomplete (Supabase) ----------------
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -70,7 +83,7 @@ export default function HomePage() {
       const searchName = eventName.trim().toLowerCase();
       const { data: eventData } = await supabase
         .from('events')
-        .select('id, name')
+        .select('id, name, city, date')
         .ilike('name', `%${searchName}%`)
         .not('name', 'ilike', '%unnamed event%')
         .limit(5);
@@ -85,7 +98,7 @@ export default function HomePage() {
       (eventData || []).forEach((e) => {
         if (!seen.has(e.name)) {
           seen.add(e.name);
-          uniqueEvents.push({ type: 'event', id: e.id, name: e.name });
+          uniqueEvents.push({ type: 'event', id: e.id, name: e.name, city: e.city, date: e.date });
         }
       });
       setEventSuggestions([
@@ -323,6 +336,15 @@ export default function HomePage() {
                       {s.type}
                     </span>
                     <span>{s.name}</span>
+                    {liveRoomKeys.some((lr) =>
+                      roomKeyMatches(lr, {
+                        name: s.name,
+                        city: s.city ?? '',
+                        date: s.date ?? null,
+                      })
+                    ) && (
+                      <span className="rd-type-chip rd-type-chip--live">LIVE ▸</span>
+                    )}
                   </button>
                 ))}
               </div>
