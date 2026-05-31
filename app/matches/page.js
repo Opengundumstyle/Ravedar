@@ -134,6 +134,7 @@ export default function MatchesPage() {
           setLockedState({ votes: status.votes, threshold: status.threshold });
           setMatches([]); // ensure the deck cascade doesn't render stale cards
           setRealCount(0);
+          if (!cancelled) setLoading(false);
           return;
         }
 
@@ -662,7 +663,14 @@ export default function MatchesPage() {
               <div className="rd-progress-row__label">
                 <strong>{lockedState.votes}</strong> / {lockedState.threshold} ravers
               </div>
-              <div className="rd-progress-bar">
+              <div
+                className="rd-progress-bar"
+                role="progressbar"
+                aria-valuenow={lockedState.votes}
+                aria-valuemin={0}
+                aria-valuemax={lockedState.threshold}
+                aria-label={`${lockedState.votes} of ${lockedState.threshold} ravers needed to open this room`}
+              >
                 <div
                   className="rd-progress-bar__fill"
                   style={{
