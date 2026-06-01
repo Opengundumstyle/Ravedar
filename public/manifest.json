@@ -1,0 +1,14 @@
+{
+  "name": "Rave Match",
+  "short_name": "Rave Match",
+  "description": "Connect with fellow ravers and find your perfect match for the next festival or rave.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
