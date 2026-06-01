@@ -327,7 +327,7 @@ export default function HomePage() {
                     type="button"
                     key={`${s.type}-${s.id}`}
                     className="rd-dropdown-item"
-                    onMouseDown={(e) => {
+                    onPointerDown={(e) => {
                       e.preventDefault();
                       pickEvent(s);
                     }}
@@ -361,7 +361,7 @@ export default function HomePage() {
             {happeningSoonCity && (
               <div className="rd-hot-sticker">
                 <span className="rd-arrow">▸</span>
-                {happeningSoonCity.toLowerCase()}
+                {(city.trim() || happeningSoonCity).toLowerCase()}
               </div>
             )}
             <input
@@ -386,7 +386,7 @@ export default function HomePage() {
                       background: 'rgba(255, 233, 0, 0.07)',
                       borderLeftColor: 'var(--rd-spray-yellow)',
                     }}
-                    onMouseDown={(e) => {
+                    onPointerDown={(e) => {
                       e.preventDefault();
                       pickCity(happeningSoonCity);
                     }}
@@ -400,7 +400,7 @@ export default function HomePage() {
                     type="button"
                     key={c}
                     className="rd-dropdown-item"
-                    onMouseDown={(e) => {
+                    onPointerDown={(e) => {
                       e.preventDefault();
                       pickCity(c);
                     }}
@@ -447,7 +447,7 @@ export default function HomePage() {
         </form>
 
         {/* FOOTER */}
-        <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
           <div
             className="font-mono-accent"
             style={{
@@ -575,19 +575,20 @@ const layout = {
     zIndex: 10,
     maxWidth: '460px',
     margin: '0 auto',
-    padding: '2.5rem 1.5rem 5rem',
+    padding:
+      'calc(1.4rem + env(safe-area-inset-top, 0px)) 1.5rem calc(2rem + env(safe-area-inset-bottom, 0px))',
   },
   hero: {
     textAlign: 'center',
-    marginBottom: '2.5rem',
-    minHeight: '200px',
+    marginBottom: '1.6rem',
+    minHeight: '160px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'flex-end',
   },
   heroTagline: {
-    height: '5.5rem',
+    height: '4.6rem',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',

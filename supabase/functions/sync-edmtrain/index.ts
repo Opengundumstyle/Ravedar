@@ -47,11 +47,17 @@ async function syncCity(supabase: SupabaseClient, city: string, edmtrainKey: str
     slug: slugify(a.name),
   }));
 
+  // Chunk size keeps each upsert under the worker's CPU/memory budget — a
+  // single large upsert with .select() returning every row can blow the
+  // 256MB / wall-clock limits even for one city.
+  const BATCH = 200;
+
   const artistIdMap = new Map<number, string>();
-  if (artistRows.length) {
+  for (let i = 0; i < artistRows.length; i += BATCH) {
+    const slice = artistRows.slice(i, i + BATCH);
     const { data, error } = await supabase
       .from("artists")
-      .upsert(artistRows, { onConflict: "edmtrain_id" })
+      .upsert(slice, { onConflict: "edmtrain_id" })
       .select("id, edmtrain_id");
     if (error) return { events: 0, artists: 0, links: 0, skipped: 0, error: `artists upsert: ${error.message}` };
     for (const row of data ?? []) {
@@ -59,7 +65,7 @@ async function syncCity(supabase: SupabaseClient, city: string, edmtrainKey: str
     }
   }
 
-  // 2. Upsert events in one batch.
+  // 2. Upsert events in chunks.
   const eventRows = events.map((ev) => ({
     name: ev.name?.trim() || `Event on ${ev.date}`,
     city: ev.venue?.location || "Unknown",
@@ -71,18 +77,20 @@ async function syncCity(supabase: SupabaseClient, city: string, edmtrainKey: str
     address: ev.venue?.address ?? null,
   }));
 
-  const { data: eventData, error: eventErr } = await supabase
-    .from("events")
-    .upsert(eventRows, { onConflict: "edmtrain_id" })
-    .select("id, edmtrain_id");
-  if (eventErr) return { events: 0, artists: artistRows.length, links: 0, skipped: 0, error: `events upsert: ${eventErr.message}` };
-
   const eventIdMap = new Map<number, string>();
-  for (const row of eventData ?? []) {
-    if (row.edmtrain_id != null) eventIdMap.set(row.edmtrain_id, row.id);
+  for (let i = 0; i < eventRows.length; i += BATCH) {
+    const slice = eventRows.slice(i, i + BATCH);
+    const { data, error } = await supabase
+      .from("events")
+      .upsert(slice, { onConflict: "edmtrain_id" })
+      .select("id, edmtrain_id");
+    if (error) return { events: 0, artists: artistRows.length, links: 0, skipped: 0, error: `events upsert: ${error.message}` };
+    for (const row of data ?? []) {
+      if (row.edmtrain_id != null) eventIdMap.set(row.edmtrain_id, row.id);
+    }
   }
 
-  // 3. Build event_artists links and upsert in one batch.
+  // 3. Build event_artists links and upsert in chunks.
   const links: { event_id: string; artist_id: string }[] = [];
   let skipped = 0;
   for (const ev of events) {
@@ -96,12 +104,13 @@ async function syncCity(supabase: SupabaseClient, city: string, edmtrainKey: str
   }
 
   let linksWritten = 0;
-  if (links.length) {
+  for (let i = 0; i < links.length; i += BATCH) {
+    const slice = links.slice(i, i + BATCH);
     const { error: linkErr, count } = await supabase
       .from("event_artists")
-      .upsert(links, { onConflict: "event_id,artist_id", ignoreDuplicates: true, count: "exact" });
-    if (linkErr) return { events: events.length, artists: artistRows.length, links: 0, skipped, error: `event_artists upsert: ${linkErr.message}` };
-    linksWritten = count ?? links.length;
+      .upsert(slice, { onConflict: "event_id,artist_id", ignoreDuplicates: true, count: "exact" });
+    if (linkErr) return { events: events.length, artists: artistRows.length, links: linksWritten, skipped, error: `event_artists upsert: ${linkErr.message}` };
+    linksWritten += count ?? slice.length;
   }
 
   return { events: events.length, artists: artistRows.length, links: linksWritten, skipped };
@@ -122,12 +131,19 @@ Deno.serve(async (req) => {
   if (!supabaseUrl || !serviceKey) return new Response(JSON.stringify({ ok: false, error: "missing supabase env" }), { status: 500 });
   if (!edmtrainKey) return new Response(JSON.stringify({ ok: false, error: "missing EDMTRAIN_API_KEY" }), { status: 500 });
 
+  // Single-city mode (used by the weekly cron loop). Falls back to all
+  // cities if no ?city is given, but processing all 10 in one invocation
+  // exceeds the worker's memory/CPU budget.
+  const url = new URL(req.url);
+  const cityParam = url.searchParams.get("city");
+  const cities = cityParam ? [cityParam] : TARGET_CITIES;
+
   const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
   const startedAt = new Date().toISOString();
   const summary: Record<string, CitySummary> = {};
   let totalEvents = 0, totalArtists = 0, totalLinks = 0;
 
-  for (const city of TARGET_CITIES) {
+  for (const city of cities) {
     try {
       const s = await syncCity(supabase, city, edmtrainKey);
       summary[city] = s;

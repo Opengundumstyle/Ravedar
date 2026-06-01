@@ -2,8 +2,8 @@ import './globals.css';
 import {
   Rubik_Wet_Paint,
   Audiowide,
-  Major_Mono_Display,
-  Space_Mono,
+  Chakra_Petch,
+  Space_Grotesk,
   Permanent_Marker,
 } from 'next/font/google';
 import { AuthProvider } from './components/AuthContext';
@@ -22,14 +22,14 @@ const neon = Audiowide({
   variable: '--font-neon',
   display: 'swap',
 });
-const monoAccent = Major_Mono_Display({
-  weight: '400',
+const monoAccent = Chakra_Petch({
+  weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
   variable: '--font-mono-accent',
   display: 'swap',
 });
-const bodyMono = Space_Mono({
-  weight: ['400', '700'],
+const bodyMono = Space_Grotesk({
+  weight: ['400', '500', '700'],
   subsets: ['latin'],
   variable: '--font-body-mono',
   display: 'swap',

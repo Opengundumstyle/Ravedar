@@ -27,8 +27,8 @@ The look is enforced by a single design system in `app/globals.css` (the `rd-*` 
 **Fonts** (already wired in `app/layout.js`):
 - `var(--font-graffiti)` — Rubik Wet Paint — drippy graffiti tags, rotated −3deg
 - `var(--font-neon)` — Audiowide — neon titles (RAVEDAR, TAG IN)
-- `var(--font-mono-accent)` — Major Mono Display — section headers, status pills, micro-labels (uppercase, wide letter-spacing)
-- `var(--font-body-mono)` — Space Mono — body / form / list text
+- `var(--font-mono-accent)` — Chakra Petch — section headers, status pills, micro-labels (uppercase, wide letter-spacing). Readable squared-technical face; variable name is legacy from when this was Major Mono Display.
+- `var(--font-body-mono)` — Space Grotesk — body / form / list text (proportional, readable; the variable name is legacy from when this was Space Mono)
 - `var(--font-marker)` — Permanent Marker — handwritten accents (sparingly)
 
 ### 2. Reusable building blocks

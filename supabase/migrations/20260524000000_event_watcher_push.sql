@@ -82,11 +82,15 @@ begin
     'CHANGE-ME', false);
 end$$;
 
--- Persist for future sessions.
-alter database postgres set app.event_watcher_webhook_url
-  = 'https://CHANGE-ME.functions.supabase.co/send-event-watcher-push';
-alter database postgres set app.event_watcher_webhook_secret
-  = 'CHANGE-ME';
+-- Persist for future sessions: hosted Supabase forbids `alter database
+-- postgres set` from the migration role (permission denied, 42501), so this
+-- is a MANUAL per-environment step. Run as the project owner via the SQL
+-- editor / dashboard (see CLAUDE.md "Event-watcher push notifications"):
+--   alter database postgres set app.event_watcher_webhook_url
+--     = 'https://<ref>.functions.supabase.co/send-event-watcher-push';
+--   alter database postgres set app.event_watcher_webhook_secret = '<hex>';
+-- Until set, the fanout/digest triggers read a null setting and bail silently
+-- (no pushes fire), so inserts are never blocked.
 
 -- ============================================================================
 -- Subscribe trigger: when a real user scans into a sparse event (<4 real

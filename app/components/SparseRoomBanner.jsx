@@ -29,10 +29,10 @@ export default function SparseRoomBanner({ realCount, eventName, city, date }) {
       }}
     >
       <div style={{ flex: 1 }}>
-        <div style={{ fontFamily: 'var(--font-mono-accent), monospace', fontSize: '0.72rem', letterSpacing: '0.28em', textTransform: 'uppercase', opacity: 0.85 }}>
+        <div style={{ fontFamily: 'var(--font-mono-accent), sans-serif', fontSize: '0.72rem', letterSpacing: '0.28em', textTransform: 'uppercase', opacity: 0.85 }}>
           ▸ {realCount} {realCount === 1 ? 'raver' : 'ravers'} scanning this room
         </div>
-        <div style={{ fontFamily: 'var(--font-body-mono), monospace', fontSize: '0.74rem', opacity: 0.7, marginTop: '0.2rem' }}>
+        <div style={{ fontFamily: 'var(--font-body-mono), sans-serif', fontSize: '0.74rem', opacity: 0.7, marginTop: '0.2rem' }}>
           drop the link — bring your crew
         </div>
       </div>

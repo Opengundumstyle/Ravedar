@@ -63,7 +63,7 @@ export default function ReportModal({
       setSuccess(true);
       setTimeout(() => onDone({ blocked: alsoBlock }), 1400);
     } catch (e) {
-      setError(e.message || 'couldn't submit — try again?');
+      setError(e.message || "couldn't submit — try again?");
       setBusy(false);
     }
   };
@@ -189,13 +189,13 @@ const s = {
     lineHeight: 1,
   },
   sub: {
-    fontFamily: 'var(--font-body-mono), monospace',
+    fontFamily: 'var(--font-body-mono), sans-serif',
     fontSize: '0.88rem',
     color: 'rgba(255,255,255,0.78)',
     marginBottom: '0.6rem',
   },
   target: {
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
     fontSize: '0.7rem',
     letterSpacing: '0.22em',
     textTransform: 'uppercase',
@@ -209,7 +209,7 @@ const s = {
     margin: '0 0 1rem',
   },
   legend: {
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
     fontSize: '0.7rem',
     letterSpacing: '0.28em',
     textTransform: 'uppercase',
@@ -228,7 +228,7 @@ const s = {
     transform: 'scale(1.15)',
   },
   reasonLabel: {
-    fontFamily: 'var(--font-body-mono), monospace',
+    fontFamily: 'var(--font-body-mono), sans-serif',
     fontSize: '0.92rem',
     color: '#fff',
   },
@@ -237,7 +237,7 @@ const s = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'baseline',
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
     fontSize: '0.7rem',
     letterSpacing: '0.22em',
     textTransform: 'uppercase',
@@ -247,7 +247,7 @@ const s = {
   charCount: { color: 'rgba(255,255,255,0.45)' },
   textarea: {
     width: '100%',
-    fontFamily: 'var(--font-body-mono), monospace',
+    fontFamily: 'var(--font-body-mono), sans-serif',
     fontSize: '0.92rem',
     resize: 'vertical',
   },
@@ -260,7 +260,7 @@ const s = {
   },
   checkbox: { accentColor: '#ff1a8a', transform: 'scale(1.15)' },
   blockLabel: {
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
     fontSize: '0.72rem',
     letterSpacing: '0.22em',
     textTransform: 'uppercase',

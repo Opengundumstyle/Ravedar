@@ -85,7 +85,7 @@ const s = {
     border: '1px solid rgba(255,255,255,0.25)',
     background: 'rgba(0,0,0,0.55)',
     color: '#fff',
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
     fontSize: '1.05rem',
     letterSpacing: '0.1em',
     cursor: 'pointer',
@@ -111,7 +111,7 @@ const s = {
     padding: '0.65rem 0.9rem',
     background: 'transparent',
     border: 'none',
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
     fontSize: '0.72rem',
     letterSpacing: '0.22em',
     textTransform: 'lowercase',
@@ -120,6 +120,6 @@ const s = {
   },
   arrow: {
     color: 'var(--rd-spray-pink)',
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
   },
 };

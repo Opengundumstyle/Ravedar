@@ -116,7 +116,7 @@ const s = {
     lineHeight: 1,
   },
   body: {
-    fontFamily: 'var(--font-body-mono), monospace',
+    fontFamily: 'var(--font-body-mono), sans-serif',
     fontSize: '0.9rem',
     lineHeight: 1.55,
     color: 'rgba(255,255,255,0.88)',
@@ -124,7 +124,7 @@ const s = {
   },
   name: {
     color: 'var(--rd-spray-pink)',
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
     letterSpacing: '0.16em',
     textTransform: 'uppercase',
   },

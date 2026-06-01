@@ -252,7 +252,7 @@ const list = {
     cursor: 'pointer',
     width: '100%',
     textAlign: 'left',
-    fontFamily: 'var(--font-body-mono), monospace',
+    fontFamily: 'var(--font-body-mono), sans-serif',
     color: '#fff',
     transition: 'border-color 0.18s, box-shadow 0.18s',
   },
@@ -291,7 +291,7 @@ const list = {
     borderRadius: '10px',
     background: 'var(--rd-spray-pink)',
     color: '#000',
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
     fontSize: '0.65rem',
     fontWeight: 700,
     letterSpacing: '0.05em',
@@ -311,7 +311,7 @@ const list = {
     gap: '0.6rem',
   },
   name: {
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
     fontSize: '0.85rem',
     letterSpacing: '0.18em',
     color: '#fff',
@@ -324,7 +324,7 @@ const list = {
   },
   roleChip: {
     marginLeft: '0.5rem',
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
     fontSize: '0.55rem',
     letterSpacing: '0.2em',
     color: 'var(--rd-spray-yellow)',
@@ -335,7 +335,7 @@ const list = {
   },
   time: {
     flexShrink: 0,
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
     fontSize: '0.6rem',
     letterSpacing: '0.16em',
     color: 'rgba(255,255,255,0.4)',
@@ -343,7 +343,7 @@ const list = {
   },
   preview: {
     marginTop: '0.3rem',
-    fontFamily: 'var(--font-body-mono), monospace',
+    fontFamily: 'var(--font-body-mono), sans-serif',
     fontSize: '0.78rem',
     color: 'rgba(255,255,255,0.55)',
     overflow: 'hidden',

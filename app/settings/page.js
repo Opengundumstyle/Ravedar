@@ -139,7 +139,7 @@ const page = {
   },
   section: {},
   sectionHeader: {
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
     fontSize: '0.78rem',
     letterSpacing: '0.3em',
     textTransform: 'uppercase',
@@ -147,7 +147,7 @@ const page = {
     marginBottom: '1rem',
   },
   muted: {
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
     fontSize: '0.72rem',
     letterSpacing: '0.22em',
     textTransform: 'uppercase',
@@ -170,14 +170,14 @@ const page = {
     border: '1px solid rgba(255,26,138,0.4)',
   },
   name: {
-    fontFamily: 'var(--font-mono-accent), monospace',
+    fontFamily: 'var(--font-mono-accent), sans-serif',
     fontSize: '0.85rem',
     letterSpacing: '0.2em',
     textTransform: 'uppercase',
     color: '#fff',
   },
   meta: {
-    fontFamily: 'var(--font-body-mono), monospace',
+    fontFamily: 'var(--font-body-mono), sans-serif',
     fontSize: '0.72rem',
     color: 'rgba(255,255,255,0.45)',
     marginTop: '0.15rem',
